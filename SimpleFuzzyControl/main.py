@@ -20,7 +20,7 @@ class Vehicle:
         self.position = position
         self.heading = heading
         self.carModel = carModel
-        self.icTireAngle = 0
+        self.tireAngle = 0
 
     def setSpeed(self, speed):
         self.speed = speed
@@ -41,17 +41,25 @@ class Vehicle:
     def getHeading(self):
         return self.heading
 
-    def setTireAngle(self, tireAngle):
-        self.icTireAngle = tireAngle
+    def setTireAngle(self, tireAngle, degrees = True):
+
+        # todo: limit max tire angle to vehicle model settings
+        if degrees == True:
+            self.tireAngle = tireAngle * np.pi/180
+        else:
+            self.tireAngle = tireAngle
 
     def getTireAngle(self):
-        return self.icTireAngle
+        return self.tireAngle
 
-    def setSteeringAngle(self, steeringWheelAngle):
-        self.icTireAngle = steeringWheelAngle*self.carModel.steeringRatio.value
+    def setSteeringAngle(self, steeringWheelAngle, degrees = True):
+        if degrees == True:
+            self.tireAngle = steeringWheelAngle*self.carModel.steeringRatio.value * np.pi/180
+        else:
+            self.tireAngle = steeringWheelAngle * self.carModel.steeringRatio.value
 
     def getSteeringAngle(self):
-        return self.icTireAngle / self.carModel.steeringRatio.value
+        return self.tireAngle / self.carModel.steeringRatio.value
 
     def odes(self, x, t):
         x1 = x[0]
@@ -61,11 +69,11 @@ class Vehicle:
         #### ODE PERFECT MODEL - WITH HITCH
         dX1dt = self.speed * np.cos(theta1)
         dY1dt = self.speed * np.sin(theta1)
-        dTheta1dt = (self.speed / self.carModel.wheelbase.value) * np.tan(self.icTireAngle)
+        dTheta1dt = (self.speed / self.carModel.wheelbase.value) * np.tan(self.tireAngle)
 
         return [dX1dt, dY1dt, dTheta1dt]
 
-    def updatePositionHeading(self):
+    def updateState(self):
 
         # ODE initial conditions
         x0 = [self.position[0], self.position[1], self.heading]
@@ -135,25 +143,30 @@ class Pedestrian(Obstacle):
 
 
 
-class Navigation:
+class NavigationController:
     def __init__(self, vehicle, obstacles, target):
         self.vehicle = vehicle
-        self.obstacle = obstacles
+        self.obstacles = obstacles
         self.target = target
         self.fuzzyInputs = [[0] * 2 for _ in range(len(obstacles))]
 
-    def updateTarget(self, target):
+    def getVehicleData(self):
+        return self.vehicle
+
+    def updateTarget(self):
+        # todo: aquire new target information
         self.target = target
 
-    def updateObstacles(self, obstacles):
-        self.obstacle = obstacles
+    def updateObstacles(self):
+        # todo: aquire new obstacles from sensors
+        self.obstacles = obstacles
 
     def calculateAngles(self):
         targetVector = [self.target[0] - self.vehicle.getPosition()[0],
                         self.target[1] - self.vehicle.getPosition()[1]]
 
-        for i in range(len(self.obstacle)):
-            currentObstacle = self.obstacle[i]
+        for i in range(len(self.obstacles)):
+            currentObstacle = self.obstacles[i]
             obstacleVector = [currentObstacle.getPosition()[0] - self.vehicle.getPosition()[0],
                               currentObstacle.getPosition()[1] - self.vehicle.getPosition()[1]]
 
@@ -164,8 +177,8 @@ class Navigation:
         targetVector = [self.target[0] - self.vehicle.getPosition()[0],
                         self.target[1] - self.vehicle.getPosition()[1]]
 
-        for i in range(len(self.obstacle)):
-            currentObstacle = self.obstacle[i]
+        for i in range(len(self.obstacles)):
+            currentObstacle = self.obstacles[i]
             obstacleVector = [currentObstacle.getPosition()[0] - self.vehicle.getPosition()[0],
                               currentObstacle.getPosition()[1] - self.vehicle.getPosition()[1]]
 
@@ -173,31 +186,36 @@ class Navigation:
             self.fuzzyInputs[i][0] = distanceRatio
 
     def updateFuzzyInputs(self):
-        # self.vehicle.setTireAngle(self.vehicle.getTireAngle()+1)
-        print("hi")
-        self.vehicle.updatePositionHeading()
-        self.updateTarget(self.target)
-        self.updateObstacles(self.obstacle)
+
+        self.vehicle.updateState()
+        self.updateTarget()
+        self.updateObstacles()
         self.calculateAngles()
         self.calculateDistanceRatios()
 
+    def navigate(self):
+        self.updateFuzzyInputs()
+        self.vehicle.setTireAngle(0, degrees = True)
+
 
 class Simulation:
-    def __init__(self, vehicle, obstacles, target):
-        self.vehicle = vehicle
-        self.obstacle = obstacles
+    def __init__(self, navigationObj, obstacles, target):
+
+        self.navigation = navigationObj
+        self.vehicle = navigationObj.getVehicleData()
+        self.obstacles = obstacles
         self.target = target
 
     def updatePlot(self, i):
 
-        self.vehicle.updatePositionHeading()
+        self.navigation.navigate()
 
         plt.cla()
         plt.scatter(self.vehicle.getPosition()[0], self.vehicle.getPosition()[1], color='blue')
         plt.scatter(self.target[0], self.target[1], color='green')
 
-        for i in range(len(self.obstacle)):
-            currentObstacle = self.obstacle[i]
+        for i in range(len(self.obstacles)):
+            currentObstacle = self.obstacles[i]
             plt.scatter(currentObstacle.getPosition()[0], currentObstacle.getPosition()[1], color='red')
 
         plt.xlim(-10, 10)
@@ -224,10 +242,9 @@ if __name__ == '__main__':
     obstacles = [Obstacle(0, [2, 2], 0), Obstacle(0, [2, 3], 0)]
     target = [2, 4]
 
-    navigation = Navigation(myVehicle, obstacles, target)
-    fuzzySteering = Navigation(myVehicle, obstacles, target)
-    fuzzySteering.updateFuzzyInputs()
+    navigationController = NavigationController(myVehicle, obstacles, target)
 
-    navSimulation = Simulation(myVehicle, obstacles, target)
 
+
+    navSimulation = Simulation(navigationController, obstacles, target)
     navSimulation.animate()
