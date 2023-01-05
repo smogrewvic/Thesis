@@ -1,15 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 import enum
 import sys
 from scipy.integrate import odeint
+import skfuzzy as fuzz
+import skfuzzy.control as ctrl
 
 class JEEP(enum.Enum):
     wheelbase = 2.795
     width = 2.00
-    hitchOffset = 1.34
     steeringRatio = 0.0652778
     maxTireAngle = 22.5  # degrees
 
@@ -193,10 +193,56 @@ class NavigationController:
         self.calculateAngles()
         self.calculateDistanceRatios()
 
+    def fuzzyControl(self):
+        pass
+
     def navigate(self):
         self.updateFuzzyInputs()
-        self.vehicle.setTireAngle(0, degrees = True)
 
+        # Create fuzzy variables
+        angle = ctrl.Antecedent(np.arange(-90, 90, 1), 'angle')
+        distance_ratio = ctrl.Antecedent(np.arange(0, 2, 0.01), 'distance_ratio')
+        steering_angle = ctrl.Consequent(np.arange(-45, 45, 1), 'steering_angle')
+
+        # Create fuzzy membership functions
+        # angle['left'] = fuzz.trapmf(angle.universe, [-90, -77.5, -22.5, -5])
+        angle['left'] = fuzz.zmf(angle.universe, -45,0)
+        angle['straight'] = fuzz.trimf(angle.universe, [-10, 0, 10])
+        # angle['right'] = fuzz.trapmf(angle.universe, [5, 22.5, 77.5, 90])
+        angle['right'] = fuzz.smf(angle.universe, 0, 45)
+
+        # distance_ratio['close'] = fuzz.trimf(distance_ratio.universe, [0, 0, 0.5])
+        distance_ratio['close'] = fuzz.zmf(distance_ratio.universe, 0.01, 0.5)
+        # distance_ratio['far'] = fuzz.trimf(distance_ratio.universe, [0.5, 1, 2])
+        distance_ratio['far'] = fuzz.smf(distance_ratio.universe, 0.5, 1)
+
+
+        # steering_angle['left'] = fuzz.trimf(steering_angle.universe, [-45, -22.5, 0])
+        steering_angle['left'] = fuzz.zmf(steering_angle.universe, -45, 0)
+        # steering_angle['right'] = fuzz.trimf(steering_angle.universe, [0, 22.5, 45])
+        steering_angle['right'] = fuzz.smf(steering_angle.universe, 0, 45)
+
+        # Create fuzzy rules
+        rule1 = ctrl.Rule(angle['left'] & distance_ratio['close'], steering_angle['left'])
+        rule2 = ctrl.Rule(angle['left'] & distance_ratio['far'], steering_angle['left'])
+        rule3 = ctrl.Rule(angle['straight'] & distance_ratio['close'], steering_angle['left'])
+        rule4 = ctrl.Rule(angle['straight'] & distance_ratio['far'], steering_angle['right'])
+        rule5 = ctrl.Rule(angle['right'] & distance_ratio['close'], steering_angle['right'])
+        rule6 = ctrl.Rule(angle['right'] & distance_ratio['far'], steering_angle['right'])
+
+        # Create fuzzy control system
+        steering_control = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6])
+        steering = ctrl.ControlSystemSimulation(steering_control)
+
+        # Set inputs and compute output
+        steering.input['distance_ratio'] = self.fuzzyInputs[0][0]
+        steering.input['angle'] = self.fuzzyInputs[0][1]
+        steering.compute()
+
+        # Print output
+
+        print("angle", self.fuzzyInputs[0][1] ,"\tdistanceRatio", self.fuzzyInputs[0][0],"\tsteering output", steering.output['steering_angle'])
+        self.vehicle.setTireAngle(steering.output['steering_angle'], degrees = True)
 
 class Simulation:
     def __init__(self, navigationObj, obstacles, target):
@@ -218,8 +264,8 @@ class Simulation:
             currentObstacle = self.obstacles[i]
             plt.scatter(currentObstacle.getPosition()[0], currentObstacle.getPosition()[1], color='red')
 
-        plt.xlim(-10, 10)
-        plt.ylim(-10, 10)
+        plt.xlim(-25, 25)
+        plt.ylim(-25, 25)
 
     def animate(self):
         plt.axis('off')
@@ -238,9 +284,10 @@ if __name__ == '__main__':
     myVehicle = Vehicle(JEEP, 1, [0,0], 0)
     myVehicle.setTireAngle(-5)
 
+    obstacles = [Obstacle(0, [5, 5], 0)]  # 1 obstacles
+    # obstacles = [Obstacle(0, [2, 2], 0), Obstacle(0, [2, 3], 0)] # 2 obstacles
 
-    obstacles = [Obstacle(0, [2, 2], 0), Obstacle(0, [2, 3], 0)]
-    target = [2, 4]
+    target = [10, 10]
 
     navigationController = NavigationController(myVehicle, obstacles, target)
 
