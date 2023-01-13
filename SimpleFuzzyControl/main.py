@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import time
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import enum
@@ -7,6 +8,9 @@ import sys
 from scipy.integrate import odeint
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401,E402
+import random
+
 
 class JEEP(enum.Enum):
     wheelbase = 2.795
@@ -153,6 +157,9 @@ class NavigationController:
         self.obstacleForceVectors = [0]*2
         self.targetForceVectors = 0
 
+        #testvars
+        # self.lastHeading = 0
+
     def getVehicleData(self):
         return self.vehicle
 
@@ -179,6 +186,8 @@ class NavigationController:
 
             self.fuzzyInputs[i][1] = abs(angleObstacleTarget)
             self.obstacleForceVectors[i] = obstacleVector * 1   # Todo: add a weighting factor
+            # print("angleObstacleTarget",self.fuzzyInputs[i][1])
+
 
     def calculateDistanceRatios(self):
         targetVector = [self.target[0] - self.vehicle.getPosition()[0],
@@ -191,9 +200,33 @@ class NavigationController:
 
             distanceRatio = (np.linalg.norm(obstacleVector) / np.linalg.norm(targetVector))
             self.fuzzyInputs[i][0] = distanceRatio
+            # print("distanceRatio", distanceRatio)
 
-    def fuzzyControl(self):
-        pass
+    def saturateValue(self, value, saturationHigh, saturationLow):
+
+        if value > saturationHigh:
+            value = saturationHigh
+        elif value < saturationLow:
+            value = saturationLow
+
+        return value
+
+
+    def costFunction(self, input1, input2, output):
+
+        time = 0
+        crash = 0
+        target = 0
+        lateralAccel = 0
+        lateralJerk = 0
+        longitudinalAccel = 0
+        longitudinalJerk = 0
+
+        cost = sum(pow(time,2), pow(crash,2)*100, pow(target)*5)
+
+
+        return (input1 - output) ** 2 + (input2 - output) ** 2
+
 
     def navigate(self):
         self.vehicle.updateState()
@@ -203,22 +236,25 @@ class NavigationController:
         self.calculateDistanceRatios()
 
         # Create fuzzy variables
-        relativeAngle = ctrl.Antecedent(np.arange(0, np.pi/2, 1), 'angle')
-        distanceRatio = ctrl.Antecedent(np.arange(0, 2, 0.01), 'distanceRatio')
-        resultForce = ctrl.Consequent(np.arange(0, 1, 0.01), 'resultForce')
+        relativeAngle = ctrl.Antecedent(np.arange(0, np.pi/2, 0.1), 'relativeAngle')
+        distanceRatio = ctrl.Antecedent(np.arange(0, 2, 0.1), 'distanceRatio')
+        output = ctrl.Consequent(np.arange(0, 1, 0.1), 'output')
 
+
+        # print("arange", len(np.arange(0, np.pi/2, 0.01)))
         # Create fuzzy membership functions
-        relativeAngle['low'] = fuzz.zmf(relativeAngle.universe, 0, np.pi/8)
-        relativeAngle['high'] = fuzz.smf(relativeAngle.universe, np.pi/12, np.pi/4)
-        distanceRatio['low'] = fuzz.zmf(distanceRatio.universe, 0, 0.5)
-        distanceRatio['high'] = fuzz.smf(distanceRatio.universe, 0.3, 1)
+        relativeAngle['low'] = fuzz.zmf(relativeAngle.universe, np.pi/4, np.pi/2)
+        relativeAngle['high'] = fuzz.smf(relativeAngle.universe, 0.2, np.pi/2)
+        distanceRatio['low'] = fuzz.zmf(distanceRatio.universe, 0.25, 2)  # alpha
+        distanceRatio['high'] = fuzz.smf(distanceRatio.universe, 0, 1.5)  # alpha
 
-        resultForce['low'] = fuzz.zmf(resultForce.universe, 0, 0.4)
-        resultForce['high'] = fuzz.smf(resultForce.universe, 0.2, 0.6)
+        output['low'] = fuzz.zmf(output.universe, 0.25, 1)
+        output['high'] = fuzz.smf(output.universe, 0, 0.75)
 
         # Create fuzzy rules
-        rule1 = ctrl.Rule(relativeAngle['low'] & distanceRatio['low'], resultForce['high'])
-        rule2 = ctrl.Rule(relativeAngle['high'], resultForce['low'])
+        rule1 = ctrl.Rule(distanceRatio['low'] & relativeAngle['low'], output['high'])
+        rule2 = ctrl.Rule(relativeAngle['high'], output['low'])
+
 
         # Create fuzzy control system
         steering_control = ctrl.ControlSystem([rule1, rule2])
@@ -226,20 +262,66 @@ class NavigationController:
 
         # Set inputs and compute output
         forceWeight.input['distanceRatio'] = self.fuzzyInputs[0][0]
-        forceWeight.input['angle'] = self.fuzzyInputs[0][1]
+        forceWeight.input['relativeAngle'] = self.fuzzyInputs[0][1]
         forceWeight.compute()
 
-        repulsionVector = forceWeight.output['resultForce']*np.array(self.obstacleForceVectors[0])
-        attractionVector = (1-forceWeight.output['resultForce'])*np.array(self.targetForceVectors[0])
+        repulsionVector = forceWeight.output['output']*np.array(self.obstacleForceVectors[0])
+        attractionVector = (1-forceWeight.output['output'])*np.array(self.targetForceVectors[0])
 
         resultForceVector = np.add(repulsionVector, attractionVector)
-        steeringAngle = math.atan2(resultForceVector[1],resultForceVector[0]) - self.vehicle.getHeading()
-        steeringAngle = min(self.vehicle.carModel.maxTireAngleRads.value, abs(steeringAngle))  # saturate to max steering angle
+        steeringAngle = math.atan2(resultForceVector[1],resultForceVector[0]) #- self.vehicle.getHeading()
+
+        # rate limiting steering
+        # heading = self.lastHeading + min(max(steeringAngle-self.lastHeading, np.pi/4), -np.pi/4)
+        # self.lastHeading = heading
+        # self.vehicle.setHeading(heading)
+
+        # saturate steering angle to range
+        steeringAngle = self.saturateValue(steeringAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
+        self.vehicle.setHeading(steeringAngle)
         self.vehicle.setTireAngle(steeringAngle, degrees = False)
 
-        print("steeringAngle",steeringAngle*57.7, "vehicleheading",self.vehicle.getHeading())
-        # print("angle", self.fuzzyInputs[0][1], "\tdistanceRatio", self.fuzzyInputs[0][0], "\tsteering output", forceWeight.output['resultForce'])
 
+
+        # self.displayPlots([relativeAngle, distanceRatio], [output], [rule1, rule2])
+
+
+
+    def displayPlots(self, inputMemberships,outputMemberships,rules):
+
+        fis = ctrl.ControlSystem(rules)
+        controlSystem = ctrl.ControlSystemSimulation(fis)
+
+        for memFunc in inputMemberships:
+            memFunc.view()
+
+        for memFunc in outputMemberships:
+            memFunc.view()
+
+        #create 3D plot space
+        upsampled = np.arange(0, 2, 0.1)
+        x, y = np.meshgrid(upsampled, upsampled)
+        z = np.zeros_like(x)
+        for i in range(len(upsampled)):
+            for j in range(len(upsampled)):
+                # print(i, j, "angle", x[i, j], "\tdistanceRatio", y[i, j])
+                controlSystem.input[inputMemberships[0].label] = x[i, j]
+                controlSystem.input[inputMemberships[1].label] = y[i, j]
+                controlSystem.compute()
+                z[i, j] = controlSystem.output[outputMemberships[0].label]
+
+        fig = plt.figure(figsize=(8, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap='viridis',
+                               linewidth=0.4, antialiased=True)
+
+        cset = ax.contourf(x, y, z, zdir='z', offset=-2.5, cmap='viridis', alpha=0.5)
+        cset = ax.contourf(x, y, z, zdir='x', offset=3, cmap='viridis', alpha=0.5)
+        cset = ax.contourf(x, y, z, zdir='y', offset=3, cmap='viridis', alpha=0.5)
+
+        ax.view_init(30, 200)
+        plt.show()
 
 class Simulation:
     def __init__(self, navigationObj, obstacles, target):
@@ -251,7 +333,7 @@ class Simulation:
 
     def updatePlot(self, i):
 
-        self.navigation.navigate()
+        resultForce = self.navigation.navigate()
 
         plt.cla()
         plt.scatter(self.vehicle.getPosition()[0], self.vehicle.getPosition()[1], color='blue')
@@ -261,13 +343,21 @@ class Simulation:
             currentObstacle = self.obstacles[i]
             plt.scatter(currentObstacle.getPosition()[0], currentObstacle.getPosition()[1], color='red')
 
+        #
+        # #plot force Vector
+        # forceX = [self.vehicle.getPosition()[0], self.vehicle.getPosition()[0]+resultForce[0]]
+        # forceY = [self.vehicle.getPosition()[1], self.vehicle.getPosition()[1]+resultForce[1]]
+        # plt.plot(forceX, forceY)
+
         plt.xlim(-25, 25)
         plt.ylim(-25, 25)
+        # time.sleep(5)
 
     def animate(self):
         plt.axis('off')
         ani = FuncAnimation(plt.gcf(), self.updatePlot, interval=10)
         plt.show()
+
 
 
 def exit_application():
@@ -277,14 +367,20 @@ def exit_application():
 
 
 if __name__ == '__main__':
-    myVehicle = Vehicle(JEEP, 5, [-2,-7], 0)
+    myVehicle = Vehicle(JEEP, 5, [5,8.66], 3)
     myVehicle.setTireAngle(0)
 
-    target = [10, 10]
-    obstacles = [Obstacle(0, [5, 5], 0)]  # 1 obstacles
+    xPos = random.randint(-25,25)
+    yPos = random.randint(-25,25)
+    target = [xPos, yPos]
+
+    # target = [0,0]
+    obstacles = [Obstacle(0, [10,0], 0)]  # 1 obstacles
     # obstacles = [Obstacle(0, [2, 2], 0), Obstacle(0, [2, 3], 0)] # 2 obstacles
 
     navigationController = NavigationController(myVehicle, obstacles, target)
-
+    navigationController.navigate()
     navSimulation = Simulation(navigationController, obstacles, target)
     navSimulation.animate()
+
+    # navigationController.adaptiveNavigate()
