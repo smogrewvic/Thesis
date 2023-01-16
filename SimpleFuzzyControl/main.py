@@ -367,22 +367,30 @@ class LearnController(NavigationController):
         self.updateObstacles()
         self.calculateAngles()
         self.calculateDistanceRatios()
+        # print("PARAMS", gaussParams)
+        if mfShape == "gauss":
+            #check that no gaussParams became zero from mutation
+            for i in range(len(gaussParams)):
+                if gaussParams[i] <= 0:
 
-        #check that no gaussParams became zero from mutation
-        for i in range(len(gaussParams)):
-            if gaussParams[i] <= 0:
-                print("BAD PARAMS", gaussParams)
-                gaussParams[i]=0.1
-                print("FIXED",gaussParams)
-                # return False
+                    gaussParams[i]=0.1
+                    # return False
+            self.inputMF1['low'] = fuzz.gaussmf(self.inputMF1.universe, gaussParams[0], gaussParams[1])
+            self.inputMF1['high'] = fuzz.gaussmf(self.inputMF1.universe, gaussParams[2], gaussParams[3])
+            self.inputMF2['low'] = fuzz.gaussmf(self.inputMF2.universe, gaussParams[4], gaussParams[5])  # alpha
+            self.inputMF2['high'] = fuzz.gaussmf(self.inputMF2.universe, gaussParams[6], gaussParams[7])  # alpha
 
-        self.inputMF1['low'] = fuzz.gaussmf(self.inputMF1.universe, gaussParams[0], gaussParams[1])
-        self.inputMF1['high'] = fuzz.gaussmf(self.inputMF1.universe, gaussParams[2], gaussParams[3])
-        self.inputMF2['low'] = fuzz.gaussmf(self.inputMF2.universe, gaussParams[4], gaussParams[5])  # alpha
-        self.inputMF2['high'] = fuzz.gaussmf(self.inputMF2.universe, gaussParams[6], gaussParams[7])  # alpha
+            self.outputMF1['low'] = fuzz.gaussmf(self.outputMF1.universe, gaussParams[8], gaussParams[9])
+            self.outputMF1['high'] = fuzz.gaussmf(self.outputMF1.universe, gaussParams[10], gaussParams[11])
 
-        self.outputMF1['low'] = fuzz.gaussmf(self.outputMF1.universe, gaussParams[8], gaussParams[9])
-        self.outputMF1['high'] = fuzz.gaussmf(self.outputMF1.universe, gaussParams[10], gaussParams[11])
+        if mfShape == "sigmoid":
+            self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, gaussParams[0], gaussParams[1])
+            self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, gaussParams[2], gaussParams[3])
+            self.inputMF2['low'] = fuzz.sigmf(self.inputMF2.universe, gaussParams[4], gaussParams[5])  # alpha
+            self.inputMF2['high'] = fuzz.sigmf(self.inputMF2.universe, gaussParams[6], gaussParams[7])  # alpha
+
+            self.outputMF1['low'] = fuzz.sigmf(self.outputMF1.universe, gaussParams[8], gaussParams[9])
+            self.outputMF1['high'] = fuzz.sigmf(self.outputMF1.universe, gaussParams[10], gaussParams[11])
 
         # Create fuzzy rules
         rule1 = ctrl.Rule(self.inputMF2['low'] & self.inputMF1['low'], self.outputMF1['high'])
@@ -415,13 +423,14 @@ class LearnController(NavigationController):
         steeringAngle = self.saturateValue(steeringAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
         self.vehicle.setTireAngle(steeringAngle, degrees=False)
 
-        # self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [rule1, rule2])
+        if display == True:
+            self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [rule1, rule2])
         return True
 
 
     def simulateBest(self, gaussParams):
         while len(self.vehicle.positionMemory) < 100:
-            self.navigate2(gaussParams)
+            self.navigate2(gaussParams, mfShape = "sigmoid", display = True)
         self.plotTrajectory()
         self.costFunction([gaussParams])
 
@@ -437,14 +446,16 @@ class LearnController(NavigationController):
         plt.plot(xPositions, yPositions)
         plt.scatter(self.obstacle[0].getPosition()[0], self.obstacle[0].getPosition()[1], color="red")
         plt.scatter(self.target[0], self.target[1], color='green')
-        # self.inputMF1.view()
+        self.inputMF1.view()
+        self.inputMF2.view()
+        self.outputMF1.view()
         plt.show()
 
     def costFunction(self, individual):
 
         gaussParams = individual[0]
         while len(self.vehicle.positionMemory) < 100:
-            if self.navigate2(gaussParams) == False:
+            if self.navigate2(gaussParams, mfShape = "sigmoid") == False:
                 cost = 1000
                 print("COST", cost)
                 return cost  #invalid fuzzy controller, return inf cost
@@ -463,14 +474,14 @@ class LearnController(NavigationController):
             for position in self.vehicle.positionMemory:
                 if obstacle == position:
                     collision = True
-                    cost = pow(time, 2) + pow(collision, 2) * 200 + pow(missedTarget, 2) * 5
+                    cost =  pow(collision, 2) * 200 + pow(missedTarget, 2) * 5
                     print("hit obstacle")
                     return cost
 
                 elif self.target == position:
                     missedTarget = False
                     time = iteration
-                    cost = pow(time, 2) + pow(collision, 2) * 2000 + pow(missedTarget, 2)*500 * 5
+                    cost =  + pow(collision, 2) * 2000 + pow(missedTarget, 2)*500 * 5
                     print("hit target")
                     return cost
                 iteration += 1
@@ -478,14 +489,14 @@ class LearnController(NavigationController):
         # final distance to target
         distanceError = pow(pow(self.target[0] - self.vehicle.positionMemory[-1][0], 2) + pow(self.target[1] - self.vehicle.positionMemory[-1][1], 2), 0.5)  # pythagorean distance
 
-        cost = pow(time, 2)/2 + pow(collision, 2) * 2000 + pow(missedTarget, 2)*500 * 5 + pow(distanceError, 2)
+        cost = pow(collision, 2) * 2000 + pow(missedTarget, 2)*500 * 5 + pow(distanceError, 2)
         print("COST", cost)
-        # self.plotTrajectory()
+        self.plotTrajectory()
         self.vehicle = Vehicle(JEEP, speed=10)  # reset vehicle
         return cost,
 
     def gaussGenerator(self):
-        sampleRange = np.linspace(0.1, 3, 50)
+        sampleRange = np.linspace(-5, 5,1000)
         return random.choices(sampleRange, k=12)
 
     def learnGenetic(self):
@@ -520,7 +531,7 @@ class LearnController(NavigationController):
         fits = [ind.fitness.values[0] for ind in pop]
         print("i got here 1")
         generation = 0
-        while generation < 25:
+        while generation < 500:
             generation += 1
             print("GENERATION", generation)
 
@@ -600,7 +611,9 @@ if __name__ == '__main__':
     # navigationController.adaptiveNavigate()
 
     # geneticContoller = LearnController()
-    geneticController.simulateBest([0.7591836734693878, 0.1, 1.689795918367347, 0.1, 0.8755102040816326, 0.1, 2.0, 0.5265306122448979, 0.1, 0.1, 0.9530612244897959, 0.1])
+    # geneticController.simulateBest([0.7591836734693878, 0.1, 1.689795918367347, 0.1, 0.8755102040816326, 0.1, 2.0, 0.5265306122448979, 0.1, 0.1, 0.9530612244897959, 0.1])
+    # geneticController.simulateBest([0.810204081632653, 0.15918367346938775, 2.8816326530612244, 0.336734693877551, 0.810204081632653, 1.993877551020408, 2.4081632653061225, 0.9877551020408162, 0.1, 0.1, 1.7571428571428571, 0.336734693877551])
+    # geneticController.simulateBest([-0.6565656565656566, -3.9898989898989896, -0.45454545454545503, 2.3737373737373737, 4.595959595959595, 5.0, -3.888888888888889, -2.1717171717171717, 5.0, 4.292929292929292, 2.6767676767676765, 4.494949494949495])
     best = geneticController.learnGenetic()
 
     for params in best:
