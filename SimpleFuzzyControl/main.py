@@ -14,13 +14,14 @@ import random
 from deap import base
 from deap import creator
 from deap import tools
-
+import multiprocessing
+# from scoop import futures
 
 class JEEP(enum.Enum):
     wheelbase = 2.795
     width = 2.00
     steeringRatio = 0.0652778
-    maxTireAngle = 89  # degrees
+    maxTireAngle = 45  # degrees
     maxTireAngleRads = maxTireAngle * 0.01745329  # radians
 
 
@@ -95,7 +96,6 @@ class Vehicle:
         t = [0, 0.01, 0.02]
         x = odeint(self.odes, x0, t)  # ODE calculation
 
-
         x1 = x[:, 0]
         y1 = x[:, 1]
         theta1 = x[:, 2]
@@ -114,6 +114,7 @@ class Obstacle:
         self.speed = speed
         self.position = position
         self.heading = heading
+        self.safetyRadius = 0.5
 
     def setSpeed(self, speed):
         self.speed - speed
@@ -134,12 +135,17 @@ class Obstacle:
     def getHeading(self):
         return self.heading
 
+    def setSafetyRadius(self, safetyRadius):
+        self.safetyRadius = safetyRadius
+
+    def getSafetyRadius(self):
+        return self.safetyRadius
 
 class Car(Obstacle):
     def __init__(self, speed=0, position=[0, 0], heading=0):
         super().__init__(speed, position, heading)
         self.longitudinalSafety = 0
-        self.lateralSafety = 0
+        self.lateralSafety = 0.2
         self.speedFactor = 2
 
     def calculateSafety(self):
@@ -352,9 +358,9 @@ class Simulation:
 class LearnController(NavigationController):
     def __init__(self):
         self.vehicle = Vehicle(JEEP, speed=10)
-        self.obstacle = [Obstacle(position=[5, 0])]
+        self.obstacles = [Obstacle(position=[5, 0])]
         self.target = [10, 0]
-        super().__init__(self.vehicle, self.obstacle, self.target)
+        super().__init__(self.vehicle, self.obstacles, self.target)
 
         self.inputMF1 = ctrl.Antecedent(np.arange(0, np.pi / 2, 0.1), 'relativeAngle')
         self.inputMF2 = ctrl.Antecedent(np.arange(0, 2, 0.1), 'distanceRatio')
@@ -362,14 +368,14 @@ class LearnController(NavigationController):
         self.rule1 = None
         self.rule2 = None
         self.controlSystem = None
-        self.fisResult = None
+        self.fisSimulation = None
 
-    def setMemberships(self, mfParams, mfShape = "gauss", display = False):
+    def setMemberships(self, mfParams, mfShape="gauss", display=False):
 
         if mfShape == "gauss":
             for i in range(len(mfParams)):  # check that no mfParams became zero from mutation
                 if mfParams[i] <= 0:
-                    mfParams[i]=0.1
+                    mfParams[i] = 0.1
                     # return False
             self.inputMF1['low'] = fuzz.gaussmf(self.inputMF1.universe, mfParams[0], mfParams[1])
             self.inputMF1['high'] = fuzz.gaussmf(self.inputMF1.universe, mfParams[2], mfParams[3])
@@ -382,14 +388,13 @@ class LearnController(NavigationController):
         if mfShape == "sigmoid":
             # self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, mfParams[0], mfParams[1])
             # self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, mfParams[2], mfParams[3])
-            self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, mfParams[0], mfParams[1]*20)
-            self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, mfParams[2], mfParams[3]*20)
-            self.inputMF2['low'] = fuzz.sigmf(self.inputMF2.universe, mfParams[4], mfParams[5]*20)  # alpha
-            self.inputMF2['high'] = fuzz.sigmf(self.inputMF2.universe, mfParams[6], mfParams[7]*20)  # alpha
+            self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, mfParams[0], mfParams[1] * 20)
+            self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, mfParams[2], mfParams[3] * 20)
+            self.inputMF2['low'] = fuzz.sigmf(self.inputMF2.universe, mfParams[4], mfParams[5] * 20)  # alpha
+            self.inputMF2['high'] = fuzz.sigmf(self.inputMF2.universe, mfParams[6], mfParams[7] * 20)  # alpha
 
-            self.outputMF1['low'] = fuzz.sigmf(self.outputMF1.universe, mfParams[8], mfParams[9]*20)
-            self.outputMF1['high'] = fuzz.sigmf(self.outputMF1.universe, mfParams[10], mfParams[11]*20)
-
+            self.outputMF1['low'] = fuzz.sigmf(self.outputMF1.universe, mfParams[8], mfParams[9] * 20)
+            self.outputMF1['high'] = fuzz.sigmf(self.outputMF1.universe, mfParams[10], mfParams[11] * 20)
 
         # Create fuzzy rules
         self.rule1 = ctrl.Rule(self.inputMF2['low'] & self.inputMF1['low'], self.outputMF1['high'])
@@ -397,7 +402,7 @@ class LearnController(NavigationController):
 
         # Create fuzzy control system
         self.controlSystem = ctrl.ControlSystem([self.rule1, self.rule2])
-        self.fisResult = ctrl.ControlSystemSimulation(self.controlSystem)
+        self.fisSimulation = ctrl.ControlSystemSimulation(self.controlSystem)
 
     def navigate2(self, display=False):
         self.vehicle.updateState()
@@ -407,17 +412,17 @@ class LearnController(NavigationController):
         self.calculateDistanceRatios()
 
         # Set inputs and compute output
-        self.fisResult.input['distanceRatio'] = self.fuzzyInputs[0][0]
-        self.fisResult.input['relativeAngle'] = self.fuzzyInputs[0][1]
+        self.fisSimulation.input['distanceRatio'] = self.fuzzyInputs[0][0]
+        self.fisSimulation.input['relativeAngle'] = self.fuzzyInputs[0][1]
 
         try:
-            self.fisResult.compute()
+            self.fisSimulation.compute()
         except:
             print("crisp output not possible", " inputMF1[low]:", " inputMF1[high]:")
             return False
 
-        repulsionVector = self.fisResult.output['output'] * np.array(self.obstacleForceVectors[0])
-        attractionVector = (1 - self.fisResult.output['output']) * np.array(self.targetForceVectors[0])
+        repulsionVector = self.fisSimulation.output['output'] * np.array(self.obstacleForceVectors[0])
+        attractionVector = (1 - self.fisSimulation.output['output']) * np.array(self.targetForceVectors[0])
 
         resultForceVector = np.add(repulsionVector, attractionVector)
         steeringAngle = math.atan2(resultForceVector[1], resultForceVector[0])  # - self.vehicle.getHeading()
@@ -430,11 +435,11 @@ class LearnController(NavigationController):
             self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
         return True
 
-
-    def simulateBest(self, mfParams, mfShape = "gauss"):
-        self.setMemberships(mfParams, mfShape = mfShape, display = True)
+    def simulateBest(self, mfParams, mfShape="gauss"):
+        self.setMemberships(mfParams, mfShape=mfShape, display=True)
         while len(self.vehicle.positionMemory) < 100:
-            self.navigate2(display = False)
+            self.navigate2(display=False)
+        self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
         self.plotTrajectory()
         self.costFunction([mfParams])
 
@@ -448,7 +453,7 @@ class LearnController(NavigationController):
 
         plt.cla()
         plt.plot(xPositions, yPositions)
-        plt.scatter(self.obstacle[0].getPosition()[0], self.obstacle[0].getPosition()[1], color="red")
+        plt.scatter(self.obstacles[0].getPosition()[0], self.obstacles[0].getPosition()[1], color="red")
         plt.scatter(self.target[0], self.target[1], color='green')
         self.inputMF1.view()
         self.inputMF2.view()
@@ -458,14 +463,17 @@ class LearnController(NavigationController):
     def costFunction(self, individual):
 
         mfParams = individual[0]
-        self.setMemberships(mfParams, mfShape = "sigmoid", display = False)
+
+        self.setMemberships(mfParams, mfShape="sigmoid", display=False)
         while len(self.vehicle.positionMemory) < 100:
-            if self.navigate2(mfParams,) == False:
+            if self.navigate2(mfParams, ) == False:
                 cost = 100000
                 print("COST", cost)
-                return cost  #invalid fuzzy controller, return inf cost
+                return cost  # invalid fuzzy controller, return inf cost
 
         time = len(self.vehicle.positionMemory)
+        totalTravel = len(self.vehicle.positionMemory) * self.vehicle.getSpeed()  # not true simulation speed
+        closestDistanceToTarget = float('inf')
         collision = False
         missedTarget = True
         lateralAccel = 0
@@ -473,70 +481,73 @@ class LearnController(NavigationController):
         longitudinalAccel = 0
         longitudinalJerk = 0
 
-        # check for collisions and reached target
-        iteration = 0
-        for obstacle in self.obstacles:
-            for position in self.vehicle.positionMemory:
-                if obstacle == position:
-                    collision = True
-                    cost =  pow(collision, 2) * 200 + pow(missedTarget, 2) * 5
-                    print("hit obstacle")
-                    return cost
 
-                elif self.target == position:
-                    missedTarget = False
-                    time = iteration
-                    cost =  + pow(collision, 2) * 2000 + pow(missedTarget, 2)*500 * 5
-                    print("hit target")
-                    return cost
-                iteration += 1
+
+        # check how close we got to target
+        for i in range(len(self.vehicle.positionMemory)):
+            currentPosition = self.vehicle.positionMemory[i]
+            currentDistanceToTarget = pow(pow(self.target[0] - currentPosition[0], 2) + pow(self.target[1] - currentPosition[1], 2), 0.5)
+            closestDistanceToTarget = min(currentDistanceToTarget, closestDistanceToTarget)
+
+            if closestDistanceToTarget <= 0.2 and missedTarget == True:  # first time target reached
+                totalTravel = i * self.vehicle.getSpeed()
+                missedTarget = False
+
+            for obstacle in self.obstacles:  # check if safe distance around all obstacles
+                currentDistanceToObstacle = pow(pow(obstacle.getPosition()[0] - currentPosition[0], 2) + pow(obstacle.getPosition()[1] - currentPosition[1], 2), 0.5)
+                if currentDistanceToObstacle < obstacle.getSafetyRadius():
+                    collision = True
 
         # final distance to target
-        distanceError = pow(pow(self.target[0] - self.vehicle.positionMemory[-1][0], 2) + pow(self.target[1] - self.vehicle.positionMemory[-1][1], 2), 0.5)  # pythagorean distance
+        # distanceError = pow(pow(self.target[0] - self.vehicle.positionMemory[-1][0], 2) + pow(self.target[1] - self.vehicle.positionMemory[-1][1], 2), 0.5)  # pythagorean distance
+        # cost = pow(collision, 2) * 2000 + pow(missedTarget, 2) * 500 * 5 + pow(distanceError, 2)
 
-        cost = pow(collision, 2) * 2000 + pow(missedTarget, 2)*500 * 5 + pow(distanceError, 2)
-        print("COST", cost)
+        cost = collision*200 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
+        print("COST", str(cost)[0:9], "\t---- Collision:", collision*200, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
         self.vehicle = Vehicle(JEEP, speed=10)  # reset vehicle
         return cost,
 
     def gaussGenerator(self):
-        sampleRange = np.linspace(-5, 5,100)
+        sampleRange = np.linspace(-5, 5, 10000)
         return random.choices(sampleRange, k=12)
 
     def sigmoidGenerator(self):
         pass
 
-
     def learnGenetic(self):
 
-        creator.create("FitnessMin", base.Fitness, weights = (-1.0,))
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMin)
 
         toolbox = base.Toolbox()
+        pool = multiprocessing.Pool()
+        toolbox.register("map", pool.map)  # multicore
+        # toolbox.register("map", futures.map)  # scoop
+
         toolbox.register("gaussGenerator", self.gaussGenerator)
-        toolbox.register("individual",tools.initRepeat, creator.Individual, toolbox.gaussGenerator,n=1)
+        toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.gaussGenerator, n=1)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=1)
 
-        toolbox.register("evaluate",self.costFunction)
+        toolbox.register("evaluate", self.costFunction)
         toolbox.register("mate", tools.cxTwoPoint)
-        toolbox.register("mutate",tools.mutFlipBit, indpb=0.05)
-        toolbox.register("select",tools.selTournament,tournsize=3)
-
-        pop = toolbox.population(n=300)
+        toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+        toolbox.register("select", tools.selTournament, tournsize=3)
+        print("started")
+        pop = toolbox.population(n=3000)
         fitnesses = list(map(toolbox.evaluate, pop))
 
         for ind, fit in zip(pop, fitnesses):
             # print("i got here 0")
             ind.fitness.values = fit
 
-        CXPB, MUTPB = 0.5, 0.2
+        CXPB, MUTPB = 0.5, 0.4
 
         fits = [ind.fitness.values[0] for ind in pop]
 
         generation = 0
-        while generation < 25:
+        while generation < 55:
             generation += 1
-            print("GENERATION -------------------------", generation)
+            print("\nGENERATION -------------------------", generation, "\n")
 
             # Select the next generation individuals
             offspring = toolbox.select(pop, len(pop))
@@ -558,7 +569,7 @@ class LearnController(NavigationController):
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-            fitnesses = map(toolbox.evaluate, invalid_ind)
+            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
 
@@ -573,19 +584,20 @@ class LearnController(NavigationController):
         return best
 
 
-# geneticController = LearnController()
-# creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-# creator.create("Individual", list, fitness=creator.FitnessMin)
-#
-# toolbox = base.Toolbox()
-# toolbox.register("gaussGenerator", geneticController.gaussGenerator)
-# toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.gaussGenerator, n=300)
-# toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=1)
-#
-# toolbox.register("evaluate", geneticController.costFunction)
-# toolbox.register("mate", tools.cxTwoPoint)
-# toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
-# toolbox.register("select", tools.selTournament, tournsize=3)
+geneticController = LearnController()
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMin)
+
+toolbox = base.Toolbox()
+# toolbox.register("map", futures.map)  # scoop
+toolbox.register("gaussGenerator", geneticController.gaussGenerator)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.gaussGenerator, n=300)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=1)
+
+toolbox.register("evaluate", geneticController.costFunction)
+toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+toolbox.register("select", tools.selTournament, tournsize=3)
 
 
 def exit_application():
@@ -616,10 +628,14 @@ if __name__ == '__main__':
     geneticController = LearnController()
     # geneticController.simulateBest([0.7591836734693878, 0.1, 1.689795918367347, 0.1, 0.8755102040816326, 0.1, 2.0, 0.5265306122448979, 0.1, 0.1, 0.9530612244897959, 0.1])
     # geneticController.simulateBest([0.810204081632653, 0.15918367346938775, 2.8816326530612244, 0.336734693877551, 0.810204081632653, 1.993877551020408, 2.4081632653061225, 0.9877551020408162, 0.1, 0.1, 1.7571428571428571, 0.336734693877551])
-    # geneticController.simulateBest([0.0, 0.9595959595959593, -4.898989898989899, -3.787878787878788, 0.5555555555555554, -3.5858585858585856, -1.6666666666666665, 0.050505050505050164, 0.0, 0.0, 1.666666666666667, 0.2525252525252526], mfShape = "sigmoid")
+    # geneticController.simulateBest([0.0, 0.9595959595959593, -4.898989898989899, -3.787878787878788, 0.5555555555555554, -3.5858585858585856, -1.6666666666666665, 0.050505050505050164, 0.0, 0.0, 1.666666666666667, 0.2525252525252526], mfShape = "sigmoid")  # very good, pop = 300 gen = 25
+    # geneticController.simulateBest([0.6065606560656063, -3.0408040804080407, 0.9805980598059802, -4.683968396839684, 0.4815481548154814, -3.194819481948195, 4.822982298229823, -4.033903390339034, 0.8845884588458848, 2.587758775877588, 2.130713071307131, -4.176917691769177], mfShape = "sigmoid") # pop = 3000 gen = 35
+    # geneticController.simulateBest([-2.3137313731373137, -0.11251125112511229, 0.0, -4.368936893689369, 0.955595559555956, -3.2488248824882486, 2.6467646764676465, 0.0, 2.6967696769676968, 0.33553355335533563, 0.911591159115912, 4.4519451945194515], mfShape = "sigmoid") # mega run, overtuned pop = 3000 gen = 55
+
+
+
+
     best = geneticController.learnGenetic()
 
     for params in best:
-        geneticController.simulateBest(params)
-
-
+        geneticController.simulateBest(params, mfShape = "sigmoid")
