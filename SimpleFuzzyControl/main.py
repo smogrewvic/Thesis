@@ -460,16 +460,32 @@ class LearnController(NavigationController):
         self.outputMF1.view()
         plt.show()
 
+    def evaluate(self, individual):
+
+        totalCost = 0
+
+        for i in range(10):  # todo: multithread this task
+            # generate random obstacles locations for learning
+            for j in range(len(self.obstacles)):
+                x = random.randint(-15, 15)
+                y = random.randint(-15, 15)
+                self.obstacles[j].setPosition(x, y)
+
+            totalCost += self.costFunction(individual)
+
+        print("totalCost:", totalCost)
+        return totalCost,
+
     def costFunction(self, individual):
 
         mfParams = individual[0]
 
         self.setMemberships(mfParams, mfShape="sigmoid", display=False)
         while len(self.vehicle.positionMemory) < 100:
-            if self.navigate2(mfParams, ) == False:
+            if self.navigate2(mfParams) == False:
                 cost = 100000
                 print("COST", cost)
-                return cost  # invalid fuzzy controller, return inf cost
+                return cost,  # invalid fuzzy controller, return inf cost
 
         time = len(self.vehicle.positionMemory)
         totalTravel = len(self.vehicle.positionMemory) * self.vehicle.getSpeed()  # not true simulation speed
@@ -503,16 +519,15 @@ class LearnController(NavigationController):
         # cost = pow(collision, 2) * 2000 + pow(missedTarget, 2) * 500 * 5 + pow(distanceError, 2)
 
         cost = collision*200 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
-        print("COST", str(cost)[0:9], "\t---- Collision:", collision*200, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
+        # print("COST", str(cost)[0:9], "\t---- Collision:", collision*200, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
         self.vehicle = Vehicle(JEEP, speed=10)  # reset vehicle
-        return cost,
+        return cost
 
-    def gaussGenerator(self):
+    def parameterGenerator(self):
+        print("generating random parameters")
         sampleRange = np.linspace(-5, 5, 10000)
         return random.choices(sampleRange, k=12)
 
-    def sigmoidGenerator(self):
-        pass
 
     def learnGenetic(self):
 
@@ -524,16 +539,16 @@ class LearnController(NavigationController):
         toolbox.register("map", pool.map)  # multicore
         # toolbox.register("map", futures.map)  # scoop
 
-        toolbox.register("gaussGenerator", self.gaussGenerator)
-        toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.gaussGenerator, n=1)
+        toolbox.register("parameterGenerator", self.parameterGenerator)
+        toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.parameterGenerator, n=1)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=1)
 
-        toolbox.register("evaluate", self.costFunction)
+        toolbox.register("evaluate", self.evaluate)
         toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
         toolbox.register("select", tools.selTournament, tournsize=3)
         print("started")
-        pop = toolbox.population(n=3000)
+        pop = toolbox.population(n=300)
         fitnesses = list(map(toolbox.evaluate, pop))
 
         for ind, fit in zip(pop, fitnesses):
@@ -545,7 +560,7 @@ class LearnController(NavigationController):
         fits = [ind.fitness.values[0] for ind in pop]
 
         generation = 0
-        while generation < 55:
+        while generation < 25:
             generation += 1
             print("\nGENERATION -------------------------", generation, "\n")
 
@@ -590,11 +605,11 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 
 toolbox = base.Toolbox()
 # toolbox.register("map", futures.map)  # scoop
-toolbox.register("gaussGenerator", geneticController.gaussGenerator)
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.gaussGenerator, n=300)
+toolbox.register("parameterGenerator", geneticController.parameterGenerator)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.parameterGenerator, n=300)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=1)
 
-toolbox.register("evaluate", geneticController.costFunction)
+toolbox.register("evaluate", geneticController.evaluate)
 toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 toolbox.register("select", tools.selTournament, tournsize=3)
