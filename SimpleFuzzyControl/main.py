@@ -15,7 +15,8 @@ from deap import base
 from deap import creator
 from deap import tools
 import multiprocessing
-# from scoop import futures
+from threading import Thread
+
 
 class JEEP(enum.Enum):
     wheelbase = 2.795
@@ -460,28 +461,37 @@ class LearnController(NavigationController):
         self.outputMF1.view()
         plt.show()
 
+
+
     def evaluate(self, individual):
-
+        mfParams = individual[0]
         totalCost = 0
+        threads = [None] * 100
+        simulationCosts = [0]
 
-        for i in range(10):  # todo: multithread this task
-            # generate random obstacles locations for learning
+        for i in range(len(threads)):
+            randomObstacles = []
             for j in range(len(self.obstacles)):
                 x = random.randint(-15, 15)
                 y = random.randint(-15, 15)
-                self.obstacles[j].setPosition(x, y)
+                randomObstacles.append(Obstacle(speed = 0, position = [x,y], heading = 0))
 
-            totalCost += self.costFunction(individual)
+            simContainer = LearnControllerContainer(mfParams, "sigmoid", randomObstacles)
+            threads[i] = Thread(target=simContainer.costFunction, args=(mfParams, simulationCosts))
+            threads[i].start()
 
+        for i in range(len(threads)):
+           threads[i].join()
+
+        totalCost = simulationCosts[0]
         print("totalCost:", totalCost)
         return totalCost,
 
-    def costFunction(self, individual):
 
-        mfParams = individual[0]
+    def costFunction(self, mfParams, mutableReturn = None):
 
-        self.setMemberships(mfParams, mfShape="sigmoid", display=False)
-        while len(self.vehicle.positionMemory) < 100:
+        # self.setMemberships(mfParams, mfShape="sigmoid", display=False)
+        while len(self.vehicle.positionMemory) < 10:
             if self.navigate2(mfParams) == False:
                 cost = 100000
                 print("COST", cost)
@@ -521,10 +531,13 @@ class LearnController(NavigationController):
         cost = collision*200 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
         # print("COST", str(cost)[0:9], "\t---- Collision:", collision*200, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
         self.vehicle = Vehicle(JEEP, speed=10)  # reset vehicle
+
+        if mutableReturn != None:
+            mutableReturn[0] += cost
+
         return cost
 
     def parameterGenerator(self):
-        print("generating random parameters")
         sampleRange = np.linspace(-5, 5, 10000)
         return random.choices(sampleRange, k=12)
 
@@ -549,7 +562,7 @@ class LearnController(NavigationController):
         toolbox.register("select", tools.selTournament, tournsize=3)
         print("started")
         pop = toolbox.population(n=300)
-        fitnesses = list(map(toolbox.evaluate, pop))
+        fitnesses = list(toolbox.map(toolbox.evaluate, pop))
 
         for ind, fit in zip(pop, fitnesses):
             # print("i got here 0")
@@ -562,13 +575,13 @@ class LearnController(NavigationController):
         generation = 0
         while generation < 25:
             generation += 1
-            print("\nGENERATION -------------------------", generation, "\n")
+            print("\n\nGENERATION -------------------------", generation, "\n\n")
 
             # Select the next generation individuals
             offspring = toolbox.select(pop, len(pop))
 
             # Clone the selected individuals
-            offspring = list(map(toolbox.clone, offspring))
+            offspring = list(toolbox.map(toolbox.clone, offspring))
 
             # Apply crossover and mutation on the offspring
             for child1, child2 in zip(offspring[::2], offspring[1::2]):
@@ -614,6 +627,15 @@ toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
+
+class LearnControllerContainer(LearnController):
+    def __init__(self, mfParams, mfShape, obstacles):
+        super().__init__()
+        self.obstacles = obstacles
+        self.setMemberships(mfParams, mfShape, display = False)
+
+
+#
 
 def exit_application():
     """Exit program event handler"""
