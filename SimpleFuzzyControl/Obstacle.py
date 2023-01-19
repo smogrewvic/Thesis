@@ -1,0 +1,78 @@
+import numpy as np
+import math
+import time
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import enum
+import sys
+from scipy.integrate import odeint
+import skfuzzy as fuzz
+import skfuzzy.control as ctrl
+from mpl_toolkits.mplot3d import Axes3D
+
+import random
+from deap import base
+from deap import creator
+from deap import tools
+import multiprocessing
+from threading import Thread
+
+
+
+
+class Obstacle:
+
+    def __init__(self, speed=0, position=[0, 0], heading=0):
+        self.speed = speed
+        self.position = position
+        self.heading = heading
+        self.safetyRadius = 0.5
+
+    def setSpeed(self, speed):
+        self.speed - speed
+
+    def getSpeed(self):
+        return self.speed
+
+    def setPosition(self, x, y):
+        self.position[0] = x
+        self.position[1] = y
+
+    def getPosition(self):
+        return self.position
+
+    def setHeading(self, heading):
+        self.heading = heading
+
+    def getHeading(self):
+        return self.heading
+
+    def setSafetyRadius(self, safetyRadius):
+        self.safetyRadius = safetyRadius
+
+    def getSafetyRadius(self):
+        return self.safetyRadius
+
+
+class Car(Obstacle):
+    def __init__(self, speed=0, position=[0, 0], heading=0):
+        super().__init__(speed, position, heading)
+        self.longitudinalSafety = 0
+        self.lateralSafety = 0.2
+        self.speedFactor = 2
+
+    def calculateSafety(self):
+        self.longitudinalSafety = self.speed * self.speedFactor
+        self.lateralSafety = self.speed * self.speedFactor * 0.1
+
+
+class Pedestrian(Obstacle):
+    def __init__(self, speed=0, position=[0, 0], heading=0):
+        super().__init__(speed, position, heading)
+        self.longitudinalSafety = 0
+        self.lateralSafety = 0
+        self.speedFactor = 2
+
+    def calculateSafety(self):
+        self.longitudinalSafety = self.speed * self.speedFactor
+        self.lateralSafety = self.speed * self.speedFactor * 0.1
