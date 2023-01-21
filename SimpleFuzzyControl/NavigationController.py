@@ -29,8 +29,8 @@ class NavigationController:
         self.obstacles = obstacles
         self.target = target
         self.fuzzyInputs = [[0] * 2 for _ in range(len(obstacles))]
-        self.obstacleForceVectors = [0] * 2
-        self.targetForceVectors = 0
+        self.obstacleForceVectors = [0]*len(obstacles)
+        self.targetForceVectors = [0]
 
         # testvars
         # self.lastHeading = 0
@@ -52,19 +52,17 @@ class NavigationController:
         targetVector = [self.target[0] - self.vehicle.getPosition()[0],
                         self.target[1] - self.vehicle.getPosition()[1]]
 
-        self.targetForceVectors = targetVector * 1  # Todo: add a weighting factor, maybe multiple targets?
+        self.targetForceVectors = targetVector / np.linalg.norm(targetVector)
 
         for i in range(len(self.obstacles)):
             currentObstacle = self.obstacles[i]
             obstacleVector = [currentObstacle.getPosition()[0] - self.vehicle.getPosition()[0],
                               currentObstacle.getPosition()[1] - self.vehicle.getPosition()[1]]
 
-
             angleObstacleTarget = np.arccos(np.dot(obstacleVector, targetVector) / (np.linalg.norm(obstacleVector) * np.linalg.norm(targetVector)))
 
             self.fuzzyInputs[i][1] = abs(angleObstacleTarget)
-            self.obstacleForceVectors[i] = obstacleVector * 1  # Todo: add a weighting factor
-            # print("angleObstacleTarget",self.fuzzyInputs[i][1])
+            self.obstacleForceVectors[i] = obstacleVector / np.linalg.norm(obstacleVector)
 
     def calculateDistanceRatios(self):
         targetVector = [self.target[0] - self.vehicle.getPosition()[0],
@@ -77,7 +75,6 @@ class NavigationController:
 
             distanceRatio = (np.linalg.norm(obstacleVector) / np.linalg.norm(targetVector))
             self.fuzzyInputs[i][0] = distanceRatio
-            # print("distanceRatio", distanceRatio)
 
         return distanceRatio
 
@@ -126,10 +123,10 @@ class NavigationController:
         forceWeight.compute()
 
         repulsionVector = forceWeight.output['output'] * np.array(self.obstacleForceVectors[0])
-        attractionVector = (1 - forceWeight.output['output']) * np.array(self.targetForceVectors[0])
+        attractionVector = (1 - forceWeight.output['output']) * np.array(self.targetForceVectors)
 
         resultForceVector = np.add(repulsionVector, attractionVector)
-        steeringAngle = math.atan2(resultForceVector[1], resultForceVector[0])  # - self.vehicle.getHeading()
+        resultForceAngle = math.atan2(resultForceVector[1], resultForceVector[0])  # - self.vehicle.getHeading()
 
         # rate limiting steering
         # heading = self.lastHeading + min(max(steeringAngle-self.lastHeading, np.pi/4), -np.pi/4)
@@ -137,12 +134,14 @@ class NavigationController:
         # self.vehicle.setHeading(heading)
 
         # saturate steering angle to range
-        steeringAngle = self.saturateValue(steeringAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
-        self.vehicle.setTireAngle(steeringAngle, degrees=False)
+        # tireAngle = resultForceAngle-self.vehicle.getHeading(degrees=False)
+        # tireAngle = self.saturateValue(tireAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
+        # self.vehicle.setTireAngle(tireAngle, degrees=False)
 
-        # self.displayPlots([relativeAngle, distanceRatio], [output], [rule1, rule2])
+        self.vehicle.setHeading(resultForceAngle, degrees = False)
+        print("w:", forceWeight.output['output'], "attractionVector",attractionVector,"repulsionVector", repulsionVector)
 
-        # return resultForceVector
+        return resultForceVector, repulsionVector, attractionVector
 
     def displayPlots(self, inputMemberships, outputMemberships, rules):
 

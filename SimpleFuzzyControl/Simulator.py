@@ -3,7 +3,7 @@ from matplotlib.animation import FuncAnimation
 
 
 
-class Simulation:
+class Simulator:
     def __init__(self, navigationObj, obstacles, target):
         self.navigation = navigationObj
         self.vehicle = navigationObj.getVehicleData()
@@ -11,7 +11,7 @@ class Simulation:
         self.target = target
 
     def updatePlot(self, i):
-        resultForce = self.navigation.navigate()
+        resultForce, repulsionVector, attractionVector = self.navigation.navigate()
 
         plt.cla()
         plt.scatter(self.vehicle.getPosition()[0], self.vehicle.getPosition()[1], color='blue')
@@ -22,9 +22,16 @@ class Simulation:
             plt.scatter(currentObstacle.getPosition()[0], currentObstacle.getPosition()[1], color='red')
 
         # plot force Vector
-        # forceX = [self.vehicle.getPosition()[0], self.vehicle.getPosition()[0]+resultForce[0]]
-        # forceY = [self.vehicle.getPosition()[1], self.vehicle.getPosition()[1]+resultForce[1]]
-        # plt.plot(forceX, forceY)
+        forceX = [self.vehicle.getPosition()[0], self.vehicle.getPosition()[0]+resultForce[0]*10]
+        forceY = [self.vehicle.getPosition()[1], self.vehicle.getPosition()[1]+resultForce[1]*10]
+        plt.plot(forceX, forceY)
+        repulseX =[self.vehicle.getPosition()[0], self.vehicle.getPosition()[0]+repulsionVector[0]*10]
+        repulseY = [self.vehicle.getPosition()[1], self.vehicle.getPosition()[1]+repulsionVector[1]*10]
+
+        attractX =[self.vehicle.getPosition()[0], self.vehicle.getPosition()[0]+attractionVector[0]*10]
+        attractY = [self.vehicle.getPosition()[1], self.vehicle.getPosition()[1]+attractionVector[1]*10]
+        plt.plot(repulseX, repulseY)
+        plt.plot(attractX, attractY)
 
         plt.xlim(-25, 25)
         plt.ylim(-25, 25)

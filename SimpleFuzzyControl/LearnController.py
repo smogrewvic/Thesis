@@ -18,7 +18,7 @@ from NavigationController import NavigationController
 class LearnController(NavigationController):
     def __init__(self):
         self.vehicle = Vehicle(JEEP, speed=10)
-        self.obstacles = [Obstacle(position=[5, 0])]
+        self.obstacles = [Obstacle(position=[5, -30])]
         self.target = [10, 0]
         super().__init__(self.vehicle, self.obstacles, self.target)
 
@@ -85,11 +85,13 @@ class LearnController(NavigationController):
         attractionVector = (1 - self.fisSimulation.output['output']) * np.array(self.targetForceVectors[0])
 
         resultForceVector = np.add(repulsionVector, attractionVector)
-        steeringAngle = math.atan2(resultForceVector[1], resultForceVector[0])  # - self.vehicle.getHeading()
+        resultForceAngle = math.atan2(resultForceVector[1], resultForceVector[0])  # - self.vehicle.getHeading()
 
         # saturate steering angle to range
-        steeringAngle = self.saturateValue(steeringAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
-        self.vehicle.setTireAngle(steeringAngle, degrees=False)
+        # steeringAngle = self.saturateValue(steeringAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
+        # self.vehicle.setTireAngle(steeringAngle, degrees=False)
+
+        self.vehicle.setHeading(resultForceAngle, degrees=False)
 
         if display == True:
             self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
@@ -223,7 +225,7 @@ class LearnController(NavigationController):
     def learnGenetic(self, population, generations):
 
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMin)
+        creator.create("Individual", tuple, fitness=creator.FitnessMin)
 
         toolbox = base.Toolbox()
         pool = multiprocessing.Pool()
