@@ -18,7 +18,7 @@ from NavigationController import NavigationController
 class LearnController(NavigationController):
     def __init__(self):
         self.vehicle = Vehicle(JEEP, speed=10)
-        self.obstacles = [Obstacle(position=[5, -30])]
+        self.obstacles = [Obstacle(position=[5, 0])]
         self.target = [10, 0]
         super().__init__(self.vehicle, self.obstacles, self.target)
 
@@ -81,7 +81,7 @@ class LearnController(NavigationController):
             print("crisp output not possible", " inputMF1[low]:", " inputMF1[high]:")
             return False
 
-        repulsionVector = self.fisSimulation.output['output'] * np.array(self.obstacleForceVectors[0])
+        repulsionVector = self.fisSimulation.output['output'] * np.array(self.obstacleForceVectors[0]) * -1  # todo: check if repulsion is negative
         attractionVector = (1 - self.fisSimulation.output['output']) * np.array(self.targetForceVectors[0])
 
         resultForceVector = np.add(repulsionVector, attractionVector)
@@ -122,10 +122,8 @@ class LearnController(NavigationController):
         self.outputMF1.view()
         plt.show()
 
-
-
     def evaluate_threaded(self, individual):
-        mfParams = tuple(individual[0])
+        mfParams = individual[0]
         totalCost = 0
         threads = [None] * 100
         simulationCosts = [0]
@@ -149,17 +147,18 @@ class LearnController(NavigationController):
         print("totalCost",totalCost)
         return totalCost,
 
-    def evaluate(self, individual):
-        mfParams = tuple(individual[0])
+    def evaluate2(self, individual):
+        mfParams = individual[0]
         totalCost = 0
 
-
-        for i in range(100):
+        for i in range(10):
             randomObstacles = []
             for j in range(len(self.obstacles)):
                 x = random.randint(-15, 15)
                 y = random.randint(-15, 15)
-                while [x,y] == self.target: x,y = random.randint(-15, 15), random.randint(-15, 15) #make sure random obstacle isnt over target
+
+                while [x,y] == self.target or [x,y] == self.vehicle.getPosition():
+                    x,y = random.randint(-15, 15), random.randint(-15, 15) #make sure random obstacle isnt over target
 
                 randomObstacles.append(Obstacle(speed = 0, position = [x,y], heading = 0))
             simContainer = LearnControllerContainer(mfParams, "sigmoid", randomObstacles)
@@ -168,13 +167,28 @@ class LearnController(NavigationController):
         print("totalCost",totalCost)
         return totalCost,
 
+    def evaluate(self, individual):
+        mfParams = individual[0]
+        totalCost = 0
+
+        obstacleAvoidance = [Obstacle(position = [5,0])]
+        obstacleNoAvoidance = [Obstacle(position = [5,4])]
+
+        simContainer1 = LearnControllerContainer(mfParams, "sigmoid", obstacleAvoidance)
+        simContainer2 = LearnControllerContainer(mfParams, "sigmoid", obstacleNoAvoidance)
+        totalCost = simContainer1.costFunction(mfParams) + simContainer2.costFunction(mfParams)
+
+        # totalCost = self.costFunction(mfParams)
+
+        print("totalCost", totalCost)
+        return totalCost,
+
     def costFunction(self, mfParams, mutableReturn = None):
 
         # self.setMemberships(mfParams, mfShape="sigmoid", display=False)
         while len(self.vehicle.positionMemory) < 100:
             if self.navigate2(mfParams) == False:
                 cost = 100000
-                print("COST", cost)
                 return cost,  # invalid fuzzy controller, return inf cost
 
         time = len(self.vehicle.positionMemory)
@@ -218,14 +232,14 @@ class LearnController(NavigationController):
         return cost
 
     def parameterGenerator(self):
-        sampleRange = np.linspace(-5, 5, 10000)
+        sampleRange = np.linspace(-5, 5, 1000)
         return random.choices(sampleRange, k=12)
 
 
     def learnGenetic(self, population, generations):
 
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-        creator.create("Individual", tuple, fitness=creator.FitnessMin)
+        creator.create("Individual", list, fitness=creator.FitnessMin)
 
         toolbox = base.Toolbox()
         pool = multiprocessing.Pool()
@@ -248,7 +262,7 @@ class LearnController(NavigationController):
             # print("i got here 0")
             ind.fitness.values = fit
 
-        CXPB, MUTPB = 0.5, 0.2
+        CXPB, MUTPB = 0.5, 0.4
 
         fits = [ind.fitness.values[0] for ind in pop]
 

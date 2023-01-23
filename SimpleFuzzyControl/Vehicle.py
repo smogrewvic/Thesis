@@ -24,19 +24,19 @@ class Vehicle:
     def getPosition(self):
         return self.position
 
-    def setHeading(self, heading, degrees = True):
+    def setHeading(self, heading, degrees = False):
         if degrees == True:
             self.heading = heading* np.pi / 180
         else:
             self.heading = heading
 
-    def getHeading(self, degrees = True):
+    def getHeading(self, degrees = False):
         if degrees == True:
             return self.heading * 180/np.pi
         else:
             return self.heading
 
-    def setTireAngle(self, tireAngle, degrees=True):
+    def setTireAngle(self, tireAngle, degrees = False):
 
         # todo: limit max tire angle to vehicle model settings
         if degrees == True:
@@ -44,19 +44,19 @@ class Vehicle:
         else:
             self.tireAngle = tireAngle
 
-    def getTireAngle(self, degrees = True):
+    def getTireAngle(self, degrees = False):
         if degrees == True:
             return self.tireAngle * 180/np.pi
         else:
             return self.tireAngle
 
-    def setSteeringAngle(self, steeringWheelAngle, degrees=True):
+    def setSteeringAngle(self, steeringWheelAngle, degrees = False):
         if degrees == True:
             self.tireAngle = steeringWheelAngle * self.carModel.steeringRatio.value * np.pi / 180
         else:
             self.tireAngle = steeringWheelAngle * self.carModel.steeringRatio.value
 
-    def getSteeringAngle(self, degrees = True):
+    def getSteeringAngle(self, degrees = False):
         if degrees == True:
             return (self.tireAngle * np.pi / 180) / self.carModel.steeringRatio.value
         else:
@@ -88,7 +88,7 @@ class Vehicle:
         x1 = x[:, 0]
         y1 = x[:, 1]
         theta1 = x[:, 2]
-        self.position, self.heading = [x1[1], y1[1]], theta1[1]%(2*np.pi)  # current positions
+        self.position, self.heading = [x1[1], y1[1]], theta1[1]  # current positions
 
         # log data
         self.positionMemory.append(self.position)
