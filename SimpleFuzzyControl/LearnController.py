@@ -31,79 +31,10 @@ class LearnController(NavigationController):
         self.fisSimulation = None
 
 
-    def setMemberships(self, mfParams, mfShape="sigmoid", display=False):
-
-        if mfShape == "gauss":
-            for i in range(len(mfParams)):  # check that no mfParams became zero from mutation
-                if mfParams[i] <= 0:
-                    mfParams[i] = 0.1
-                    # return False
-            self.inputMF1['low'] = fuzz.gaussmf(self.inputMF1.universe, mfParams[0], mfParams[1])
-            self.inputMF1['high'] = fuzz.gaussmf(self.inputMF1.universe, mfParams[2], mfParams[3])
-            self.inputMF2['low'] = fuzz.gaussmf(self.inputMF2.universe, mfParams[4], mfParams[5])  # alpha
-            self.inputMF2['high'] = fuzz.gaussmf(self.inputMF2.universe, mfParams[6], mfParams[7])  # alpha
-
-            self.outputMF1['low'] = fuzz.gaussmf(self.outputMF1.universe, mfParams[8], mfParams[9])
-            self.outputMF1['high'] = fuzz.gaussmf(self.outputMF1.universe, mfParams[10], mfParams[11])
-
-        if mfShape == "sigmoid":
-            self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, mfParams[0], mfParams[1] * 20)
-            self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, mfParams[2], mfParams[3] * 20)
-            self.inputMF2['low'] = fuzz.sigmf(self.inputMF2.universe, mfParams[4], mfParams[5] * 20)  # alpha
-            self.inputMF2['high'] = fuzz.sigmf(self.inputMF2.universe, mfParams[6], mfParams[7] * 20)  # alpha
-
-            self.outputMF1['low'] = fuzz.sigmf(self.outputMF1.universe, mfParams[8], mfParams[9] * 20)
-            self.outputMF1['high'] = fuzz.sigmf(self.outputMF1.universe, mfParams[10], mfParams[11] * 20)
-
-        # Create fuzzy rules
-        self.rule1 = ctrl.Rule(self.inputMF2['low'] & self.inputMF1['low'], self.outputMF1['high'])
-        self.rule2 = ctrl.Rule(self.inputMF1['high'], self.outputMF1['low'])
-
-        # Create fuzzy control system
-        self.controlSystem = ctrl.ControlSystem([self.rule1, self.rule2])
-        self.fisSimulation = ctrl.ControlSystemSimulation(self.controlSystem)
-
-    def navigate2(self, display=False):
-        self.vehicle.updateState()
-        self.updateTarget()
-        self.updateObstacles()
-        self.calculateAngles()
-        self.calculateDistanceRatios()
-
-        # Set inputs and compute output
-        self.fisSimulation.input['distanceRatio'] = self.fuzzyInputs[0][0]
-        self.fisSimulation.input['relativeAngle'] = self.fuzzyInputs[0][1]
-
-        try:
-            self.fisSimulation.compute()
-        except:
-            print("crisp output not possible", " inputMF1[low]:", " inputMF1[high]:")
-            return False
-
-
-
-        repulsionVector = self.fisSimulation.output['output'] * np.array(self.obstacleForceVectors[0]) * -1  # todo: check if repulsion is negative
-        attractionVector = (1 - self.fisSimulation.output['output']) * np.array(self.targetForceVectors)
-
-        resultForceVector = np.add(repulsionVector, attractionVector)
-        resultForceAngle = math.atan2(resultForceVector[1], resultForceVector[0])
-
-        # rate limiting steering
-        # nextHeading = self.vehicle.getHeading() + min(max(resultForceAngle-self.vehicle.getHeading(), np.pi/4), -np.pi/4)
-        # self.vehicle.setHeading(nextHeading)
-
-        # using tire angle to steer
-        tireAngle = self.calculateSteeringInput(resultForceAngle)
-        self.vehicle.setTireAngle(tireAngle)
-
-        if display == True:
-            self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
-        return True
-
     def simulateBest(self, mfParams, mfShape="sigmoid"):
         self.setMemberships(mfParams, mfShape=mfShape, display=True)
         while len(self.vehicle.positionMemory) < 100:
-            self.navigate2(display=False)
+            self.navigate(display=False)
         self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
         self.plotTrajectory()
         self.costFunction([mfParams])
@@ -189,7 +120,7 @@ class LearnController(NavigationController):
 
         # self.setMemberships(mfParams, mfShape="sigmoid", display=False)
         while len(self.vehicle.positionMemory) < 100:
-            if self.navigate2(mfParams) == False:
+            if self.navigate() == False:
                 cost = 100000
                 return cost,  # invalid fuzzy controller, return inf cost
 

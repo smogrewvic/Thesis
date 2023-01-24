@@ -11,6 +11,7 @@ class Vehicle:
         self.positionMemory = []
         self.lateralAccelMemory = []
 
+
     def setSpeed(self, speed):
         self.speed = speed
 
@@ -62,7 +63,6 @@ class Vehicle:
         else:
             return self.tireAngle / self.carModel.steeringRatioRads.value
 
-
     def odes(self, x, t):
         x1 = x[0]
         y1 = x[1]
@@ -95,5 +95,4 @@ class Vehicle:
         # np.append(self.positionMemory, self.position, axis = 0)
 
         return x1, y1, theta1  # future path
-
 
