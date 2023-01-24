@@ -17,9 +17,9 @@ from NavigationController import NavigationController
 
 class LearnController(NavigationController):
     def __init__(self):
-        self.vehicle = Vehicle(JEEP, speed=10)
-        self.obstacles = [Obstacle(position=[5, 0])]
-        self.target = [10, 0]
+        self.vehicle = Vehicle(JEEP, speed=20)
+        self.obstacles = [Obstacle(position=[10, 0])]
+        self.target = [20, 0]
         super().__init__(self.vehicle, self.obstacles, self.target)
 
         self.inputMF1 = ctrl.Antecedent(np.arange(0, np.pi / 2, 0.1), 'relativeAngle')
@@ -46,8 +46,6 @@ class LearnController(NavigationController):
             self.outputMF1['high'] = fuzz.gaussmf(self.outputMF1.universe, mfParams[10], mfParams[11])
 
         if mfShape == "sigmoid":
-            # self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, mfParams[0], mfParams[1])
-            # self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, mfParams[2], mfParams[3])
             self.inputMF1['low'] = fuzz.sigmf(self.inputMF1.universe, mfParams[0], mfParams[1] * 20)
             self.inputMF1['high'] = fuzz.sigmf(self.inputMF1.universe, mfParams[2], mfParams[3] * 20)
             self.inputMF2['low'] = fuzz.sigmf(self.inputMF2.universe, mfParams[4], mfParams[5] * 20)  # alpha
@@ -81,17 +79,21 @@ class LearnController(NavigationController):
             print("crisp output not possible", " inputMF1[low]:", " inputMF1[high]:")
             return False
 
+
+
         repulsionVector = self.fisSimulation.output['output'] * np.array(self.obstacleForceVectors[0]) * -1  # todo: check if repulsion is negative
-        attractionVector = (1 - self.fisSimulation.output['output']) * np.array(self.targetForceVectors[0])
+        attractionVector = (1 - self.fisSimulation.output['output']) * np.array(self.targetForceVectors)
 
         resultForceVector = np.add(repulsionVector, attractionVector)
-        resultForceAngle = math.atan2(resultForceVector[1], resultForceVector[0])  # - self.vehicle.getHeading()
+        resultForceAngle = math.atan2(resultForceVector[1], resultForceVector[0])
 
-        # saturate steering angle to range
-        # steeringAngle = self.saturateValue(steeringAngle, self.vehicle.carModel.maxTireAngleRads.value, -self.vehicle.carModel.maxTireAngleRads.value)
-        # self.vehicle.setTireAngle(steeringAngle, degrees=False)
+        # rate limiting steering
+        # nextHeading = self.vehicle.getHeading() + min(max(resultForceAngle-self.vehicle.getHeading(), np.pi/4), -np.pi/4)
+        # self.vehicle.setHeading(nextHeading)
 
-        self.vehicle.setHeading(resultForceAngle, degrees=False)
+        # using tire angle to steer
+        tireAngle = self.calculateSteeringInput(resultForceAngle)
+        self.vehicle.setTireAngle(tireAngle)
 
         if display == True:
             self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
@@ -171,16 +173,15 @@ class LearnController(NavigationController):
         mfParams = individual[0]
         totalCost = 0
 
-        obstacleAvoidance = [Obstacle(position = [5,0])]
+        obstacleAvoidance = [Obstacle(position = [10,0])]
         obstacleNoAvoidance = [Obstacle(position = [5,4])]
 
         simContainer1 = LearnControllerContainer(mfParams, "sigmoid", obstacleAvoidance)
         simContainer2 = LearnControllerContainer(mfParams, "sigmoid", obstacleNoAvoidance)
-        totalCost = simContainer1.costFunction(mfParams) + simContainer2.costFunction(mfParams)
+        # totalCost = simContainer1.costFunction(mfParams) + simContainer2.costFunction(mfParams)
+        totalCost = simContainer1.costFunction(mfParams)
 
-        # totalCost = self.costFunction(mfParams)
-
-        print("totalCost", totalCost)
+        # print("totalCost", totalCost)
         return totalCost,
 
     def costFunction(self, mfParams, mutableReturn = None):
@@ -222,8 +223,8 @@ class LearnController(NavigationController):
         # distanceError = pow(pow(self.target[0] - self.vehicle.positionMemory[-1][0], 2) + pow(self.target[1] - self.vehicle.positionMemory[-1][1], 2), 0.5)  # pythagorean distance
         # cost = pow(collision, 2) * 2000 + pow(missedTarget, 2) * 500 * 5 + pow(distanceError, 2)
 
-        cost = collision*200 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
-        # print("COST", str(cost)[0:9], "\t---- Collision:", collision*200, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
+        cost = collision*2000 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
+        print("COST", str(cost)[0:9], "\t--- Collision:", collision*1, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
         self.vehicle = Vehicle(JEEP, speed=10)  # reset vehicle
 
         if mutableReturn != None:
@@ -232,7 +233,7 @@ class LearnController(NavigationController):
         return cost
 
     def parameterGenerator(self):
-        sampleRange = np.linspace(-5, 5, 1000)
+        sampleRange = np.linspace(-1, 1, 1000)
         return random.choices(sampleRange, k=12)
 
 
