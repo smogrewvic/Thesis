@@ -1,24 +1,3 @@
-import numpy as np
-import math
-import time
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import enum
-import sys
-from scipy.integrate import odeint
-import skfuzzy as fuzz
-import skfuzzy.control as ctrl
-from mpl_toolkits.mplot3d import Axes3D
-
-import random
-from deap import base
-from deap import creator
-from deap import tools
-import multiprocessing
-from threading import Thread
-
-
-
 
 class Obstacle:
 
@@ -26,10 +5,10 @@ class Obstacle:
         self.speed = speed
         self.position = position
         self.heading = heading
-        self.safetyRadius = 0.5
+        self.safetyRadius = 1
 
     def setSpeed(self, speed):
-        self.speed - speed
+        self.speed = speed
 
     def getSpeed(self):
         return self.speed

@@ -30,6 +30,7 @@ class LearnController(NavigationController):
         self.controlSystem = None
         self.fisSimulation = None
 
+
     def setMemberships(self, mfParams, mfShape="sigmoid", display=False):
 
         if mfShape == "gauss":
