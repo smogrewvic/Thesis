@@ -124,17 +124,11 @@ class LearnController(NavigationController):
                 cost = 100000
                 return cost,  # invalid fuzzy controller, return inf cost
 
-        time = len(self.vehicle.dataLog["position"])
         totalTravel = len(self.vehicle.dataLog["position"]) * self.vehicle.getSpeed()  # not true simulation speed
         closestDistanceToTarget = float('inf')
         collision = False
         missedTarget = True
-        lateralAccel = 0
-        lateralJerk = 0
-        longitudinalAccel = 0
-        longitudinalJerk = 0
-
-
+        discomfort = 0
 
         # check how close we got to target
         for i in range(len(self.vehicle.dataLog["position"])):
@@ -151,12 +145,13 @@ class LearnController(NavigationController):
                 if currentDistanceToObstacle < obstacle.getSafetyRadius():
                     collision = True
 
-        # final distance to target
-        # distanceError = pow(pow(self.target[0] - self.vehicle.dataLog["position"][-1][0], 2) + pow(self.target[1] - self.vehicle.dataLog["position"][-1][1], 2), 0.5)  # pythagorean distance
-        # cost = pow(collision, 2) * 2000 + pow(missedTarget, 2) * 500 * 5 + pow(distanceError, 2)
+        # passenger discomfort costs:
+        for i in range(len(self.vehicle.dataLog["time"])):
+            if self.vehicle.dataLog["lateral acceleration"][i] > 4: discomfort += 10
+            if self.vehicle.dataLog["longitudinal acceleration"][i] > 4: discomfort += 10
 
-        cost = collision*2000 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
-        print("COST", str(cost)[0:9], "\t--- Collision:", collision*1, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
+        cost = collision*2000 + missedTarget*300 + totalTravel +closestDistanceToTarget*100 + discomfort
+        print("COST", str(cost)[0:9], "\t--- Collision:", collision*1, "\tmissedTarget:",missedTarget*300, "\ttotalTravel", totalTravel, "\tdiscomfort", discomfort, "\tclosestDistanceToTarget", closestDistanceToTarget*100)
         self.vehicle = Vehicle(JEEP, speed=10)  # reset vehicle
 
         if mutableReturn != None:
