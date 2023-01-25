@@ -33,14 +33,14 @@ class LearnController(NavigationController):
 
     def simulateBest(self, mfParams, mfShape="sigmoid"):
         self.setMemberships(mfParams, mfShape=mfShape, display=True)
-        while len(self.vehicle.positionMemory) < 100:
+        while len(self.vehicle.dataLog["position"]) < 100:
             self.navigate(display=False)
         self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
         self.plotTrajectory()
         self.costFunction([mfParams])
 
     def plotTrajectory(self):
-        positions = np.array(self.vehicle.positionMemory)
+        positions = np.array(self.vehicle.dataLog["position"])
         xPositions = []
         yPositions = []
         for x, y in positions:
@@ -119,13 +119,13 @@ class LearnController(NavigationController):
     def costFunction(self, mfParams, mutableReturn = None):
 
         # self.setMemberships(mfParams, mfShape="sigmoid", display=False)
-        while len(self.vehicle.positionMemory) < 100:
+        while len(self.vehicle.dataLog["position"]) < 100:
             if self.navigate() == False:
                 cost = 100000
                 return cost,  # invalid fuzzy controller, return inf cost
 
-        time = len(self.vehicle.positionMemory)
-        totalTravel = len(self.vehicle.positionMemory) * self.vehicle.getSpeed()  # not true simulation speed
+        time = len(self.vehicle.dataLog["position"])
+        totalTravel = len(self.vehicle.dataLog["position"]) * self.vehicle.getSpeed()  # not true simulation speed
         closestDistanceToTarget = float('inf')
         collision = False
         missedTarget = True
@@ -137,13 +137,13 @@ class LearnController(NavigationController):
 
 
         # check how close we got to target
-        for i in range(len(self.vehicle.positionMemory)):
-            currentPosition = self.vehicle.positionMemory[i]
+        for i in range(len(self.vehicle.dataLog["position"])):
+            currentPosition = self.vehicle.dataLog["position"][i]
             currentDistanceToTarget = pow(pow(self.target[0] - currentPosition[0], 2) + pow(self.target[1] - currentPosition[1], 2), 0.5)
             closestDistanceToTarget = min(currentDistanceToTarget, closestDistanceToTarget)
 
             if closestDistanceToTarget <= 0.2 and missedTarget == True:  # first time target reached
-                totalTravel = i * self.vehicle.getSpeed()
+                totalTravel = i * self.vehicle.getSpeed()  # todo: use dataLog["speed"]
                 missedTarget = False
 
             for obstacle in self.obstacles:  # check if safe distance around all obstacles
@@ -152,7 +152,7 @@ class LearnController(NavigationController):
                     collision = True
 
         # final distance to target
-        # distanceError = pow(pow(self.target[0] - self.vehicle.positionMemory[-1][0], 2) + pow(self.target[1] - self.vehicle.positionMemory[-1][1], 2), 0.5)  # pythagorean distance
+        # distanceError = pow(pow(self.target[0] - self.vehicle.dataLog["position"][-1][0], 2) + pow(self.target[1] - self.vehicle.dataLog["position"][-1][1], 2), 0.5)  # pythagorean distance
         # cost = pow(collision, 2) * 2000 + pow(missedTarget, 2) * 500 * 5 + pow(distanceError, 2)
 
         cost = collision*2000 + missedTarget*300 + totalTravel +closestDistanceToTarget*100
