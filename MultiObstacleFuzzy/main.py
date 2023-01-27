@@ -29,11 +29,12 @@ if __name__ == '__main__':
     # target = [15, 0]
     # target = [0,0]
 
-    obstacles = [Obstacle(0, [5,0], 0)]  # 1 obstacles
-    # obstacles = [Obstacle(0, [2, 2], 0), Obstacle(0, [2, 3], 0)] # 2 obstacles
+    # obstacles = [Obstacle(0, [5,0], 0)]  # 1 obstacles
+    # obstacles = [Obstacle(0, [2, 2], 0), Obstacle(0, [2, 5], 0)] # 2 obstacles
+    obstacles = [Obstacle(0, [random.randint(-25,25), random.randint(-25,25)], 0), Obstacle(0, [random.randint(-25,25), random.randint(-25,25)], 0)]
 
     navigationController = NavigationController(myVehicle, obstacles, target)
-    navigationController.setMemberships([0.0, -0.9619619619619619, 0.15715715715715706, 0.91991991991992, 0.0, -0.27127127127127126, 0.3793793793793794, 0.0, 0.0, -0.7877877877877878, 0.7177177177177176, 0.8118118118118118])
+    # navigationController.setMemberships([0.0, -0.9619619619619619, 0.15715715715715706, 0.91991991991992, 0.0, -0.27127127127127126, 0.3793793793793794, 0.0, 0.0, -0.7877877877877878, 0.7177177177177176, 0.8118118118118118])
     navigationController.navigate()
     navSimulator = Simulator(navigationController, obstacles, target)
     navSimulator.animate()
