@@ -1,0 +1,9 @@
+import PotentialField as pf
+import time
+from multiprocessing import Pool
+import os
+
+if __name__ == '__main__':
+    potential_field = pf.APF()
+    potential_field.generate_APF()
+    potential_field.save_image_APF()

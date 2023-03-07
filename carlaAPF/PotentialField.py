@@ -1,8 +1,15 @@
 import numpy as np
 import collections
+import threading
+from multiprocessing import Process, Pool
+
+import scipy.misc
+from PedestrianAPF import PedestrianAPF
+from VehicleAPF import VehicleAPF
+
 
 class APF:
-    def __init__(self, field_size = 100, granularity = 0.1, actor_data_filepath = "actor_data.txt"):
+    def __init__(self, field_size = 10, granularity = 0.1, actor_data_filepath = "actor_data.txt"):
         self.field_size = field_size  # meters
         self.field_granularity = granularity   # meters
         self.potential_field = np.zeros((int(self.field_size/self.field_granularity), int(self.field_size/self.field_granularity)))
@@ -135,22 +142,59 @@ class APF:
     def lane_data(self, mapObj):
         print(mapObj)
 
+    def add_APF(self, id):
+        # print("thread#", threading.get_ident())
+        if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
+            for y in range(len(self.potential_field[0])):
+                for x in range(len(self.potential_field[0])):
+                    self.potential_field[x][y] = 35
 
-    def generate_APF(self, ego_vehicle = None):
+        elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
+            for y in range(len(self.potential_field[0])):
+                for x in range(len(self.potential_field[0])):
+                    self.potential_field[x][y] = 35
 
+    def generate_APF_multicored(self):
         self.read_actor_data()
-
+        processes = []
         for id in self.actor_ids:
+            processes.append(Process(target=self.add_APF, args=(id,)))
+            processes[-1].start()
 
-            if type(self.actor_ids[id]) is VehicleAPF: #might have to change to PotentialField.VehicleAPF
-                for y in range(len(self.potential_field)):
-                    for x in range(len(self.potential_field)):
-                        self.potential_field = 0
+        for process in processes:
+            process.join()
 
-            elif type(self.actor_ids[id]) is PedestrianAPF: #might have to change to PotentialField.VehicleAPF
-                for y in range(len(self.potential_field)):
-                    for x in range(len(self.potential_field)):
-                        self.potential_field = 0
+    def generate_APF_threaded(self):
+        # print("generating threaded")
+        self.read_actor_data()
+        threads = []
+        for id in self.actor_ids:
+            threads.append(threading.Thread(target = self.add_APF, args = (id,)))
+            threads[-1].start()
+
+        for thread in threads:
+            thread.join()
+
+    def generate_APF(self):
+        print("generating")
+        self.read_actor_data()
+        for id in self.actor_ids:
+            if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
+                for y in range(len(self.potential_field[0])):
+                    for x in range(len(self.potential_field[0])):
+                        self.potential_field[x][y] = 35
+
+
+            elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
+                for y in range(len(self.potential_field[0])):
+                    for x in range(len(self.potential_field[0])):
+                        self.potential_field[x][y] = 35
+
+
+
+    def save_image_APF(self):
+        scipy.misc.imsave('APF.jpg', self.potential_field)
+
 
 
 class PedestrianAPF:

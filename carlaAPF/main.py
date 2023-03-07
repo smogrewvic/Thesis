@@ -4,9 +4,7 @@ import random
 import keyboard
 import sys
 
-import PotentialField as pf
-
-
+# import PotentialField as pf
 
 
 # def exit_application(actors):
@@ -16,6 +14,13 @@ import PotentialField as pf
 #
 #     print("exiting application")
 #     sys.exit(1)
+
+
+
+def spectator_follow():
+    new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
+                                    ego_vehicle.get_transform().rotation)
+    world.get_spectator().set_transform(new_transform)
 
 
 
@@ -43,19 +48,17 @@ if __name__ == '__main__':
 
     # keyboard.on_press_key("z", lambda _: exit_application(world.get_actors()))
 
-
+    # potential_field = pf.APF()
+    # p2 = Process(target=potential_field.generate_APF)
 
     while True:
-        new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
-                                    ego_vehicle.get_transform().rotation)
-        world.get_spectator().set_transform(new_transform)
+        spectator_follow()
+
+
+
+
 
         # spectator = world.get_spectator()
         # transform = ego_vehicle.get_transform()
         # spectator.set_transform(carla.Transform(transform.location + carla.Location(z=5),
         #                                         carla.Rotation(pitch=-90)))
-
-        potential_field = pf.APF()
-        potential_field.generate_APF()
-        # pf.APF.read_actor_data("actor_data.txt")
-        # pf.APF.lane_data(carla.Waypoint)
