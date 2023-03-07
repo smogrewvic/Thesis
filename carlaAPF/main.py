@@ -48,12 +48,12 @@ if __name__ == '__main__':
 
     # keyboard.on_press_key("z", lambda _: exit_application(world.get_actors()))
 
-    # potential_field = pf.APF()
-    # p2 = Process(target=potential_field.generate_APF)
+    potential_field = pf.APF()
 
     while True:
         spectator_follow()
-
+        potential_field.generate_APF()
+        potential_field.save_image_APF()
 
 
 

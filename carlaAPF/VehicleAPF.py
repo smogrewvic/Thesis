@@ -28,10 +28,6 @@ class VehicleAPF:
 
     def static_APF(self, x, y):
 
-
-        distance = np.linalg.norm(self.relative_state["position"])
-        if distance >= self.field_size: return -1
-
         i, j = self.relative_state["position"]
         num = self.safety_radius - (((x-i)**2 + (y-j)**2)/self.safety_radius)
         denom = - self.safety_radius - (((x-i)**2 + (y-j)**2)/(0.01*self.safety_radius))

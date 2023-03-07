@@ -3,7 +3,7 @@ import collections
 import threading
 from multiprocessing import Process, Pool
 
-import scipy.misc
+from PIL import Image
 from PedestrianAPF import PedestrianAPF
 from VehicleAPF import VehicleAPF
 
@@ -15,6 +15,7 @@ class APF:
         self.potential_field = np.zeros((int(self.field_size/self.field_granularity), int(self.field_size/self.field_granularity)))
         self.actor_data_filepath = actor_data_filepath
         self.actor_ids = {}
+        # self.ego_vehicle = ego_vehicle
 
     def compute_total_APF(self):
         pass
@@ -147,12 +148,12 @@ class APF:
         if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
             for y in range(len(self.potential_field[0])):
                 for x in range(len(self.potential_field[0])):
-                    self.potential_field[x][y] = 35
+                    self.potential_field[x][y] = 255
 
         elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
             for y in range(len(self.potential_field[0])):
                 for x in range(len(self.potential_field[0])):
-                    self.potential_field[x][y] = 35
+                    self.potential_field[x][y] = 255
 
     def generate_APF_multicored(self):
         self.read_actor_data()
@@ -175,10 +176,17 @@ class APF:
         for thread in threads:
             thread.join()
 
+    def set_ego_vehicle_state(self):
+        pass
+
     def generate_APF(self):
         print("generating")
         self.read_actor_data()
         for id in self.actor_ids:
+            # distance = np.linalg.norm(self.actor_ids[id].get_relative_state(ego_vehicle_state)["position"])
+            # if distance >= self.field_size:
+            #     continue
+
             if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
                 for y in range(len(self.potential_field[0])):
                     for x in range(len(self.potential_field[0])):
@@ -193,94 +201,23 @@ class APF:
 
 
     def save_image_APF(self):
-        scipy.misc.imsave('APF.jpg', self.potential_field)
+        # test_img = np.zeros((255,255,3))
+        # val = 0
+        #
+        # for x in range(len(test_img)):
+        #     for y in range(len(test_img)):
+        #
+        #         test_img[x][y][0] = val
+        #         test_img[x][y][1] = val
+        #         test_img[x][y][2] = val
+        #         val+=1
+        # apf_image = Image.fromarray(test_img, mode="L")
+        # apf_image.save("APF_Image.bmp")
 
+        grayscale = np.array(self.potential_field, dtype = np.uint8)
 
-
-class PedestrianAPF:
-    def __init__(self, state_data):
-        # super().__init__()
-        self.safety_radius = 5
-        self.data_log = collections.deque(maxlen = 100)
-        # self.state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0, "angular_velocity": np.zeros(3),
-        #               "acceleration": np.zeros(3)}
-        self.state = state_data
-
-        self.relative_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0, "angular_velocity": np.zeros(3),
-                      "acceleration": np.zeros(3)}
-
-    def calculate_relative_state(self, ego_vehicle_state):
-
-        for key in self.state:
-            if key == "type": continue
-            else:
-                self.relative_state[key] = self.state[key] - ego_vehicle_state[key]
-
-
-    def get_relative_state(self, ego_vehicle_state):
-        self.calculate_relative_state(ego_vehicle_state)
-
-        return self.relative_state
-
-    def static_APF(self, x, y):
-
-
-        distance = np.linalg.norm(self.relative_state["position"])
-        if distance >= self.field_size: return -1
-
-        i, j = self.relative_state["position"]
-        num = self.safety_radius - (((x-i)**2 + (y-j)**2)/self.safety_radius)
-        denom = - self.safety_radius - (((x-i)**2 + (y-j)**2)/(0.01*self.safety_radius))
-
-        return (abs(num)+num)/denom
-
-    def dynamic_APF(self):
-        pass
-
-
-
-
-
-class VehicleAPF:
-    def __init__(self, state_data):
-        # super().__init__()
-        self.safety_radius = 2
-        self.data_log = collections.deque(maxlen = 100)
-        # self.state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0, "angular_velocity": np.zeros(3),
-        #               "acceleration": np.zeros(3)}
-        self.state = state_data
-
-        self.relative_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0, "angular_velocity": np.zeros(3),
-                      "acceleration": np.zeros(3)}
-
-    def calculate_relative_state(self, ego_vehicle_state):
-
-        for key in self.state:
-            if key == "type": continue
-            else:
-                self.relative_state[key] = self.state[key] - ego_vehicle_state[key]
-
-
-    def get_relative_state(self, ego_vehicle_state):
-        self.calculate_relative_state(ego_vehicle_state)
-
-        return self.relative_state
-
-    def static_APF(self, x, y):
-
-
-        distance = np.linalg.norm(self.relative_state["position"])
-        if distance >= self.field_size: return -1
-
-        i, j = self.relative_state["position"]
-        num = self.safety_radius - (((x-i)**2 + (y-j)**2)/self.safety_radius)
-        denom = - self.safety_radius - (((x-i)**2 + (y-j)**2)/(0.01*self.safety_radius))
-
-        return (abs(num)+num)/denom
-
-    def dynamic_APF(self):
-        pass
-
+        apf_image = Image.fromarray(grayscale, mode = "L")
+        apf_image.save("APF_Image.bmp")
 
 
 
