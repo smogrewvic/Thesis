@@ -20,7 +20,8 @@ class VehicleAPF:
             else:
                 self.relative_state[key] = self.state[key] - ego_vehicle_state[key]
 
-
+    def get_state(self):
+        return self.state
     def get_relative_state(self, ego_vehicle_state):
         self.calculate_relative_state(ego_vehicle_state)
 
@@ -28,11 +29,12 @@ class VehicleAPF:
 
     def static_APF(self, x, y):
 
-        i, j = self.relative_state["position"]
+        #todo: remember to update relative state before calling
+        i, j = self.relative_state["position"][0], self.relative_state["position"][1]
         num = self.safety_radius - (((x-i)**2 + (y-j)**2)/self.safety_radius)
         denom = - self.safety_radius - (((x-i)**2 + (y-j)**2)/(0.01*self.safety_radius))
 
-        return (abs(num)+num)/denom
+        return -100*(abs(num)+num)/denom
 
     def dynamic_APF(self):
         pass

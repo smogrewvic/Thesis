@@ -4,7 +4,7 @@ import random
 import keyboard
 import sys
 
-# import PotentialField as pf
+import PotentialField as pf
 
 
 # def exit_application(actors):
@@ -48,13 +48,11 @@ if __name__ == '__main__':
 
     # keyboard.on_press_key("z", lambda _: exit_application(world.get_actors()))
 
-    potential_field = pf.APF()
+    # potential_field = pf.APF(ego_vehicle)
 
     while True:
         spectator_follow()
-        potential_field.generate_APF()
-        potential_field.save_image_APF()
-
+        pf.APF.write_ego_data(ego_vehicle)
 
 
 
