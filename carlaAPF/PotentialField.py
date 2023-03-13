@@ -86,6 +86,7 @@ class APF:
                        + "\tacceleration = " + str(acceleration)
                        + '\n')
         file.close()
+
     def read_actor_data(self):
         file = open("actor_data.txt", "r")
 
@@ -169,16 +170,13 @@ class APF:
 
             # self.actor_ids.update({id : actor_state})
 
-            self.actor_ids.update({id : VehicleAPF(actor_state)})
+            self.actor_ids.update({id : VehicleAPF(actor_state, len(self.potential_field), self.field_granularity)})
 
 
         file.close()
 
     def read_ego_data(self):
         file = open("ego_data.txt", "r")
-
-        # state = {"type": "", "position":[0,0,0], "heading": 0,  "speed": 0, "angular_velocity": [0,0,0], "acceleration": [0,0,0]}
-
 
         for data in file:
             if data[0:2] != "ID": break  # file has finished
@@ -255,9 +253,12 @@ class APF:
                           "angular_velocity": angular_velocity,
                           "acceleration": acceleration}
 
-            # self.actor_ids.update({id : actor_state})
-
-            self.actor_ids.update({id : VehicleAPF(state)})
+            # ego_vehicle = VehicleAPF(state)
+            #
+            # #set realtive position to center of potential field
+            # centered_pos = [len(self.potential_field)//2, len(self.potential_field[0])//2, position[2]]
+            # ego_vehicle.set_relative_state(position = centered_pos)
+            self.actor_ids.update({id : VehicleAPF(state, len(self.potential_field), self.field_granularity)})
 
 
         file.close()
@@ -298,31 +299,6 @@ class APF:
         for thread in threads:
             thread.join()
 
-    # def update_ego_vehicle_state(self):
-    #     id = "ego_vehicle"
-    #     velocity = round(np.linalg.norm([self.ego_vehicle.get_velocity().x,
-    #                                      self.ego_vehicle.get_velocity().y,
-    #                                      self.ego_vehicle.get_velocity().z]), 4)
-    #
-    #     heading = round(self.ego_vehicle.get_transform().rotation.yaw, 4)
-    #
-    #     position = round(self.ego_vehicle.get_transform().location.x, 4), round(self.ego_vehicle.get_transform().location.y, 4), round(
-    #         self.ego_vehicle.get_transform().location.z, 4)
-    #
-    #     acceleration = round(self.ego_vehicle.get_acceleration().x, 4), round(self.ego_vehicle.get_acceleration().y, 4), round(
-    #         self.ego_vehicle.get_acceleration().z, 4)
-    #
-    #     angular_vel = round(self.ego_vehicle.get_angular_velocity().x, 4), round(self.ego_vehicle.get_angular_velocity().y, 4), round(
-    #         self.ego_vehicle.get_angular_velocity().z, 4)
-    #
-    #     state = {"type": "vehicle",
-    #              "position": position,
-    #              "heading": heading,
-    #              "speed": velocity,
-    #              "angular_velocity": angular_vel,
-    #              "acceleration": acceleration}
-    #
-    #     self.actor_ids.update({id : VehicleAPF(state)})
 
     def generate_APF(self):
         print("generating")
@@ -330,23 +306,24 @@ class APF:
         self.read_ego_data()
 
         for id in self.actor_ids:
-            actor_relative_state = self.actor_ids[id].get_relative_state(self.actor_ids["ego_vehicle"].get_state())
-            # distance = np.linalg.norm(actor_relative_state)
-            # if distance >= self.field_size:
-            #     continue
+            # if id == "ego_vehicle" : continue  # ignore ego_vehicle
+
+            #update egocentric actor state to center in APF relative to ego vehicle
+            self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(), len(self.potential_field)//2, len(self.potential_field[0])//2)
+
+            distance = np.linalg.norm(self.actor_ids[id].get_relative_state()["position"])
+            if distance >= self.field_size/2:
+                continue
 
             if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
-                for y in range(len(self.potential_field[0])):
+                for y in range(len(self.potential_field)):
                     for x in range(len(self.potential_field[0])):
-                        self.potential_field[x][y] = self.actor_ids[id].static_APF(x,y)
-
+                        self.potential_field[x][y] = min(self.potential_field[x][y]+self.actor_ids[id].static_APF(x,y), 255)
 
             elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
-                for y in range(len(self.potential_field[0])):
+                for y in range(len(self.potential_field)):
                     for x in range(len(self.potential_field[0])):
-                        self.potential_field[x][y] = self.actor_ids[id].static_APF(x,y)
-
-
+                        self.potential_field[x][y] += self.actor_ids[id].static_APF(x,y)
 
 
     def save_image_APF(self):
