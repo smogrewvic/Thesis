@@ -7,21 +7,22 @@ import sys
 import PotentialField as pf
 
 
-# def exit_application(actors):
-#     for actor in actors:
-#         success = actor.destroy()
-#         if not success: print("Error destroying:", actor)
-#
-#     print("exiting application")
-#     sys.exit(1)
 
 
+def spectator_follow(view):
+    if view == "third person":
+        new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
+                                        ego_vehicle.get_transform().rotation)
+        world.get_spectator().set_transform(new_transform)
 
-def spectator_follow():
-    new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
-                                    ego_vehicle.get_transform().rotation)
-    world.get_spectator().set_transform(new_transform)
-
+    if view == "top":
+        print(ego_vehicle.get_transform().rotation)
+        # new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(z=10)),
+        #                                 carla.Rotation(pitch=-90, yaw = ego_vehicle.get_transform().rotation.yaw))
+        # world.get_spectator().set_transform(new_transform)
+        new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
+                                        ego_vehicle.get_transform().rotation)
+        world.get_spectator().set_transform(new_transform)
 
 
 
@@ -51,12 +52,5 @@ if __name__ == '__main__':
     # potential_field = pf.APF(ego_vehicle)
 
     while True:
-        spectator_follow()
-        pf.APF.write_ego_data(ego_vehicle)
-
-
-
-        # spectator = world.get_spectator()
-        # transform = ego_vehicle.get_transform()
-        # spectator.set_transform(carla.Transform(transform.location + carla.Location(z=5),
-        #                                         carla.Rotation(pitch=-90)))
+        spectator_follow("top")
+        # pf.APF.write_ego_data(ego_vehicle)

@@ -19,6 +19,10 @@ class VehicleAPF:
         self.egocentric_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
                                "angular_velocity": np.zeros(3),
                                "acceleration": np.zeros(3)}
+
+        self.scaled_egocentric_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
+                               "angular_velocity": np.zeros(3),
+                               "acceleration": np.zeros(3)}
     def calculate_relative_state(self, ego_vehicle_state):
 
         for key in self.state:
@@ -45,17 +49,25 @@ class VehicleAPF:
         ego_centered_state = self.centered_state(ego_vehicle_state, center_x, center_y)
         self.calculate_relative_state(ego_vehicle_state)
 
-        self.egocentric_state =  {"type": "",
-                                  "position": self.relative_state["position"]+ego_centered_state["position"],
-                                  "heading": self.relative_state["heading"]+ego_centered_state["heading"], # todo: maybe 90 degs or 0 deg
-                                  "speed": self.relative_state["speed"]+ego_centered_state["speed"],
-                                  "angular_velocity": self.relative_state["angular_velocity"]+ego_centered_state["angular_velocity"],
-                                  "acceleration": self.relative_state["acceleration"]+ego_centered_state["acceleration"]}
+        self.egocentric_state = {"type": "",
+                                 "position": self.relative_state["position"]+ego_centered_state["position"],
+                                 "heading": self.relative_state["heading"]+ego_centered_state["heading"], # todo: maybe 90 degs or 0 deg
+                                 "speed": self.relative_state["speed"]+ego_centered_state["speed"],
+                                 "angular_velocity": self.relative_state["angular_velocity"]+ego_centered_state["angular_velocity"],
+                                 "acceleration": self.relative_state["acceleration"]+ego_centered_state["acceleration"]}
 
-        return self.egocentric_state, self.relative_state
+        self.scaled_egocentric_state = {"type": "",
+                             "position": self.relative_state["position"]/self.potential_field_granularity +ego_centered_state["position"], #use relative state for position scale
+                             "heading": self.egocentric_state["heading"], # todo: maybe 90 degs or 0 deg
+                             "speed": self.egocentric_state["speed"],
+                             "angular_velocity": self.egocentric_state["angular_velocity"],
+                             "acceleration": self.egocentric_state["acceleration"]}
+
+        return self.scaled_egocentric_state, self.egocentric_state, self.relative_state
 
     def get_egocentric_state(self):
         return self.egocentric_state
+
 
     def set_relative_state(self, position = None, heading = None, speed = None, angular_vel = None, accel = None):
 
@@ -74,14 +86,13 @@ class VehicleAPF:
 
         # todo: remember to update relative state before calling
 
-        i, j = self.egocentric_state["position"][0], self.egocentric_state["position"][1]
-        print("i,j", i, j)
+        i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         num = self.safety_radius - (((x-i)**2 + (y-j)**2)/self.safety_radius)
         denom = - self.safety_radius - (((x-i)**2 + (y-j)**2)/(0.01*self.safety_radius))
 
         return min(-100*(abs(num)+num)/denom, 255)
 
-        # i, j = self.egocentric_state["position"][0], self.egocentric_state["position"][1]
+        # i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         # if x == i and y == j:
         #     return 250
         # else:

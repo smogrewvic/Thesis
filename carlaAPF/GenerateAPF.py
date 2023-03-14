@@ -9,3 +9,4 @@ if __name__ == '__main__':
     while True:
         potential_field.generate_APF()
         potential_field.save_image_APF()
+        potential_field.show_APF()

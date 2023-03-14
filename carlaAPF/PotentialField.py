@@ -6,6 +6,7 @@ from multiprocessing import Process, Pool
 from PIL import Image
 from PedestrianAPF import PedestrianAPF
 from VehicleAPF import VehicleAPF
+import cv2
 
 
 class APF:
@@ -301,7 +302,8 @@ class APF:
 
 
     def generate_APF(self):
-        print("generating")
+
+        self.potential_field.fill(0)  # erase potential field to not sum between calls
         self.read_actor_data()
         self.read_ego_data()
 
@@ -323,7 +325,8 @@ class APF:
             elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
                 for y in range(len(self.potential_field)):
                     for x in range(len(self.potential_field[0])):
-                        self.potential_field[x][y] += self.actor_ids[id].static_APF(x,y)
+                        self.potential_field[x][y] = min(self.potential_field[x][y]+self.actor_ids[id].static_APF(x,y), 255)
+
 
 
     def save_image_APF(self):
@@ -334,4 +337,8 @@ class APF:
         apf_image.save("APF_Image.bmp")
 
 
-
+    def show_APF(self):
+        img =cv2.imread("APF_Image.bmp")
+        resized = cv2.resize(img, (500,500), interpolation=cv2.INTER_AREA)
+        cv2.imshow("image", resized)
+        cv2.waitKey(1)
