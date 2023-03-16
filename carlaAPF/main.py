@@ -16,13 +16,14 @@ def spectator_follow(view):
         world.get_spectator().set_transform(new_transform)
 
     if view == "top":
-        print(ego_vehicle.get_transform().rotation)
-        # new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(z=10)),
-        #                                 carla.Rotation(pitch=-90, yaw = ego_vehicle.get_transform().rotation.yaw))
-        # world.get_spectator().set_transform(new_transform)
-        new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
-                                        ego_vehicle.get_transform().rotation)
+        # print(ego_vehicle.get_transform().rotation)
+
+        new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(z=10)),
+                                        carla.Rotation(pitch=-90, yaw = 0))
         world.get_spectator().set_transform(new_transform)
+        # new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
+        #                                 ego_vehicle.get_transform().rotation)
+        # world.get_spectator().set_transform(new_transform)
 
 
 
@@ -53,4 +54,5 @@ if __name__ == '__main__':
 
     while True:
         spectator_follow("top")
-        # pf.APF.write_ego_data(ego_vehicle)
+        pf.APF.write_ego_data(ego_vehicle)
+        # print(world.get_actors())

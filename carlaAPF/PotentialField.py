@@ -7,7 +7,7 @@ from PIL import Image
 from PedestrianAPF import PedestrianAPF
 from VehicleAPF import VehicleAPF
 import cv2
-
+import matplotlib.pyplot as plt
 
 class APF:
     def __init__(self, field_size = 10, granularity = 0.1):
@@ -18,10 +18,6 @@ class APF:
 
 
         self.actor_ids = {}
-
-
-    def compute_total_APF(self):
-        pass
 
     @staticmethod
     def write_actor_data(actorList):
@@ -254,11 +250,6 @@ class APF:
                           "angular_velocity": angular_velocity,
                           "acceleration": acceleration}
 
-            # ego_vehicle = VehicleAPF(state)
-            #
-            # #set realtive position to center of potential field
-            # centered_pos = [len(self.potential_field)//2, len(self.potential_field[0])//2, position[2]]
-            # ego_vehicle.set_relative_state(position = centered_pos)
             self.actor_ids.update({id : VehicleAPF(state, len(self.potential_field), self.field_granularity)})
 
 
@@ -342,3 +333,24 @@ class APF:
         resized = cv2.resize(img, (500,500), interpolation=cv2.INTER_AREA)
         cv2.imshow("image", resized)
         cv2.waitKey(1)
+
+    def plot_actor_positions(self):
+        x_actors = []
+        y_actors = []
+        x_ego = [1]
+        y_ego = [1]
+        for id in self.actor_ids:
+            if id == "ego_vehicle":
+                x_ego[0] = self.actor_ids[id].get_state()["position"][0]
+                y_ego[0] = self.actor_ids[id].get_state()["position"][1]
+            else:
+                x_actors.append(self.actor_ids[id].get_state()["position"][0])
+                y_actors.append(self.actor_ids[id].get_state()["position"][1])
+
+        plt.cla()
+        plt.scatter(x_actors, y_actors, c="blue")
+        plt.scatter(x_ego, y_ego, c = "red")
+        plt.xlim(-150,150)
+        plt.ylim(-150,150)
+        plt.draw()
+        plt.pause(0.01)
