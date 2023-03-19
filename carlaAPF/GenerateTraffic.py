@@ -343,7 +343,7 @@ def generate():
         while True:
             if not args.asynch and synchronous_master:
                 world.tick()
-                pf.APF.write_actor_data(world.get_actors())
+                # pf.APF.write_actor_data(world.get_actors())
             else:
                 world.wait_for_tick()
 

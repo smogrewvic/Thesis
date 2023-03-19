@@ -1,7 +1,5 @@
 import numpy as np
-import collections
-import threading
-from multiprocessing import Process, Pool
+import carla
 
 from PIL import Image
 from PedestrianAPF import PedestrianAPF
@@ -10,293 +8,66 @@ import cv2
 import matplotlib.pyplot as plt
 
 class APF:
-    def __init__(self, field_size = 10, granularity = 0.1):
+    def __init__(self, field_size = 15, granularity = 0.5):
+        self.client = carla.Client('localhost', 2000)
+        self.world = self.client.get_world()
 
         self.field_size = field_size  # meters
         self.field_granularity = granularity   # meters
         self.potential_field = np.zeros((int(self.field_size/self.field_granularity), int(self.field_size/self.field_granularity)))
 
-
         self.actor_ids = {}
 
-    @staticmethod
-    def write_actor_data(actorList):
-        with open('actor_data.txt', 'w') as file:
-            for actor in actorList:
+    def update_actor_states(self):
+        #todo: stop creating a new vehicleAPF each call
+        carla_actors = self.world.get_actors()
 
-                id = actor.id
-                velocity = round(np.linalg.norm([actor.get_velocity().x,actor.get_velocity().y,actor.get_velocity().z]), 4)
-                heading = round(actor.get_transform().rotation.yaw, 4)
-                position = round(actor.get_transform().location.x, 4), round(actor.get_transform().location.y, 4), round(actor.get_transform().location.z, 4)
-                acceleration = round(actor.get_acceleration().x, 4), round(actor.get_acceleration().y, 4), round(actor.get_acceleration().z, 4)
-                angular_vel = round(actor.get_angular_velocity().x, 4), round(actor.get_angular_velocity().y, 4), round(actor.get_angular_velocity().z, 4)
+        for actor in carla_actors:
 
-                vehicle_type = actor.type_id
-                if vehicle_type.find("vehicle") >= 0:
-                    vehicle_type = "vehicle"
-                elif vehicle_type.find("pedestrian") >= 0:
-                    vehicle_type = "pedestrian"
-                else:
-                    continue  # does not send other actor types
+            vehicle = True if actor.type_id.find("vehicle") >= 0 else False
+            pedestrian = True if actor.type_id.find("pedestrian") >= 0 else False
 
-                file.write("ID = " + str(id)
-                           + "\ttype = " + str(vehicle_type)
-                           + "\tposition = " + str(position)
-                           + "\theading = " + str(heading)
-                           + "\tspeed = " + str(velocity)
-                           + "\tangular_velocity = " + str(angular_vel)
-                           + "\tacceleration = " + str(acceleration)
-                           + '\n')
+            if not vehicle and not pedestrian:
+                continue
 
-            file.write("DONE")
-            file.close()
+            id = actor.id
+            # velocity = round(actor.get_velocity().x, 4), round(actor.get_velocity().y, 4), (actor.get_velocity().z, 4)
+            speed = round(np.linalg.norm([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]),4)
+            heading = round(actor.get_transform().rotation.yaw, 4)
+            position = round(actor.get_transform().location.x, 4), round(actor.get_transform().location.y, 4), round(actor.get_transform().location.z, 4)
+            acceleration = round(actor.get_acceleration().x, 4), round(actor.get_acceleration().y, 4), round(actor.get_acceleration().z, 4)
+            angular_vel = round(actor.get_angular_velocity().x, 4), round(actor.get_angular_velocity().y, 4), round(actor.get_angular_velocity().z, 4)
 
-    @staticmethod
-    def write_ego_data(ego_vehicle_obj):
-        with open('ego_data.txt', 'w') as file:
+            actor_state = {"position":np.array(position),
+                           "heading": heading,
+                           "speed": speed,
+                           # "velocity": np.array(velocity),
+                           "angular_velocity": np.array(angular_vel),
+                           "acceleration": np.array(acceleration)}
 
+            #check if ego_vehicle else make generic vehicle or pedestrian
+            if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
+                self.actor_ids.update({"ego_vehicle": VehicleAPF(actor_state, len(self.potential_field), self.field_granularity)})
 
-            id = "ego_vehicle"
-            velocity = round(
-                np.linalg.norm([ego_vehicle_obj.get_velocity().x,
-                                ego_vehicle_obj.get_velocity().y,
-                                ego_vehicle_obj.get_velocity().z]), 4)
+            elif vehicle:
+                self.actor_ids.update({id: VehicleAPF(actor_state, len(self.potential_field), self.field_granularity)})
 
-            heading = round(ego_vehicle_obj.get_transform().rotation.yaw, 4)
-            position = round(ego_vehicle_obj.get_transform().location.x, 4), round(ego_vehicle_obj.get_transform().location.y,
-                                                                         4), round(ego_vehicle_obj.get_transform().location.z,
-                                                                                   4)
-            acceleration = round(ego_vehicle_obj.get_acceleration().x, 4), round(ego_vehicle_obj.get_acceleration().y, 4), round(
-                ego_vehicle_obj.get_acceleration().z, 4)
-
-            angular_vel = round(ego_vehicle_obj.get_angular_velocity().x, 4), round(ego_vehicle_obj.get_angular_velocity().y, 4), round(
-                ego_vehicle_obj.get_angular_velocity().z, 4)
-
-            vehicle_type = "vehicle"
-
-            file.write("ID = " + str(id)
-                       + "\ttype = " + str(vehicle_type)
-                       + "\tposition = " + str(position)
-                       + "\theading = " + str(heading)
-                       + "\tspeed = " + str(velocity)
-                       + "\tangular_velocity = " + str(angular_vel)
-                       + "\tacceleration = " + str(acceleration)
-                       + '\n')
-        file.close()
-
-    def read_actor_data(self):
-        file = open("actor_data.txt", "r")
-
-        actor_state = {"type": "", "position":[0,0,0], "heading": 0,  "speed": 0, "angular_velocity": [0,0,0], "acceleration": [0,0,0]}
+            elif pedestrian:
+                self.actor_ids.update({id : PedestrianAPF(actor_state, len(self.potential_field), self.field_granularity)})
 
 
-        for data in file:
-            if data[0:2] != "ID": break  # file has finished
-
-            #read id
-            start = data.find("ID") + len("ID") + 3
-            end = data.find("\t")
-            id = int(data[start:end])
-
-            #read type
-            start = data.find("type") + len("type") + 3
-            end = data.find("\t", start)
-            type = data[start:end]
-
-            #read position x,y,z
-            start = data.find("position") + len("position") + 4
-            end = data.find(",", start)
-            x = float(data[start:end])
-
-            start = end+2
-            end = data.find(",", start)
-            y = float(data[start:end])
-
-            start = end + 2
-            end = data.find(")", start)
-            z = float(data[start:end])
-
-            position = [x,y,z]
-
-            #read heading
-            start = data.find("heading")  + len("heading") + 3
-            end = data.find("\t", start)
-            heading = float(data[start:end])
-
-            #read speed
-            start = data.find("speed") + len("speed") + 3
-            end = data.find("\t", start)
-            speed = float(data[start:end])
-
-            #read angular velocity x,y,z
-            start = data.find("angular_velocity") + len("angular_velocity") + 4
-            end = data.find(",", start)
-            x = float(data[start:end])
-
-            start = end + 2
-            end = data.find(",", start)
-            y = float(data[start:end])
-
-            start = end + 2
-            end = data.find(")", start)
-            z = float(data[start:end])
-
-            angular_velocity = [x, y, z]
-
-            # read acceleration x,y,z
-            start = data.find("acceleration") + len("acceleration") + 4
-            end = data.find(",", start)
-            x = float(data[start:end])
-
-            start = end + 2
-            end = data.find(",", start)
-            y = float(data[start:end])
-
-            start = end + 2
-            end = data.find(")", start)
-            z = float(data[start:end])
-
-            acceleration = [x, y, z]
-
-            actor_state = {"type": type,
-                          "position": position,
-                          "heading": heading,
-                          "speed": speed,
-                          "angular_velocity": angular_velocity,
-                          "acceleration": acceleration}
-
-            # self.actor_ids.update({id : actor_state})
-
-            self.actor_ids.update({id : VehicleAPF(actor_state, len(self.potential_field), self.field_granularity)})
-
-
-        file.close()
-
-    def read_ego_data(self):
-        file = open("ego_data.txt", "r")
-
-        for data in file:
-            if data[0:2] != "ID": break  # file has finished
-
-            #read id
-            start = data.find("ID") + len("ID") + 3
-            end = data.find("\t")
-            id = data[start:end]
-
-            #read type
-            start = data.find("type") + len("type") + 3
-            end = data.find("\t", start)
-            type = data[start:end]
-
-            #read position x,y,z
-            start = data.find("position") + len("position") + 4
-            end = data.find(",", start)
-            x = float(data[start:end])
-
-            start = end+2
-            end = data.find(",", start)
-            y = float(data[start:end])
-
-            start = end + 2
-            end = data.find(")", start)
-            z = float(data[start:end])
-
-            position = np.array([x, y, z])
-
-            #read heading
-            start = data.find("heading")  + len("heading") + 3
-            end = data.find("\t", start)
-            heading = float(data[start:end])
-
-            #read speed
-            start = data.find("speed") + len("speed") + 3
-            end = data.find("\t", start)
-            speed = float(data[start:end])
-
-            #read angular velocity x,y,z
-            start = data.find("angular_velocity") + len("angular_velocity") + 4
-            end = data.find(",", start)
-            x = float(data[start:end])
-
-            start = end + 2
-            end = data.find(",", start)
-            y = float(data[start:end])
-
-            start = end + 2
-            end = data.find(")", start)
-            z = float(data[start:end])
-
-            angular_velocity = np.array([x, y, z])
-
-            # read acceleration x,y,z
-            start = data.find("acceleration") + len("acceleration") + 4
-            end = data.find(",", start)
-            x = float(data[start:end])
-
-            start = end + 2
-            end = data.find(",", start)
-            y = float(data[start:end])
-
-            start = end + 2
-            end = data.find(")", start)
-            z = float(data[start:end])
-
-            acceleration = np.array([x, y, z])
-
-            state = {"type": type,
-                          "position": position,
-                          "heading": heading,
-                          "speed": speed,
-                          "angular_velocity": angular_velocity,
-                          "acceleration": acceleration}
-
-            self.actor_ids.update({id : VehicleAPF(state, len(self.potential_field), self.field_granularity)})
-
-
-        file.close()
-
-    def lane_data(self, mapObj):
-        print(mapObj)
-
-    def add_APF(self, id):
-        # print("thread#", threading.get_ident())
-        if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
-            for y in range(len(self.potential_field[0])):
-                for x in range(len(self.potential_field[0])):
-                    self.potential_field[x][y] = 255
-
-        elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
-            for y in range(len(self.potential_field[0])):
-                for x in range(len(self.potential_field[0])):
-                    self.potential_field[x][y] = 255
-
-    def generate_APF_multicored(self):
-        self.read_actor_data()
-        processes = []
+    def get_actor_states(self):
         for id in self.actor_ids:
-            processes.append(Process(target=self.add_APF, args=(id,)))
-            processes[-1].start()
+            print(self.actor_ids[id].get_state())
 
-        for process in processes:
-            process.join()
+        return self.actor_ids
 
-    def generate_APF_threaded(self):
-        # print("generating threaded")
-        self.read_actor_data()
-        threads = []
-        for id in self.actor_ids:
-            threads.append(threading.Thread(target = self.add_APF, args = (id,)))
-            threads[-1].start()
-
-        for thread in threads:
-            thread.join()
 
 
     def generate_APF(self):
 
         self.potential_field.fill(0)  # erase potential field to not sum between calls
-        self.read_actor_data()
-        self.read_ego_data()
+        self.update_actor_states()
 
         for id in self.actor_ids:
             # if id == "ego_vehicle" : continue  # ignore ego_vehicle
@@ -305,7 +76,7 @@ class APF:
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(), len(self.potential_field)//2, len(self.potential_field[0])//2)
 
             distance = np.linalg.norm(self.actor_ids[id].get_relative_state()["position"])
-            if distance >= self.field_size/2:
+            if abs(distance) >= self.field_size:
                 continue
 
             if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF

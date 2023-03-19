@@ -1,13 +1,8 @@
 import carla
-import math
 import random
-import keyboard
-import sys
+
 
 import PotentialField as pf
-
-
-
 
 def spectator_follow(view):
     if view == "third person":
@@ -21,9 +16,6 @@ def spectator_follow(view):
         new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(z=10)),
                                         carla.Rotation(pitch=-90, yaw = 0))
         world.get_spectator().set_transform(new_transform)
-        # new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)),
-        #                                 ego_vehicle.get_transform().rotation)
-        # world.get_spectator().set_transform(new_transform)
 
 
 
@@ -37,6 +29,7 @@ if __name__ == '__main__':
     spawn_points = world.get_map().get_spawn_points()
 
     vehicle_bp = bp_lib.find('vehicle.lincoln.mkz_2020')
+    vehicle_bp.set_attribute('role_name', 'ego_vehicle')
     ego_vehicle = world.try_spawn_actor(vehicle_bp, random.choice(spawn_points))
     spectator = world.get_spectator()
     transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)), ego_vehicle.get_transform().rotation)
@@ -48,11 +41,13 @@ if __name__ == '__main__':
     camera_init_trans = carla.Transform(carla.Location(z=2))
     camera = world.spawn_actor(camera_bp, camera_init_trans, attach_to = ego_vehicle)
 
-    # keyboard.on_press_key("z", lambda _: exit_application(world.get_actors()))
+    potential_field = pf.APF()
 
-    # potential_field = pf.APF(ego_vehicle)
+    try:
+        client.get_world()
+        while True:
+            spectator_follow("top")
+            print("heading", round(ego_vehicle.get_transform().rotation.yaw, 4))
 
-    while True:
-        spectator_follow("top")
-        pf.APF.write_ego_data(ego_vehicle)
-        # print(world.get_actors())
+    finally:
+        ego_vehicle.destroy()
