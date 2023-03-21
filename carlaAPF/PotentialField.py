@@ -7,8 +7,9 @@ from VehicleAPF import VehicleAPF
 import cv2
 import matplotlib.pyplot as plt
 
+
 class APF:
-    def __init__(self, field_size = 15, granularity = 0.5):
+    def __init__(self, field_size = 20, granularity = 0.5):
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
@@ -73,7 +74,7 @@ class APF:
             # if id == "ego_vehicle" : continue  # ignore ego_vehicle
 
             #update egocentric actor state to center in APF relative to ego vehicle
-            self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(), len(self.potential_field)//2, len(self.potential_field[0])//2)
+            self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(), len(self.potential_field)//2, len(self.potential_field)//2)
 
             distance = np.linalg.norm(self.actor_ids[id].get_relative_state()["position"])
             if abs(distance) >= self.field_size:
@@ -82,13 +83,20 @@ class APF:
             if type(self.actor_ids[id]) is VehicleAPF:  # might have to change to PotentialField.VehicleAPF
                 for y in range(len(self.potential_field)):
                     for x in range(len(self.potential_field[0])):
-                        self.potential_field[x][y] = min(self.potential_field[x][y]+self.actor_ids[id].static_APF(x,y), 255)
+                        # self.potential_field[x][y] = min(self.potential_field[x][y] + self.actor_ids[id].static_APF(x, y), 255)
+                        #negative indexes to draw right side up
+                        self.potential_field[-x-1][y] = min(self.potential_field[-x-1][y]+self.actor_ids[id].static_APF(x,y), 255)
+                        # negative indexes for double flipped
+                        # self.potential_field[-x - 1][-y - 1] = min(self.potential_field[-x - 1][-y - 1] + self.actor_ids[id].static_APF(x, y), 255)
 
             elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
                 for y in range(len(self.potential_field)):
                     for x in range(len(self.potential_field[0])):
-                        self.potential_field[x][y] = min(self.potential_field[x][y]+self.actor_ids[id].static_APF(x,y), 255)
-
+                        # self.potential_field[x][y] = min(self.potential_field[x][y] + self.actor_ids[id].static_APF(x, y), 255)
+                        # negative indexes to draw right side up
+                        self.potential_field[-x-1][y] = min(self.potential_field[-x-1][y]+self.actor_ids[id].static_APF(x,y), 255)
+                        # negative indexes for double flipped
+                        # self.potential_field[-x - 1][-y-1] = min(self.potential_field[-x - 1][-y-1] + self.actor_ids[id].static_APF(x, y), 255)
 
 
     def save_image_APF(self):
