@@ -104,6 +104,6 @@ from TransformMatrix import rotate2D, stretch2D
 
 from VehicleAPF import VehicleAPF
 class PedestrianAPF(VehicleAPF):
-    def __init__(self, state_data, potential_field_size, potential_field_granularity):
-        super().__init__(state_data, potential_field_size, potential_field_granularity)
+    def __init__(self, potential_field_size, potential_field_granularity):
+        super().__init__(potential_field_size, potential_field_granularity)
         self.safety_radius = 5 / potential_field_granularity

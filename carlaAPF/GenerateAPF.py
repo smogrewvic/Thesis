@@ -12,6 +12,7 @@ if __name__ == '__main__':
     while True:
         # potential_field.set_actor_states(world.get_actors())
         potential_field.generate_APF()
+        potential_field.plot_actor_positions()
         potential_field.save_image_APF()
         potential_field.show_APF()
-        potential_field.plot_actor_positions()
+
