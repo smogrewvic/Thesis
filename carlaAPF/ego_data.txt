@@ -1,1 +1,0 @@
-ID = ego_vehicle	type = vehicle	position = (0.0, 0.0, 0.0)	heading = 0.0	speed = 0.0	angular_velocity = (0.0, 0.0, 0.0)	acceleration = (0.0, 0.0, 0.0)

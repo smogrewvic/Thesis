@@ -1,4 +1,0 @@
-ID = 128	type = vehicle	position = (-112.1101, -9.0021, -0.0045)	heading = -179.383	speed = 0.0	angular_velocity = (0.0, 0.0, 0.0)	acceleration = (0.0, 0.0, 0.0)
-ID = 153	type = pedestrian	position = (-108.1101, -9.0021, -0.0045)	heading = -173.3954	speed = 1.7	angular_velocity = (0.0, 0.0, 0.0)	acceleration = (0.0, 0.0, 0.0)
-ID = 152	type = pedestrian	position = (-110.1101, -7.0021, -0.0045)	heading = 90.0316	speed = 1.7	angular_velocity = (0.0, 0.0, 0.0)	acceleration = (0.0, 0.0, 0.0)
-ID = 168	type = vehicle	position = (-110.1101, -11.0021, -0.0045)	heading = 90.9176	speed = 0.0	angular_velocity = (0.0, 0.0, 0.0)	acceleration = (0.0, 0.0, 0.0)

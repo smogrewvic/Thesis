@@ -5,6 +5,7 @@ from PIL import Image
 from PedestrianAPF import PedestrianAPF
 from VehicleAPF import VehicleAPF
 from LaneAPF import LaneAPF
+from NavpointAPF import NavpointAPF
 import cv2
 import matplotlib.pyplot as plt
 
@@ -22,7 +23,6 @@ class APF:
         self.actor_ids = {}
 
     def update_actor_states(self):
-        # todo: stop creating a new vehicleAPF each call
         carla_actors = self.world.get_actors()
 
         for actor in carla_actors:
@@ -33,17 +33,19 @@ class APF:
             if not vehicle and not pedestrian:
                 continue
 
-            id = "ego_vehicle" if 'role_name' in actor.attributes and actor.attributes[
-                'role_name'] == 'ego_vehicle' else actor.id
+            id = "ego_vehicle" if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle' else actor.id
             # velocity = round(actor.get_velocity().x, 4), round(actor.get_velocity().y, 4), (actor.get_velocity().z, 4)
             speed = round(np.linalg.norm([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]), 4)
             heading = round(actor.get_transform().rotation.yaw, 4)
-            position = round(actor.get_transform().location.x, 4), round(actor.get_transform().location.y, 4), round(
-                actor.get_transform().location.z, 4)
-            acceleration = round(actor.get_acceleration().x, 4), round(actor.get_acceleration().y, 4), round(
-                actor.get_acceleration().z, 4)
-            angular_vel = round(actor.get_angular_velocity().x, 4), round(actor.get_angular_velocity().y, 4), round(
-                actor.get_angular_velocity().z, 4)
+            position = (round(actor.get_transform().location.x, 4),
+                        round(actor.get_transform().location.y, 4),
+                        round(actor.get_transform().location.z, 4))
+            acceleration = (round(actor.get_acceleration().x, 4),
+                            round(actor.get_acceleration().y, 4),
+                            round(actor.get_acceleration().z, 4))
+            angular_vel = (round(actor.get_angular_velocity().x, 4),
+                           round(actor.get_angular_velocity().y, 4),
+                           round(actor.get_angular_velocity().z, 4))
 
             actor_state = {"position": np.array(position),
                            "heading": heading,
@@ -77,9 +79,7 @@ class APF:
 
         speed = 0
         heading = round(lane_center.transform.rotation.yaw, 4)
-        position = (round(lane_center.transform.location.x, 4),
-                    round(lane_center.transform.location.y, 4),
-                    0)
+
         position_left = (round(lane_center.transform.location.x, 4) + np.cos(np.radians(heading)-np.pi/2) * self.standard_lane_width / 2,
                          round(lane_center.transform.location.y, 4) + np.sin(np.radians(heading)-np.pi/2) * self.standard_lane_width / 2,
                          0)
@@ -123,7 +123,7 @@ class APF:
         self.update_lane_states()
 
         for id in self.actor_ids:
-            # if id == "ego_vehicle" : continue  # ignore ego_vehicle
+            # if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
 
             # update egocentric actor state to center in APF relative to ego vehicle
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
@@ -132,20 +132,6 @@ class APF:
             distance = np.linalg.norm(self.actor_ids[id].get_relative_state()["position"])
             if abs(distance) >= self.field_size:
                 continue
-
-            # if type(self.actor_ids[id]) is VehicleAPF:
-            #     for y in range(len(self.potential_field)):
-            #         for x in range(len(self.potential_field[0])):
-            #             # indexed from top left
-            #             self.potential_field[-x - 1][y] = min(
-            #                 self.potential_field[-x - 1][y] + self.actor_ids[id].static_APF(x, y), 255)
-            #
-            # elif type(self.actor_ids[id]) is PedestrianAPF:  # might have to change to PotentialField.VehicleAPF
-            #     for y in range(len(self.potential_field)):
-            #         for x in range(len(self.potential_field[0])):
-            #             # indexed from top left
-            #             self.potential_field[-x - 1][y] = min(
-            #                 self.potential_field[-x - 1][y] + self.actor_ids[id].static_APF(x, y), 255)
 
             for y in range(len(self.potential_field)):
                 for x in range(len(self.potential_field[0])):
@@ -172,10 +158,16 @@ class APF:
         y_actors = []
         x_ego = [1]
         y_ego = [1]
+        x_navpoints = []
+        y_navpoints = []
+
         for id in self.actor_ids:
             if id == "ego_vehicle":
                 x_ego[0] = self.actor_ids[id].get_state()["position"][0]
                 y_ego[0] = self.actor_ids[id].get_state()["position"][1]
+            elif type(self.actor_ids[id]) is NavpointAPF:
+                x_navpoints.append(self.actor_ids[id].get_state()["position"][0])
+                y_navpoints.append(self.actor_ids[id].get_state()["position"][2])
             else:
                 x_actors.append(self.actor_ids[id].get_state()["position"][0])
                 y_actors.append(self.actor_ids[id].get_state()["position"][1])
@@ -183,7 +175,28 @@ class APF:
         plt.cla()
         plt.scatter(x_actors, y_actors, c="blue")
         plt.scatter(x_ego, y_ego, c="red")
+        plt.scatter(x_navpoints, y_navpoints, c="green")
         plt.xlim(-150, 150)
         plt.ylim(-150, 150)
         plt.draw()
         plt.pause(0.01)
+
+    def set_navpoints(self, navpoint_transforms):
+
+        for i, navpoint_transform in enumerate(navpoint_transforms):
+
+            id = "navpoint_" + str(i)
+            speed = 0
+            heading = round(navpoint_transform.rotation.yaw, 4)
+            position = (round(navpoint_transform.location.x, 4), round(navpoint_transform.location.y, 4), 0)
+            acceleration = (0, 0, 0)
+            angular_vel = (0, 0, 0)
+
+            navpoint_state = {"position": np.array(position),
+                               "heading": heading,
+                               "speed": speed,
+                               "angular_velocity": np.array(angular_vel),
+                               "acceleration": np.array(acceleration)}
+
+            self.actor_ids.update({id: NavpointAPF(len(self.potential_field), self.field_granularity)})
+            self.actor_ids[id].set_state(navpoint_state)

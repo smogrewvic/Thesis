@@ -13,7 +13,6 @@ class VehicleAPF:
                                "angular_velocity": np.zeros(3),
                                "acceleration": np.zeros(3)}
 
-
         self.relative_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
                                "angular_velocity": np.zeros(3),
                                "acceleration": np.zeros(3)}
