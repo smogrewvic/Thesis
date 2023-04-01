@@ -123,7 +123,7 @@ class APF:
         self.update_lane_states()
 
         for id in self.actor_ids:
-            # if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
+            if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
 
             # update egocentric actor state to center in APF relative to ego vehicle
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
@@ -200,3 +200,9 @@ class APF:
 
             self.actor_ids.update({id: NavpointAPF(len(self.potential_field), self.field_granularity)})
             self.actor_ids[id].set_state(navpoint_state)
+
+
+    def get_potential_field(self):
+        return self.potential_field
+    def get_granularity(self):
+        return self.field_granularity

@@ -2,6 +2,7 @@ import PotentialField as pf
 import carla
 import random
 from agents.navigation.global_route_planner import GlobalRoutePlanner
+from SteeringController import SteeringController
 
 if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
@@ -21,16 +22,19 @@ if __name__ == '__main__':
     destination = random.choice(world.get_map().get_spawn_points()).location
 
     for waypoint in high_level_route.trace_route(origin, destination):
-        # navpoint_transforms.append((waypoint[0].transform.location.x, waypoint[0].transform.location.y, waypoint[0].transform.location.z))
         navpoint_transforms.append(waypoint[0].transform)
 
 
-    potential_field.set_navpoints(navpoint_transforms)
-
+    # potential_field.set_navpoints(navpoint_transforms)
+    steering_control = SteeringController(potential_field.get_potential_field(), potential_field.get_granularity())
+    # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.5))
+    print("generate ego", ego_vehicle)
     while True:
-        # potential_field.set_actor_states(world.get_actors())
+        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.2, steer = steering_control.get_steering(ego_vehicle)))
         potential_field.generate_APF()
-        potential_field.plot_actor_positions()
+        # potential_field.plot_actor_positions()
         potential_field.save_image_APF()
         potential_field.show_APF()
+
+
 
