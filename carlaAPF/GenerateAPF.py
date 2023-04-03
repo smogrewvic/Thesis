@@ -3,6 +3,7 @@ import carla
 import random
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from SteeringController import SteeringController
+from ThrottleController import ThrottleController
 
 if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
@@ -26,14 +27,22 @@ if __name__ == '__main__':
 
 
     # potential_field.set_navpoints(navpoint_transforms)
-    steering_control = SteeringController(potential_field.get_potential_field(), potential_field.get_granularity())
-    # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.5))
-    print("generate ego", ego_vehicle)
+    steering_control = SteeringController(potential_field.get_potential_field(), potential_field.get_granularity(), ego_vehicle)
+    throttle_control = ThrottleController(potential_field.get_potential_field(), potential_field.get_granularity())
+
     while True:
-        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.2, steer = steering_control.get_steering(ego_vehicle)))
+
+        apf_search_data = steering_control.search_lowest_potential()
+        steering_input = apf_search_data["normalized_angle"]
+        throttle_input = throttle_control.get_throttle(apf_search_data["absolute_position"])
+
+        ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_input, steer = steering_input))
+        # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.3, steer = steering_control.get_steering(ego_vehicle)))
+
         potential_field.generate_APF()
         # potential_field.plot_actor_positions()
-        potential_field.save_image_APF()
+        # potential_field.save_image_APF()
+        steering_control.draw_steering_apf()
         potential_field.show_APF()
 
 

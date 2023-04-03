@@ -19,6 +19,12 @@ def spectator_follow(view):
 
         world.get_spectator().set_transform(new_transform)
 
+    if view == "right side":
+
+        new_transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-3, y = 3, z=0.5)),
+                                        ego_vehicle.get_transform().rotation,)
+        world.get_spectator().set_transform(new_transform)
+
 
 
 if __name__ == '__main__':
@@ -44,7 +50,6 @@ if __name__ == '__main__':
     camera = world.spawn_actor(camera_bp, camera_init_trans, attach_to = ego_vehicle)
 
     potential_field = pf.APF()
-    # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.2))
     print("main ego", ego_vehicle)
     try:
         client.get_world()
