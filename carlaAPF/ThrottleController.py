@@ -42,9 +42,9 @@ class ThrottleController:
 
         # normalize throttle from -1 to 1 y=(x-a)/(b-a)*(d-c)+c
         throttle = min(throttle, 255)  # clip values at after 255
-        low = 0.3
+        low = 0.6  # inversed low high because math
         high = -1
         normalized_throttle = ((throttle + 0) / 255 * (high - low) + low)  #
 
-        print(normalized_throttle)
+        print("throttle", normalized_throttle)
         return normalized_throttle
