@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=10, granularity=0.11):
+    def __init__(self, field_size=21, granularity=0.50):
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
@@ -33,7 +33,6 @@ class APF:
 
     def update_actor_states(self):
         carla_actors = self.world.get_actors()
-
         for actor in carla_actors:
 
             vehicle = True if actor.type_id.find("vehicle") >= 0 else False
@@ -139,7 +138,7 @@ class APF:
                                                        len(self.potential_field) // 2, len(self.potential_field) // 2)
 
             distance = np.linalg.norm(self.actor_ids[id].get_relative_state()["position"])
-            if abs(distance) >= self.field_size:
+            if abs(distance) >= self.field_size: #skip actors out of field
                 continue
 
             for y in range(len(self.potential_field)):

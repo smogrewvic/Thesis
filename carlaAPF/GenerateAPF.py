@@ -35,13 +35,16 @@ if __name__ == '__main__':
         # apf_search_data = potential_field.search_box_lowest_potential()
         apf_search_data = potential_field.search_radius_lowest_potential(radius =1.8)
         steering_input = apf_search_data["normalized_angle"]
-        throttle_input = throttle_control.get_throttle(apf_search_data["absolute_position"])
+        print("position", apf_search_data["absolute_position"])
+        throttle_input = throttle_control.get_throttle2(apf_search_data["absolute_position"]) # old
+        # throttle_input = throttle_control.get_throttle(apf_search_data, 3)
 
         ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_input, steer=steering_input))
 
         potential_field.generate_APF()
         # potential_field.plot_actor_positions()
         potential_field.draw_lowest_point()
+        # throttle_control.draw_throttle_point()
         # potential_field.draw_debug()
         potential_field.show_APF()
 

@@ -1,9 +1,9 @@
 import numpy as np
-from VehicleAPF import VehicleAPF
+from APF_Object import APF_Object
 
 
 
-class NavpointAPF(VehicleAPF):
+class NavpointAPF(APF_Object):
     def __init__(self, potential_field_size, potential_field_granularity):
         super().__init__( potential_field_size, potential_field_granularity)
         self.safety_radius = 1 / potential_field_granularity
