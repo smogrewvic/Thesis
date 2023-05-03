@@ -14,13 +14,14 @@ class VehicleAPF(APF_Object):
     def static_APF(self, x, y):
         # todo: remember to update relative state before calling
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
-        velocity = self.scaled_egocentric_state["speed"]
+        # velocity = self.scaled_egocentric_state["speed"]
+        velocity = self.relative_state["speed"]
 
         term1 = (((x - i - 0.25 * velocity) / (self.length + velocity)) ** 4 + ((y - j) / (self.width + 0.05 * velocity)) ** 6)
         term2 = (self.safety_radius + term1) / (self.safety_radius*0.01)
         discrete_apf = (abs(self.safety_radius - term1) + (self.safety_radius - term1)) / term2
         gain = 5000
-        print(gain*discrete_apf)
+        # print(gain*discrete_apf)
         return min(gain * discrete_apf, 255)
 
 

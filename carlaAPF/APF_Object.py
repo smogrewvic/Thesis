@@ -9,28 +9,48 @@ class APF_Object:
         self.safety_radius = 2/potential_field_granularity
         self.data_log = collections.deque(maxlen=100)
 
-        self.state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
-                               "angular_velocity": np.zeros(3),
-                               "acceleration": np.zeros(3)}
+        self.state = {"type": "",
+                      "position": np.zeros(3),
+                      "heading": 0,
+                      "speed": 0,
+                      "angular_velocity": np.zeros(3),
+                      "acceleration": np.zeros(3),
+                      "velocity": np.zeros(3)
+                      }
 
-        self.relative_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
+        self.relative_state = {"type": "",
+                               "position": np.zeros(3),
+                               "heading": 0,
+                               "speed": 0,
                                "angular_velocity": np.zeros(3),
-                               "acceleration": np.zeros(3)}
+                               "acceleration": np.zeros(3),
+                               "velocity": np.zeros(3)}
 
-        self.egocentric_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
+        self.egocentric_state = {"type": "",
+                               "position": np.zeros(3),
+                               "heading": 0,
+                               "speed": 0,
                                "angular_velocity": np.zeros(3),
-                               "acceleration": np.zeros(3)}
+                               "acceleration": np.zeros(3),
+                               "velocity": np.zeros(3)}
 
-        self.scaled_egocentric_state = {"type": "", "position": np.zeros(3), "heading": 0, "speed": 0,
+        self.scaled_egocentric_state = {"type": "",
+                               "position": np.zeros(3),
+                               "heading": 0,
+                               "speed": 0,
                                "angular_velocity": np.zeros(3),
-                               "acceleration": np.zeros(3)}
+                               "acceleration": np.zeros(3),
+                               "velocity": np.zeros(3)}
     def calculate_relative_state(self, ego_vehicle_state):
 
         for key in self.state:
-            if key == "type":
+            print(key)
+            if key == "type" or key == "speed":
                 continue
             else:
                 self.relative_state[key] = self.state[key] - ego_vehicle_state[key]
+
+        self.relative_state["speed"] = np.linalg.norm(self.state["velocity"]-ego_vehicle_state["velocity"])
 
     def get_state(self):
         return self.state
@@ -46,7 +66,8 @@ class APF_Object:
                 "heading": absolute_state["heading"], # todo: maybe 90 degs or 0 degs?
                 "speed": absolute_state["speed"],
                 "angular_velocity": absolute_state["angular_velocity"],
-                "acceleration": absolute_state["acceleration"]}
+                "acceleration": absolute_state["acceleration"],
+                "velocity": absolute_state["velocity"]}
 
     def update_alternate_states(self, ego_vehicle_state, center_x, center_y):
 
@@ -61,8 +82,8 @@ class APF_Object:
                                  "speed": self.relative_state["speed"] + ego_centered_state["speed"],
                                  "angular_velocity": self.relative_state["angular_velocity"] + ego_centered_state[
                                      "angular_velocity"],
-                                 "acceleration": self.relative_state["acceleration"] + ego_centered_state[
-                                     "acceleration"]}
+                                 "acceleration": self.relative_state["acceleration"] + ego_centered_state["acceleration"],
+                                 "velocity":self.relative_state["velocity"] + ego_centered_state["velocity"]}
 
 
         self.scaled_egocentric_state = {"type": "",
@@ -71,7 +92,8 @@ class APF_Object:
                                         "heading": self.egocentric_state["heading"],  # todo: maybe 90 degs or 0 deg
                                         "speed": self.egocentric_state["speed"],
                                         "angular_velocity": self.egocentric_state["angular_velocity"],
-                                        "acceleration": self.egocentric_state["acceleration"]}
+                                        "acceleration": self.egocentric_state["acceleration"],
+                                        "velocity":self.egocentric_state["velocity"]}
 
 
         return self.scaled_egocentric_state, self.egocentric_state, self.relative_state
@@ -80,7 +102,7 @@ class APF_Object:
         return self.egocentric_state
 
 
-    def set_relative_state(self, position = None, heading = None, speed = None, angular_vel = None, accel = None):
+    def set_relative_state(self, position = None, heading = None, speed = None, angular_vel = None, accel = None, vel = None):
 
         if position != None and len(position) == 3:
             self.relative_state["position"] = position
@@ -92,6 +114,8 @@ class APF_Object:
             self.relative_state["angular_velocity"] = angular_vel
         if accel != None and len(accel) == 3:
             self.relative_state["acceleration"] = accel
+        if vel != None and len(vel) == 3:
+            self.relative_state["velocity"] = vel
 
     def static_APF(self, x, y):
 

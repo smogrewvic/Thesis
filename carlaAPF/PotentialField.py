@@ -55,12 +55,16 @@ class APF:
                            round(actor.get_angular_velocity().y, 4),
                            round(actor.get_angular_velocity().z, 4))
 
+            velocity = (round(actor.get_velocity().x, 4),
+                        round(actor.get_velocity().y, 4),
+                        round(actor.get_velocity().z, 4))
+
             actor_state = {"position": np.array(position),
                            "heading": heading,
                            "speed": speed,
-                           # "velocity": np.array(velocity),
                            "angular_velocity": np.array(angular_vel),
-                           "acceleration": np.array(acceleration)}
+                           "acceleration": np.array(acceleration),
+                           "velocity": np.array(velocity)}
 
             if id not in self.actor_ids:  # create apf object
                 if vehicle:
@@ -96,18 +100,21 @@ class APF:
                           0)
         acceleration = (0, 0, 0)
         angular_vel = (0, 0, 0)
+        velocity = (0,0,0)
 
         left_lane_state = {"position": np.array(position_left),
                            "heading": heading,
                            "speed": speed,
                            "angular_velocity": np.array(angular_vel),
-                           "acceleration": np.array(acceleration)}
+                           "acceleration": np.array(acceleration),
+                           "velocity":velocity}
 
         right_lane_state = {"position": np.array(position_right),
                             "heading": heading,
                             "speed": speed,
                             "angular_velocity": np.array(angular_vel),
-                            "acceleration": np.array(acceleration)}
+                            "acceleration": np.array(acceleration),
+                            "velocity":velocity}
 
         if "left_lane" not in self.actor_ids:
             self.actor_ids.update({"left_lane": LaneAPF(len(self.potential_field), self.field_granularity)})
@@ -199,12 +206,14 @@ class APF:
             position = (round(navpoint_transform.location.x, 4), round(navpoint_transform.location.y, 4), 0)
             acceleration = (0, 0, 0)
             angular_vel = (0, 0, 0)
+            velocity = (0, 0, 0)
 
             navpoint_state = {"position": np.array(position),
                                "heading": heading,
                                "speed": speed,
                                "angular_velocity": np.array(angular_vel),
-                               "acceleration": np.array(acceleration)}
+                               "acceleration": np.array(acceleration),
+                               "velocity":np.array(velocity)}
 
             self.actor_ids.update({id: NavpointAPF(len(self.potential_field), self.field_granularity)})
             self.actor_ids[id].set_state(navpoint_state)
