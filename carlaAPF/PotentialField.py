@@ -131,7 +131,7 @@ class APF:
         self.update_lane_states()
 
         for id in self.actor_ids:
-            if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
+            # if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
 
             # update egocentric actor state to center in APF relative to ego vehicle
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
@@ -146,7 +146,7 @@ class APF:
                     # indexed from top left
                     self.potential_field[-x - 1][y] = min(
                         self.potential_field[-x - 1][y] + self.actor_ids[id].static_APF(x, y), 255)
-
+            print("\n\n__________________________________\n\n")
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
@@ -304,7 +304,7 @@ class APF:
                     self.lowest_potential["relative_position"] = [-x, y2]  # indexed from top left of 2d apf
                     self.lowest_potential["absolute_position"] = [x + ego_x, y2 + ego_y]
 
-        print("LOWEST VALUE", self.lowest_potential["value"])
+
         vector1 = [0, 1]
         vector2 = self.lowest_potential["relative_position"]
         self.lowest_potential["angle"] = np.degrees(np.pi / 2 - np.arccos(np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))))
@@ -328,11 +328,8 @@ class APF:
         apf_image.save("APF_Image.bmp")
 
 
-    def draw_debug(self):
+    def draw_APF(self):
         grayscale = np.array(self.potential_field, dtype=np.uint8)
-
-        for x,y in self.debug_radius:
-            grayscale[x][y] = 255
 
         apf_image = Image.fromarray(grayscale, mode="L")
         apf_image.save("APF_Image.bmp")

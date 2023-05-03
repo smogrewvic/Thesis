@@ -46,7 +46,6 @@ class ThrottleController:
         high = -1
         normalized_throttle = ((throttle + 0) / 255 * (high - low) + low)  #
 
-        print("throttle", normalized_throttle)
         return normalized_throttle
 
     def get_throttle(self, apf_minima, look_ahead_dist):
@@ -64,7 +63,6 @@ class ThrottleController:
         high = -1
         normalized_throttle = ((throttle + 0) / 255 * (high - low) + low)  #
 
-        print("throttle", normalized_throttle)
         return normalized_throttle
 
     def draw_throttle_point(self):
