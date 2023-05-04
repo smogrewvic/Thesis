@@ -19,3 +19,6 @@ class NavpointAPF(APF_Object):
     #
     #     # max(+100*(abs(num)+num)/denom, -255)
     #     return max(+100*(abs(num)+num)/denom, -255)
+
+    def dynamic_APF(self, x, y):
+        return 255

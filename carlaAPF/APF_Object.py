@@ -44,7 +44,6 @@ class APF_Object:
     def calculate_relative_state(self, ego_vehicle_state):
 
         for key in self.state:
-            print(key)
             if key == "type" or key == "speed":
                 continue
             else:
@@ -128,5 +127,5 @@ class APF_Object:
         return min(-100*(abs(num)+num)/denom, 255)
 
 
-    def dynamic_APF(self):
-        pass
+    def dynamic_APF(self, x, y):
+        return self.static_APF(x, y)

@@ -152,8 +152,7 @@ class APF:
                 for x in range(len(self.potential_field[0])):
                     # indexed from top left
                     self.potential_field[-x - 1][y] = min(
-                        self.potential_field[-x - 1][y] + self.actor_ids[id].static_APF(x, y), 255)
-            print("\n\n__________________________________\n\n")
+                        self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
