@@ -43,7 +43,7 @@ if __name__ == '__main__':
     transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)), ego_vehicle.get_transform().rotation)
     spectator.set_transform(transform)
 
-    ego_vehicle.set_autopilot(True)
+    # ego_vehicle.set_autopilot(True)
 
     camera_bp = bp_lib.find('sensor.camera.rgb')
     camera_init_trans = carla.Transform(carla.Location(z=2))

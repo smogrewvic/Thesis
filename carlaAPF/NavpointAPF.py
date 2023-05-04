@@ -6,7 +6,7 @@ from APF_Object import APF_Object
 class NavpointAPF(APF_Object):
     def __init__(self, potential_field_size, potential_field_granularity):
         super().__init__( potential_field_size, potential_field_granularity)
-        self.safety_radius = 1 / potential_field_granularity
+        self.safety_radius = 10 / potential_field_granularity
 
     #
     # def static_APF(self, x, y):
@@ -20,5 +20,5 @@ class NavpointAPF(APF_Object):
     #     # max(+100*(abs(num)+num)/denom, -255)
     #     return max(+100*(abs(num)+num)/denom, -255)
 
-    def dynamic_APF(self, x, y):
-        return 255
+    # def dynamic_APF(self, x, y):
+    #     return 0

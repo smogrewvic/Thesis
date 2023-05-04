@@ -17,6 +17,7 @@ if __name__ == '__main__':
         if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
             ego_vehicle = actor
 
+    print("ego_vehicle value", ego_vehicle.get_location())
     #find current ego_vehicle location and find random point to navigate to
     navpoint_transforms = []
     origin = ego_vehicle.get_location()
@@ -25,8 +26,8 @@ if __name__ == '__main__':
     for waypoint in high_level_route.trace_route(origin, destination):
         navpoint_transforms.append(waypoint[0].transform)
 
-
-    # potential_field.set_navpoints(navpoint_transforms)
+    print("navpoint[0]", navpoint_transforms[0])
+    potential_field.set_navpoints(navpoint_transforms)
 
 
     while True:
@@ -34,9 +35,10 @@ if __name__ == '__main__':
 
 
         potential_field.generate_APF()
-        # potential_field.plot_actor_positions()
+        potential_field.plot_actor_positions()
 
-        potential_field.draw_APF()
+        # potential_field.draw_APF()
+        potential_field.save_image_APF()
         potential_field.show_APF()
 
 
