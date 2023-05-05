@@ -29,7 +29,7 @@ class Quintic_Lane_APF():
 
         # perform quartic regression on 5 points
         start = max(0,closest_index - 1)
-        end = min(closest_index + 10, len(self.navpoints))
+        end = min(closest_index + 8, len(self.navpoints))
 
         # if start < 1:
         #     start = 0
@@ -66,11 +66,12 @@ class Quintic_Lane_APF():
         # todo: remember to call update_lane() when drawing the apf
 
         fx = self.coeffs[0] * x**4 + self.coeffs[1] * x**3 + self.coeffs[2] * x**2 + self.coeffs[3] * x + self.coeffs[4]
-        # fx = self.coeffs[0] * x ** 2 + self.coeffs[1] * x + self.coeffs[2]
+        dfx = 4*self.coeffs[0] * x**3 + 3*self.coeffs[1] * x**2 + 2*self.coeffs[2] * x + self.coeffs[3]
 
-        # dfx = 4*self.coeffs[0] * x**3 + 3*self.coeffs[1] * x**2 + 2*self.coeffs[2] * x + self.coeffs[3]
-        fxy = ((y + -fx)**2)/1
-        # fxy = (y**2)/1
+        slope_center = (self.potential_field_size/self.potential_field_granularity)/2
+        slope = -2*x+100 #- y*np.sin(np.arctan(dfx)) # -x-slope_center is a flat slope
+        fxy = ((y -fx)**2)/1 + slope
+
 
 
         return fxy

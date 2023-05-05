@@ -2,8 +2,8 @@ import PotentialField as pf
 import carla
 import random
 from agents.navigation.global_route_planner import GlobalRoutePlanner
-from SteeringController import SteeringController
-from ThrottleController import ThrottleController
+from GradientDescentPathPlanner import Gradient_path_planner
+
 
 if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print("navpoint[0]", navpoint_transforms[0])
     potential_field.set_navpoints(navpoint_transforms)
 
-
+    # path_planner = Gradient_path_planner()
     while True:
 
 
@@ -42,6 +42,7 @@ if __name__ == '__main__':
         # potential_field.draw_APF()
         potential_field.save_image_APF()
         potential_field.show_APF()
+
 
 
 
