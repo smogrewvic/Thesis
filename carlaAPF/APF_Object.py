@@ -100,7 +100,8 @@ class APF_Object:
     def get_egocentric_state(self):
         return self.egocentric_state
 
-
+    def get_scaled_egocentric_state(self):
+        return self.scaled_egocentric_state
     def set_relative_state(self, position = None, heading = None, speed = None, angular_vel = None, accel = None, vel = None):
 
         if position != None and len(position) == 3:

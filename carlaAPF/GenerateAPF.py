@@ -9,7 +9,7 @@ if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF()
-    high_level_route = GlobalRoutePlanner(world.get_map(), 10)
+    high_level_route = GlobalRoutePlanner(world.get_map(), 5)
     ego_vehicle = None
 
     #find ego_actor spawn point
@@ -21,7 +21,9 @@ if __name__ == '__main__':
     #find current ego_vehicle location and find random point to navigate to
     navpoint_transforms = []
     origin = ego_vehicle.get_location()
-    destination = random.choice(world.get_map().get_spawn_points()).location
+    print("origin", origin)
+    # destination = random.choice(world.get_map().get_spawn_points()).location
+    destination = carla.Location(x=105.868706, y=72.938820, z=0.000000)
 
     for waypoint in high_level_route.trace_route(origin, destination):
         navpoint_transforms.append(waypoint[0].transform)

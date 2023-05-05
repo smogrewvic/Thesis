@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=21, granularity=0.50):
+    def __init__(self, field_size=100, granularity=1):
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
@@ -156,6 +156,7 @@ class APF:
                     self.potential_field[-x - 1][y] = min(
                         self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
 
+        self.set_lane_APF()
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
@@ -193,7 +194,7 @@ class APF:
         plt.scatter(x_actors, y_actors, c="blue")
         plt.scatter(x_ego, y_ego, c="red")
         plt.scatter(x_navpoints, y_navpoints, c="green")
-        plt.xlim(-150, 150)
+        plt.xlim(150, -150)
         plt.ylim(-150, 150)
         plt.draw()
         plt.pause(0.01)
@@ -225,14 +226,14 @@ class APF:
     def set_lane_APF(self):
         #get all navpoint actors and send to laneAPF
         # todo: check that navpoints are stored in actor_ids in order
-        lane = Quintic_Lane_APF()
+        lane = Quintic_Lane_APF(self.field_size, self.field_granularity)
         lane.set_navpoints(self.navpoint_actors)
-
+        lane.update_lane()
         for y in range(len(self.potential_field)):
             for x in range(len(self.potential_field[0])):
-                # indexed from top left
+                ## indexed from top left
                 self.potential_field[-x - 1][y] = min(
-                    self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
+                    self.potential_field[-x - 1][y] + lane.static_APF(x, y), 255)
 
     def get_potential_field(self):
         return self.potential_field

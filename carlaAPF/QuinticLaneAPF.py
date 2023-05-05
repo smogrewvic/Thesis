@@ -1,15 +1,14 @@
 import numpy as np
-import collections
-from TransformMatrix import rotate2D, stretch2D
-from APF_Object import APF_Object
+import warnings
 
 
 class Quintic_Lane_APF():
-    # def __init__(self, potential_field_size, potential_field_granularity):
-    #     super().__init__(potential_field_size, potential_field_granularity)
-    #     self.navpoints = []
-    def __init__(self):
+
+    def __init__(self, potential_field_size, potential_field_granularity):
+        self.potential_field_size = potential_field_size
+        self.potential_field_granularity = potential_field_granularity
         self.navpoints = []
+        self.coeffs = []
     def set_navpoints(self, navpoints):
         self.navpoints = navpoints
 
@@ -25,23 +24,53 @@ class Quintic_Lane_APF():
                 closest_index = i
 
         return closest_index
-    def quartic_regression_coefficients(self):
+    def regression_coefficients(self):
         closest_index = self.closest_navpoint_index()
 
         # perform quartic regression on 5 points
-        start = closest_index - 1
-        end = closest_index + 4
+        start = max(0,closest_index - 1)
+        end = min(closest_index + 10, len(self.navpoints))
 
-        if closest_index - 1 < 1:
-            start = 0
-        if closest_index + 4 > len(self.navpoints):
-            end = len(self.navpoints)
-    def dynamic_APF(self, x, y):
+        # if start < 1:
+        #     start = 0
+        # if end > len(self.navpoints):
+        #     end = len(self.navpoints)
 
-        coeffs = self.quartic_regression_coefficients()
-        fy = coeffs[0] * y ^ 4 + coeffs[1] * y ^ 3 + coeffs[2] * y ^ 2 + coeffs[3] * y + coeffs[4]
-        dfy = 4*coeffs[0] * y ^ 3 + 3*coeffs[1] * y ^ 2 + 2*coeffs[2] * y + coeffs[3]
+        local_navpoints_x = []
+        local_navpoints_y = []
+        for i in range(start, end+1):
+            local_navpoints_x.append(self.navpoints[i].get_relative_state()["position"][0])
+            local_navpoints_y.append(self.navpoints[i].get_relative_state()["position"][1])
+        print("start:end", start, end, "closest_index", closest_index)
+        print("local_x", local_navpoints_x)
+        print("local_y", local_navpoints_y)
+        print("\n ________ \n")
 
-        fxy = ((fy + x)^2)/10
+        coeffs = []
+        coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, 4)
+        # with warnings.catch_warnings():
+        #     warnings.filterwarnings('error')
+        #     try:
+        #         coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, 4)
+        #     except np.RankWarning:
+        #         print("caught warning")
+        #         coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, 4)
+
+        return coeffs
+
+    def update_lane(self):
+        self.coeffs = self.regression_coefficients()
+    def static_APF(self, x, y):
+        x = x-(self.potential_field_size/self.potential_field_granularity)/2  # move to center of APF (using relative_state())
+        y = y-(self.potential_field_size/self.potential_field_granularity)/2
+        # todo: remember to call update_lane() when drawing the apf
+
+        fx = self.coeffs[0] * x**4 + self.coeffs[1] * x**3 + self.coeffs[2] * x**2 + self.coeffs[3] * x + self.coeffs[4]
+        # fx = self.coeffs[0] * x ** 2 + self.coeffs[1] * x + self.coeffs[2]
+
+        # dfx = 4*self.coeffs[0] * x**3 + 3*self.coeffs[1] * x**2 + 2*self.coeffs[2] * x + self.coeffs[3]
+        fxy = ((y + -fx)**2)/1
+        # fxy = (y**2)/1
+
 
         return fxy
