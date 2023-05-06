@@ -41,10 +41,10 @@ class Quintic_Lane_APF():
         for i in range(start, end+1):
             local_navpoints_x.append(self.navpoints[i].get_relative_state()["position"][0])
             local_navpoints_y.append(self.navpoints[i].get_relative_state()["position"][1])
-        print("start:end", start, end, "closest_index", closest_index)
-        print("local_x", local_navpoints_x)
-        print("local_y", local_navpoints_y)
-        print("\n ________ \n")
+        # print("start:end", start, end, "closest_index", closest_index)
+        # print("local_x", local_navpoints_x)
+        # print("local_y", local_navpoints_y)
+        # print("\n ________ \n")
 
         coeffs = []
         coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, 4)

@@ -1,3 +1,6 @@
+import numpy as np
+from PIL import Image
+import cv2
 
 
 class Gradient_path_planner:
@@ -7,21 +10,39 @@ class Gradient_path_planner:
 
     def holonomic_gradient_descent(self):
 
-        self.gradient_path = [] #reset path
-        i, j = self.potential_field / 2, self.potential_field / 2
-        self.gradient_path = [[i,j]]  # reset path starting at ego_vehicle
+        self.gradient_path = []  # reset path
+        i, j = len(self.potential_field[0])//2, len(self.potential_field)//2
+        self.gradient_path = [[i, j]]  # reset path starting at ego_vehicle
 
-        directions = [[0,1], [1,1], [1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]]
-        while i in range(0, len(self.potential_field)) and j in range(0, len(self.potential_field)):
+        directions = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
+        while i in range(0, len(self.potential_field[0])) and j in range(0, len(self.potential_field)):
             lowest_potential = self.potential_field[i][j]
 
-            for dr,dc in directions:
-                if lowest_potential > self.potential_field[i+dr][j+dc]:
-                    i, j = i+dr, j+dc
-            self.gradient_path.append([i,j])
-            if self.gradientpath[-1] == self.gradientpath[-2]:
-                break #minima found
+            for dr, dc in directions:
+                print("i",i+dr, "j", j+dc, "potential:", self.potential_field[i + dr][j + dc])
+                if lowest_potential > self.potential_field[i + dr][j + dc]:
+                    i, j = i + dr, j + dc
+            self.gradient_path.append([i, j])
+            if self.gradient_path[-1] == self.gradient_path[-2]:
+                print("break")
+                break  # minima found
 
-
+        print("\n\ngradient path", self.gradient_path, "\n\n")
         return self.gradient_path
 
+    def save_image_APF(self):
+
+        grayscale = np.array(self.potential_field, dtype=np.uint8)
+        for i in range(len(self.gradient_path)):
+            px_x, px_y = self.gradient_path[i]
+            grayscale[px_x][px_y] = 255
+
+        apf_image = Image.fromarray(grayscale, mode="L")
+        apf_image.save("APF_Image.bmp")
+
+    def show_APF(self):
+        img = cv2.imread("APF_Image.bmp")
+        resized = cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA)
+        normalized = cv2.normalize(resized, None, 0, 255, cv2.NORM_MINMAX)
+        cv2.imshow("image", normalized)
+        cv2.waitKey(1)

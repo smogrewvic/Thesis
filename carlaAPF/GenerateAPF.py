@@ -31,7 +31,8 @@ if __name__ == '__main__':
     print("navpoint[0]", navpoint_transforms[0])
     potential_field.set_navpoints(navpoint_transforms)
 
-    # path_planner = Gradient_path_planner()
+    path_planner = Gradient_path_planner(potential_field.get_potential_field())
+
     while True:
 
 
@@ -40,8 +41,12 @@ if __name__ == '__main__':
         potential_field.plot_actor_positions()
 
         # potential_field.draw_APF()
-        potential_field.save_image_APF()
-        potential_field.show_APF()
+        # potential_field.save_image_APF()
+        # potential_field.show_APF()
+
+        path_planner.holonomic_gradient_descent()
+        path_planner.save_image_APF()
+        path_planner.show_APF()
 
 
 
