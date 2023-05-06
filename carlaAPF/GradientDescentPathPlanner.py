@@ -16,18 +16,20 @@ class Gradient_path_planner:
 
         directions = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
         while i in range(0, len(self.potential_field[0])) and j in range(0, len(self.potential_field)):
-            lowest_potential = self.potential_field[i][j]
+            temp_i, temp_j = i, j
 
             for dr, dc in directions:
-                print("i",i+dr, "j", j+dc, "potential:", self.potential_field[i + dr][j + dc])
-                if lowest_potential > self.potential_field[i + dr][j + dc]:
-                    i, j = i + dr, j + dc
+                if self.potential_field[i][j] > self.potential_field[i + dr][j + dc]:
+                    temp_i, temp_j = i + dr, j + dc
+
+            i, j = temp_i, temp_j
             self.gradient_path.append([i, j])
+            
             if self.gradient_path[-1] == self.gradient_path[-2]:
                 print("break")
                 break  # minima found
 
-        print("\n\ngradient path", self.gradient_path, "\n\n")
+        # print("\n\ngradient path", self.gradient_path, "\n\n")
         return self.gradient_path
 
     def save_image_APF(self):
