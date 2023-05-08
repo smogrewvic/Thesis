@@ -24,9 +24,8 @@ class Gradient_path_planner:
 
             i, j = temp_i, temp_j
             self.gradient_path.append([i, j])
-            
+
             if self.gradient_path[-1] == self.gradient_path[-2]:
-                print("break")
                 break  # minima found
 
         # print("\n\ngradient path", self.gradient_path, "\n\n")
