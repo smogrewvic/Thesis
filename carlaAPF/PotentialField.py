@@ -160,6 +160,43 @@ class APF:
                         self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
 
         self.set_lane_APF()
+
+    def set_navpoints(self, navpoint_transforms):
+        for i, navpoint_transform in enumerate(navpoint_transforms):
+
+            id = "navpoint_" + str(i)
+            speed = 0
+            heading = round(navpoint_transform.rotation.yaw, 4)
+            position = (round(navpoint_transform.location.x, 4), round(navpoint_transform.location.y, 4), 0)
+            acceleration = (0, 0, 0)
+            angular_vel = (0, 0, 0)
+            velocity = (0, 0, 0)
+
+            navpoint_state = {"position": np.array(position),
+                               "heading": heading,
+                               "speed": speed,
+                               "angular_velocity": np.array(angular_vel),
+                               "acceleration": np.array(acceleration),
+                               "velocity":np.array(velocity)}
+
+            self.actor_ids.update({id: NavpointAPF(len(self.potential_field), self.field_granularity)})
+            self.actor_ids[id].set_state(navpoint_state)
+
+            #create the laneAPF from navpoints
+            self.navpoint_actors.append(self.actor_ids[id])
+
+    def set_lane_APF(self):
+        #get all navpoint actors and send to laneAPF
+        # todo: check that navpoints are stored in actor_ids in order
+        lane = Quintic_Lane_APF(self.field_size, self.field_granularity, self.actor_ids["ego_vehicle"].get_state())
+        lane.set_navpoints(self.navpoint_actors)
+        lane.update_lane()
+        for y in range(len(self.potential_field)):
+            for x in range(len(self.potential_field[0])):
+                ## indexed from top left
+                self.potential_field[-x - 1][y] = min(
+                    self.potential_field[-x - 1][y] + lane.static_APF(x, y), 255)
+
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
@@ -201,42 +238,6 @@ class APF:
         plt.ylim(-150, 150)
         plt.draw()
         plt.pause(0.01)
-
-    def set_navpoints(self, navpoint_transforms):
-        for i, navpoint_transform in enumerate(navpoint_transforms):
-
-            id = "navpoint_" + str(i)
-            speed = 0
-            heading = round(navpoint_transform.rotation.yaw, 4)
-            position = (round(navpoint_transform.location.x, 4), round(navpoint_transform.location.y, 4), 0)
-            acceleration = (0, 0, 0)
-            angular_vel = (0, 0, 0)
-            velocity = (0, 0, 0)
-
-            navpoint_state = {"position": np.array(position),
-                               "heading": heading,
-                               "speed": speed,
-                               "angular_velocity": np.array(angular_vel),
-                               "acceleration": np.array(acceleration),
-                               "velocity":np.array(velocity)}
-
-            self.actor_ids.update({id: NavpointAPF(len(self.potential_field), self.field_granularity)})
-            self.actor_ids[id].set_state(navpoint_state)
-
-            #create the laneAPF from navpoints
-            self.navpoint_actors.append(self.actor_ids[id])
-
-    def set_lane_APF(self):
-        #get all navpoint actors and send to laneAPF
-        # todo: check that navpoints are stored in actor_ids in order
-        lane = Quintic_Lane_APF(self.field_size, self.field_granularity)
-        lane.set_navpoints(self.navpoint_actors)
-        lane.update_lane()
-        for y in range(len(self.potential_field)):
-            for x in range(len(self.potential_field[0])):
-                ## indexed from top left
-                self.potential_field[-x - 1][y] = min(
-                    self.potential_field[-x - 1][y] + lane.static_APF(x, y), 255)
 
     def get_potential_field(self):
         return self.potential_field
