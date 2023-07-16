@@ -30,6 +30,10 @@ class Gradient_path_planner:
         # print("\n\ngradient path", self.gradient_path, "\n\n")
         return self.gradient_path
 
+
+    def phi_max_gradient_descent(self):
+        pass
+    
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
