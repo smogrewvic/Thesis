@@ -30,10 +30,44 @@ class Gradient_path_planner:
         # print("\n\ngradient path", self.gradient_path, "\n\n")
         return self.gradient_path
 
+    def __calculate_phi_max_directions(self,  phi_max, current_heading, radius = 5):
+        i, j = len(self.potential_field[0]) // 2, len(self.potential_field) // 2
+        mask_x = np.arange(0, len(self.potential_field[0]))
+        mask_y = np.arange(0, len(self.potential_field))
 
-    def phi_max_gradient_descent(self):
-        pass
-    
+        mask = (mask_x[np.newaxis, :] - i) ** 2 + (mask_y[:, np.newaxis] - j) ** 2 < radius ** 2
+        circle = np.argwhere(mask == True) - [i, j]
+        phi_max_directions = []
+
+        for coords in circle:
+            if np.pi / 2 - phi_max / 2 <= np.arctan2(coords[0], coords[1]) <= np.pi / 2 + phi_max / 2:
+                phi_max_directions.append(coords)
+
+        return phi_max_directions
+    def phi_max_gradient_descent(self, phi_max):
+        self.gradient_path = []  # reset path
+        i, j = len(self.potential_field[0]) // 2, len(self.potential_field) // 2
+
+        path_heading = [0]  # initial heading
+        self.gradient_path = [[i, j]]  # reset path starting at ego_vehicle
+
+
+        while i in range(0, len(self.potential_field[0])) and j in range(0, len(self.potential_field)):
+            directions = self.__calculate_phi_max_directions(phi_max, path_heading)
+            temp_i, temp_j = i, j
+            for dr, dc in directions:
+                if self.potential_field[temp_i][temp_j] > self.potential_field[i + dr][j + dc]:
+                    temp_i, temp_j = i + dr, j + dc
+
+            i, j = temp_i, temp_j
+            path_heading.append(np.arctan2(i - self.gradient_path[-1][0], j - self.gradient_path[-1][1]))
+            self.gradient_path.append([i, j])
+
+            if self.gradient_path[-1] == self.gradient_path[-2]:
+                break  # minima found
+
+        # print("\n\ngradient path", self.gradient_path, "\n\n")
+        return self.gradient_path
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
