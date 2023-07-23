@@ -7,7 +7,7 @@ from PedestrianAPF import PedestrianAPF
 from VehicleAPF import VehicleAPF
 from LaneAPF import LaneAPF
 from NavpointAPF import NavpointAPF
-from QuinticLaneAPF import Quintic_Lane_APF
+from RegressionLaneAPF import Regression_Lane_APF
 import cv2
 import matplotlib.pyplot as plt
 
@@ -188,7 +188,7 @@ class APF:
     def set_lane_APF(self):
         #get all navpoint actors and send to laneAPF
         # todo: check that navpoints are stored in actor_ids in order
-        lane = Quintic_Lane_APF(self.field_size, self.field_granularity, self.actor_ids["ego_vehicle"].get_state())
+        lane = Regression_Lane_APF(self.field_size, self.field_granularity, self.actor_ids["ego_vehicle"].get_state())
         lane.set_navpoints(self.navpoint_actors)
         lane.update_lane()
         for y in range(len(self.potential_field)):

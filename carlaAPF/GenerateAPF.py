@@ -3,6 +3,7 @@ import carla
 import random
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from GradientDescentPathPlanner import Gradient_path_planner
+from SteeringControlPID import Steering_Control_PID
 
 
 if __name__ == '__main__':
@@ -33,9 +34,12 @@ if __name__ == '__main__':
 
     path_planner = Gradient_path_planner(potential_field.get_potential_field())
 
+    ###### Steering control ######
+    steering_PID = Steering_Control_PID(ego_vehicle)
+    steering_PID.set_PID_values(1,0,0)
+
+
     while True:
-
-
 
         potential_field.generate_APF()
         potential_field.plot_actor_positions()
@@ -44,9 +48,13 @@ if __name__ == '__main__':
         # potential_field.save_image_APF()
         # potential_field.show_APF()
 
-        path_planner.holonomic_gradient_descent()
+        # path_planner.holonomic_gradient_descent()
+        navigation_path = path_planner.phi_max_gradient_descent(0.7854)
         path_planner.save_image_APF()
         path_planner.show_APF()
+
+        steering_control_output = steering_PID.get_control_output(navigation_path)
+        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.3, steer=steering_control_output))
 
 
 
