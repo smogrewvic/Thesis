@@ -56,10 +56,10 @@ class Gradient_path_planner:
 
         while i in range(0, len(self.potential_field[0])) and j in range(0, len(self.potential_field)):
             directions = self.__calculate_phi_max_directions(phi_max, self.gradient_heading)
-            print("directions", directions)
+            # print("directions", directions)
             temp_i, temp_j = i, j
             for dr, dc in directions:
-                print("dr,dc", dr,dc)
+                # print("dr,dc", dr,dc)
                 if self.potential_field[temp_i][temp_j] > self.potential_field[i + dr][j + dc]:
                     temp_i, temp_j = i + dr, j + dc
 
@@ -68,7 +68,7 @@ class Gradient_path_planner:
             self.gradient_path.append([i, j])
 
             if self.gradient_path[-1] == self.gradient_path[-2]:
-                print("minima", i,j)
+                # print("minima", i,j)
                 break  # minima found
 
         # print("\n\ngradient path", self.gradient_path, "\n\n")

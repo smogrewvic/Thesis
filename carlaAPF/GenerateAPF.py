@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     ###### Steering control ######
     steering_PID = Steering_Control_PID(ego_vehicle)
-    steering_PID.set_PID_values(1,0,0)
+    steering_PID.set_PID_values(0.15,0,0)
 
 
     while True:
@@ -48,8 +48,8 @@ if __name__ == '__main__':
         # potential_field.save_image_APF()
         # potential_field.show_APF()
 
-        # path_planner.holonomic_gradient_descent()
-        navigation_path = path_planner.phi_max_gradient_descent(0.7854)
+        navigation_path = path_planner.holonomic_gradient_descent()
+        # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
         path_planner.save_image_APF()
         path_planner.show_APF()
 

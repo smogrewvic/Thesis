@@ -16,7 +16,7 @@ class Steering_Control_PID:
         self.pid.setpoint = target_lateral
         control_output = self.pid(vehicle_location_lateral)
 
-        print(control_output)
+        print("PID output", control_output)
         return control_output
 
 
