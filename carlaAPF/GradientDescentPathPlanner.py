@@ -7,7 +7,7 @@ class Gradient_path_planner:
     def __init__(self, potential_field):
         self.potential_field = potential_field
         self.gradient_path = []
-        self.gradint_heading = []
+        self.gradient_heading = []
 
     def holonomic_gradient_descent(self):
 

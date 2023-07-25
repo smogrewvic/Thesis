@@ -35,8 +35,8 @@ if __name__ == '__main__':
     path_planner = Gradient_path_planner(potential_field.get_potential_field())
 
     ###### Steering control ######
-    steering_PID = Steering_Control_PID(ego_vehicle)
-    steering_PID.set_PID_values(0.15,0,0)
+    steering_PID = Steering_Control_PID(ego_vehicle, potential_field.get_granularity())
+    steering_PID.set_PID_values(1.00,0,0)
 
 
     while True:
