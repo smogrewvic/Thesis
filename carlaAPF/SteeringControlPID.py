@@ -2,10 +2,10 @@ from simple_pid import PID
 import matplotlib.pyplot as plt
 
 class Steering_Control_PID:
-    def __init__(self, ego_vehicle, potential_field_granularity, potential_field = None):
+    def __init__(self, ego_vehicle, potential_field_granularity, look_ahead_dist = 5, potential_field = None):
         self.potential_field = potential_field
         self.potential_field_granularity = potential_field_granularity
-        self.pid_look_ahead_distance = 2
+        self.pid_look_ahead_distance = look_ahead_dist
         self.vehicle = ego_vehicle
         self.pid = PID(0, 0, 0, setpoint=0)
         self.pid.output_limits = (-1, 1)

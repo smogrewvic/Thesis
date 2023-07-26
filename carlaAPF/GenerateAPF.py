@@ -48,8 +48,8 @@ if __name__ == '__main__':
         # potential_field.save_image_APF()
         # potential_field.show_APF()
 
-        navigation_path = path_planner.holonomic_gradient_descent()
-        # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
+        # navigation_path = path_planner.holonomic_gradient_descent()
+        navigation_path = path_planner.phi_max_gradient_descent(0.7854)
         path_planner.save_image_APF()
         path_planner.show_APF()
 

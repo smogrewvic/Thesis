@@ -66,6 +66,13 @@ class Regression_Lane_APF():
         dfx = 4*self.coeffs[0] * x**3 + 3*self.coeffs[1] * x**2 + 2*self.coeffs[2] * x + self.coeffs[3]
 
         slope = -255/(self.potential_field_size/self.potential_field_granularity)*x + 255 #- y*np.sin(np.arctan(dfx))
-        fxy = ((y -fx)**2)/1 + slope
+
+        ### second order lane equation
+        # fxy = ((y -fx)**2)/1 + slope
+
+        ### Gaussian lane equation
+        sigma = 10
+        exponent = -((y-fx)**2)/(2*sigma**2)
+        fxy = (1-np.e**exponent)*128 + slope
 
         return fxy

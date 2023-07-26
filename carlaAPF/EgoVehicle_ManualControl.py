@@ -297,10 +297,10 @@ class World(object):
             # spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
 
             ### SPAWN POINT FOR EASY TRACK
-            # spawn_point = carla.Transform(carla.Location(x=-114.232773, y=43.821014, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.642235, roll=0.000000))
+            spawn_point = carla.Transform(carla.Location(x=-114.232773, y=43.821014, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.642235, roll=0.000000))
 
             ### SPAWN POINT FOR SIMPLE LANE CHANGE
-            spawn_point = carla.Transform(carla.Location(x=-28.581730, y=140.535553, z=0.600000), carla.Rotation(pitch=0.000000, yaw=0.352127, roll=0.000000))
+            # spawn_point = carla.Transform(carla.Location(x=-28.581730, y=140.535553, z=0.600000), carla.Rotation(pitch=0.000000, yaw=0.352127, roll=0.000000))
 
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
             self.show_vehicle_telemetry = False
