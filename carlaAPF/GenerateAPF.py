@@ -10,7 +10,7 @@ if __name__ == '__main__':
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF()
-    high_level_route = GlobalRoutePlanner(world.get_map(), 2)
+    high_level_route = GlobalRoutePlanner(world.get_map(), 1)
     ego_vehicle = None
 
     #find ego_actor spawn point
@@ -36,13 +36,13 @@ if __name__ == '__main__':
 
     ###### Steering control ######
     steering_PID = Steering_Control_PID(ego_vehicle, potential_field.get_granularity())
-    steering_PID.set_PID_values(1.0,0,0)
+    steering_PID.set_PID_values(1, 0.0, 0.8)
 
 
     while True:
 
         potential_field.generate_APF()
-        potential_field.plot_actor_positions()
+        # potential_field.plot_actor_positions()
 
         # potential_field.draw_APF()
         # potential_field.save_image_APF()

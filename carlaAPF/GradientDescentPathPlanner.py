@@ -41,8 +41,10 @@ class Gradient_path_planner:
         circle = np.argwhere(mask == True) - [i, j]
         phi_max_directions = []
 
+        max_turn = np.pi / 2 + phi_max / 2 + current_heading
+        min_turn = np.pi / 2 - phi_max / 2 - current_heading
         for coords in circle:
-            if np.pi / 2 - phi_max / 2 <= np.arctan2(coords[0], coords[1]) <= np.pi / 2 + phi_max / 2:
+            if min_turn <= np.arctan2(coords[0], coords[1]) <= max_turn:
                 phi_max_directions.append(-coords)
 
         return phi_max_directions
@@ -50,28 +52,23 @@ class Gradient_path_planner:
         self.gradient_path = []  # reset path
         i, j = len(self.potential_field[0]) // 2, len(self.potential_field) // 2
 
-        # path_heading = [0]  # initial heading
         self.gradient_path = [[i, j]]  # reset path starting at ego_vehicle
         self.gradient_heading = [0]
 
         while i in range(0, len(self.potential_field[0])) and j in range(0, len(self.potential_field)):
-            directions = self.__calculate_phi_max_directions(phi_max, self.gradient_heading)
-            # print("directions", directions)
+            directions = self.__calculate_phi_max_directions(phi_max, self.gradient_heading[-1])
             temp_i, temp_j = i, j
             for dr, dc in directions:
-                # print("dr,dc", dr,dc)
                 if self.potential_field[temp_i][temp_j] > self.potential_field[i + dr][j + dc]:
                     temp_i, temp_j = i + dr, j + dc
 
             i, j = temp_i, temp_j
-            self.gradient_heading.append(np.arctan2(i - self.gradient_path[-1][0], j - self.gradient_path[-1][1]))
             self.gradient_path.append([i, j])
+            self.gradient_heading.append(np.arctan2(self.gradient_path[-2][0] - self.gradient_path[-1][0], self.gradient_path[-2][1] - self.gradient_path[-1][1]))
 
             if self.gradient_path[-1] == self.gradient_path[-2]:
-                # print("minima", i,j)
                 break  # minima found
 
-        # print("\n\ngradient path", self.gradient_path, "\n\n")
         return self.gradient_path
 
 

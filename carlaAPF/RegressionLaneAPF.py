@@ -25,12 +25,12 @@ class Regression_Lane_APF():
                 closest_index = i
 
         return closest_index
-    def regression_coefficients(self):
+    def regression_coefficients(self, poly_order=4):
         closest_index = self.closest_navpoint_index()
 
-        # perform quartic regression
-        start = max(0,closest_index - 12)
-        end = min(closest_index + 20, len(self.navpoints)-1)
+        # perform regression
+        start = max(0,closest_index - 8)
+        end = min(closest_index + 30, len(self.navpoints)-1)
 
         local_navpoints_x = []
         local_navpoints_y = []
@@ -39,11 +39,9 @@ class Regression_Lane_APF():
             local_navpoints_x.append(self.navpoints[i].get_scaled_egocentric_state()["position"][0])
             local_navpoints_y.append(self.navpoints[i].get_scaled_egocentric_state()["position"][1])
 
-        print("start:end", start, end, "closest_index", closest_index)
+        coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, poly_order)
 
 
-        coeffs = []
-        coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, 4)
         # with warnings.catch_warnings():
         #     warnings.filterwarnings('error')
         #     try:
@@ -61,9 +59,12 @@ class Regression_Lane_APF():
     def static_APF(self, x, y):
 
         # todo: remember to call update_lane() when drawing the apf
+        fx, dfx = 0, 0
+        for i, c_i in enumerate(self.coeffs[::-1]):
+            fx += c_i * x**i
 
-        fx = self.coeffs[0] * x**4 + self.coeffs[1] * x**3 + self.coeffs[2] * x**2 + self.coeffs[3] * x + self.coeffs[4]
-        dfx = 4*self.coeffs[0] * x**3 + 3*self.coeffs[1] * x**2 + 2*self.coeffs[2] * x + self.coeffs[3]
+        for i, c_i in enumerate(self.coeffs[:-1][::-1]):
+            dfx += c_i * x**i
 
         slope = -255/(self.potential_field_size/self.potential_field_granularity)*x + 255 #- y*np.sin(np.arctan(dfx))
 

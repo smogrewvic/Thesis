@@ -282,25 +282,28 @@ class World(object):
                 sys.exit(1)
 
             #### SPAWN POINT FINDER
-            # closest_spawn = [float('inf'), None]
-            # desired_spawn={"x":-26.197083, "y":140.748779, "z":-0.004639}
-            # for point in self.map.get_spawn_points(): # manually go to a desired spawn point, then find the closest valid point from the list
-            #     distance = (desired_spawn["x"] - point.location.x)**2 + (desired_spawn["y"] - point.location.y)**2 +(desired_spawn["z"] - point.location.z)**2
-            #     if distance < closest_spawn[0]:
-            #         closest_spawn[0] = distance
-            #         closest_spawn[1] = point
-            # print("CLOSEST POINT",closest_spawn[1])
+            closest_spawn = [float('inf'), None]
+            desired_spawn={"x":-48.820179, "y":-44.882366, "z":-0.004606}
+            for point in self.map.get_spawn_points(): # manually go to a desired spawn point, then find the closest valid point from the list
+                distance = (desired_spawn["x"] - point.location.x)**2 + (desired_spawn["y"] - point.location.y)**2 +(desired_spawn["z"] - point.location.z)**2
+                if distance < closest_spawn[0]:
+                    closest_spawn[0] = distance
+                    closest_spawn[1] = point
+            print("CLOSEST POINT",closest_spawn[1])
 
 
-            # #### RANDOM SPAWN POINT
+            #### RANDOM SPAWN POINT
             # spawn_points = self.map.get_spawn_points()
             # spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
 
-            ### SPAWN POINT FOR EASY TRACK
-            spawn_point = carla.Transform(carla.Location(x=-114.232773, y=43.821014, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.642235, roll=0.000000))
+            #### SPAWN POINT FOR EASY TRACK
+            # spawn_point = carla.Transform(carla.Location(x=-114.232773, y=43.821014, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.642235, roll=0.000000))
 
-            ### SPAWN POINT FOR SIMPLE LANE CHANGE
+            #### SPAWN POINT FOR SIMPLE LANE CHANGE
             # spawn_point = carla.Transform(carla.Location(x=-28.581730, y=140.535553, z=0.600000), carla.Rotation(pitch=0.000000, yaw=0.352127, roll=0.000000))
+
+            #### SPAWN POINT LANE CHANGE AND INTERSECTION
+            spawn_point = carla.Transform(carla.Location(x=-48.642700, y=-43.353889, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.432304, roll=0.000000))
 
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
             self.show_vehicle_telemetry = False
