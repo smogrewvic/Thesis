@@ -1,5 +1,5 @@
 import numpy as np
-from APF_Object import APF_Object
+from ApfObjects.APF_Object import APF_Object
 
 
 class LaneAPF(APF_Object):
@@ -7,4 +7,6 @@ class LaneAPF(APF_Object):
         super().__init__( potential_field_size, potential_field_granularity)
         self.safety_radius = 5 / potential_field_granularity
     def static_APF(self, x, y):
+        return 0
+    def dynamic_APF(self,x,y):
         return 0

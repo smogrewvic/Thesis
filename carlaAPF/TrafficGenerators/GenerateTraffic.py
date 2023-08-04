@@ -13,8 +13,6 @@ import os
 import sys
 import time
 
-import PotentialField as pf
-
 try:
     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
         sys.version_info.major,
@@ -24,8 +22,6 @@ except IndexError:
     pass
 
 import carla
-
-from carla import VehicleLightState as vls
 
 import argparse
 import logging

@@ -1,9 +1,8 @@
-import PotentialField as pf
+from ApfObjects import PotentialField as pf
 import carla
-import random
 from agents.navigation.global_route_planner import GlobalRoutePlanner
-from GradientDescentPathPlanner import Gradient_path_planner
-from SteeringControlPID import Steering_Control_PID
+from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
+from VehicleControllers.SteeringControlPID import Steering_Control_PID
 
 
 if __name__ == '__main__':
@@ -31,7 +30,6 @@ if __name__ == '__main__':
 
     print("navpoint[0]", navpoint_transforms[0])
     potential_field.set_navpoints(navpoint_transforms)
-
     path_planner = Gradient_path_planner(potential_field.get_potential_field())
 
     ###### Steering control ######
@@ -42,7 +40,7 @@ if __name__ == '__main__':
     while True:
 
         potential_field.generate_APF()
-        # potential_field.plot_actor_positions()
+        potential_field.plot_actor_positions()
 
         # potential_field.draw_APF()
         # potential_field.save_image_APF()
@@ -54,7 +52,7 @@ if __name__ == '__main__':
         path_planner.show_APF()
 
         steering_control_output = steering_PID.get_control_output(navigation_path)
-        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.3, steer=steering_control_output))
+        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
         # steering_PID.display_PID_tracking()
 
 

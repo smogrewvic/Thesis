@@ -1,8 +1,8 @@
 import carla
 import random
 
+from ApfObjects import PotentialField as pf
 
-import PotentialField as pf
 
 def spectator_follow(view):
     if view == "third person":

@@ -29,7 +29,6 @@ class Gradient_path_planner:
             if self.gradient_path[-1] == self.gradient_path[-2]:
                 break  # minima found
 
-        # print("\n\ngradient path", self.gradient_path, "\n\n")
         return self.gradient_path
 
     def __calculate_phi_max_directions(self,  phi_max, current_heading, radius = 5):
@@ -91,6 +90,10 @@ class Gradient_path_planner:
     def show_APF(self):
         img = cv2.imread("APF_Image.bmp")
         resized = cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA)
-        normalized = cv2.normalize(resized, None, 0, 255, cv2.NORM_MINMAX)
-        cv2.imshow("image", normalized)
+        cv2.imshow("image",resized)
+
+        ## TODO: WARNING - Normalizing can make everything 0 for a flat apf
+        # normalized = cv2.normalize(resized, None, 0, 255, cv2.NORM_MINMAX)
+        # cv2.imshow("image", normalized)
+
         cv2.waitKey(1)

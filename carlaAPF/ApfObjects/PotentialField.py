@@ -1,19 +1,18 @@
 import numpy as np
-import math
 import carla
 
 from PIL import Image
-from PedestrianAPF import PedestrianAPF
-from VehicleAPF import VehicleAPF
-from LaneAPF import LaneAPF
-from NavpointAPF import NavpointAPF
-from RegressionLaneAPF import Regression_Lane_APF
+from ApfObjects.PedestrianAPF import PedestrianAPF
+from ApfObjects.VehicleAPF import VehicleAPF
+from ApfObjects.LaneAPF import LaneAPF
+from ApfObjects.NavpointAPF import NavpointAPF
+from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
 import cv2
 import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=5, granularity=0.05):
+    def __init__(self, field_size=10, granularity=0.2):
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
@@ -141,7 +140,7 @@ class APF:
 
         for id in self.actor_ids:
             if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
-
+            # print("actor ID", id)
             # update egocentric actor state to center in APF relative to ego vehicle
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
                                                        len(self.potential_field) // 2, len(self.potential_field) // 2)
