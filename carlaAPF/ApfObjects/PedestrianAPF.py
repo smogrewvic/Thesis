@@ -1,6 +1,4 @@
 import numpy as np
-import collections
-from TransformMatrix import rotate2D, stretch2D
 
 # class PedestrianAPF:
 #     def __init__(self, state_data, potential_field_size, potential_field_granularity):

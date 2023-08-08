@@ -5,7 +5,7 @@ from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
 
 
-if __name__ == '__main__':
+def main():
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF()
@@ -52,9 +52,11 @@ if __name__ == '__main__':
         path_planner.show_APF()
 
         steering_control_output = steering_PID.get_control_output(navigation_path)
-        # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
+        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
         # steering_PID.display_PID_tracking()
 
 
 
 
+if __name__ == '__main__':
+    main()

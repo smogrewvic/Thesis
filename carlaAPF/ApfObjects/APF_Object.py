@@ -1,6 +1,7 @@
 import numpy as np
 import collections
-from TransformMatrix import rotate2D, stretch2D
+from Tools.TransformMatrix import rotate2D
+
 
 class APF_Object:
     def __init__(self, potential_field_size, potential_field_granularity):

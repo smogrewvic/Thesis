@@ -27,6 +27,7 @@ import argparse
 import logging
 from numpy import random
 
+
 def get_actor_blueprints(world, filter, generation):
     bps = world.get_blueprint_library().filter(filter)
 
@@ -50,6 +51,7 @@ def get_actor_blueprints(world, filter, generation):
     except:
         print("   Warning! Actor Generation is not valid. No actor will be spawned.")
         return []
+
 
 def generate():
     argparser = argparse.ArgumentParser(
@@ -236,7 +238,7 @@ def generate():
 
             # spawn the cars and set their autopilot and light state all together
             batch.append(SpawnActor(blueprint, transform)
-                .then(SetAutopilot(FutureActor, True, traffic_manager.get_port())))
+                         .then(SetAutopilot(FutureActor, True, traffic_manager.get_port())))
 
         for response in client.apply_batch_sync(batch, synchronous_master):
             if response.error:
@@ -254,8 +256,8 @@ def generate():
         # Spawn Walkers
         # -------------
         # some settings
-        percentagePedestriansRunning = 0.0      # how many pedestrians will run
-        percentagePedestriansCrossing = 0.0     # how many pedestrians will walk through the road
+        percentagePedestriansRunning = 0.0  # how many pedestrians will run
+        percentagePedestriansCrossing = 0.0  # how many pedestrians will walk through the road
         if args.seedw:
             world.set_pedestrians_seed(args.seedw)
             random.seed(args.seedw)
@@ -328,13 +330,12 @@ def generate():
             # set walk to random point
             all_actors[i].go_to_location(world.get_random_location_from_navigation())
             # max speed
-            all_actors[i].set_max_speed(float(walker_speed[int(i/2)]))
+            all_actors[i].set_max_speed(float(walker_speed[int(i / 2)]))
 
         print('spawned %d vehicles and %d walkers, press Ctrl+C to exit.' % (len(vehicles_list), len(walkers_list)))
 
         # Example of how to use Traffic Manager parameters
         traffic_manager.global_percentage_speed_difference(30.0)
-
 
         while True:
             if not args.asynch and synchronous_master:
@@ -365,11 +366,15 @@ def generate():
 
         time.sleep(0.5)
 
-if __name__ == '__main__':
 
+def main():
     try:
         generate()
     except KeyboardInterrupt:
         pass
     finally:
         print('\ndone.')
+
+
+if __name__ == '__main__':
+    main()

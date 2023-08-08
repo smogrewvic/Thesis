@@ -1,6 +1,4 @@
 import numpy as np
-import collections
-from TransformMatrix import rotate2D, stretch2D
 from ApfObjects.APF_Object import APF_Object
 
 
