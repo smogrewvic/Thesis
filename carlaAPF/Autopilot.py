@@ -40,7 +40,7 @@ if __name__ == '__main__':
     while True:
 
         potential_field.generate_APF()
-        potential_field.plot_actor_positions()
+        # potential_field.plot_actor_positions()
 
         # potential_field.draw_APF()
         # potential_field.save_image_APF()
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         path_planner.show_APF()
 
         steering_control_output = steering_PID.get_control_output(navigation_path)
-        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
+        # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
         # steering_PID.display_PID_tracking()
 
 
