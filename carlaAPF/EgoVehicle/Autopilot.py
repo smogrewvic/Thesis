@@ -33,7 +33,9 @@ def main():
     path_planner = Gradient_path_planner(potential_field.get_potential_field())
 
     ###### Steering control ######
-    steering_PID = Steering_Control_PID(ego_vehicle, potential_field.get_granularity())
+    steering_PID = Steering_Control_PID(ego_vehicle,
+                                        potential_field.get_granularity(),
+                                        potential_field = potential_field.get_potential_field())
     steering_PID.set_PID_values(1, 0.0, 0.8)
 
 
@@ -42,12 +44,11 @@ def main():
         potential_field.generate_APF()
         # potential_field.plot_actor_positions()
 
-        # potential_field.draw_APF()
-        # potential_field.save_image_APF()
-        # potential_field.show_APF()
-
         # navigation_path = path_planner.holonomic_gradient_descent()
-        navigation_path = path_planner.phi_max_gradient_descent(0.7854)
+        # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
+        navigation_path = path_planner.phi_max_regressed_descent(0.7854)
+        steering_PID.set_regression_precision(path_planner.get_regression_precision())
+
         path_planner.save_image_APF()
         path_planner.show_APF()
 

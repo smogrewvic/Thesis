@@ -1,11 +1,13 @@
 import numpy as np
 from PIL import Image
 import cv2
+from matplotlib import pyplot as plt
 
 
 class Gradient_path_planner:
     def __init__(self, potential_field):
         self.potential_field = potential_field
+        self.regression_precision = 1
         self.gradient_path = []
         self.gradient_heading = []
 
@@ -68,20 +70,51 @@ class Gradient_path_planner:
             if self.gradient_path[-1] == self.gradient_path[-2]:
                 break  # minima found
 
+
+        self.gradient_path
+        return self.gradient_path
+    def phi_max_regressed_descent(self, phi_max, regression_precision = 0.01):
+        self.regression_precision = regression_precision
+        self.phi_max_gradient_descent(phi_max)
+
+        self.gradient_path = self.path_regression()
         return self.gradient_path
 
+    def path_regression(self, poly_order=3):
+        coeffs = self.regression_coefficients(poly_order)
 
-    def interpolate_results(self, output_size):
+        path_distance = len(self.potential_field) // 2
+        regressed_path = []
+        for x in np.arange(0, path_distance, self.regression_precision):
+            fx = 0
+            for i, c_i in enumerate(coeffs[::-1]):
+                fx += c_i * x ** i
+            regressed_path.append([x,fx])
 
-        pass
-        # coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, 4)
+        # old_data = np.array(self.gradient_path)
+        # new_data = np.array(regressed_path)
+        # plt.cla()
+        # plt.plot(old_data[:,0], old_data[:,1], color = 'blue')
+        # plt.plot(new_data[:, 0], new_data[:, 1], color = 'red')
+        # # plt.xlim(30, 30)
+        # # plt.ylim(-30, -30)
+        # plt.draw()
+        # plt.pause(0.01)
 
+        return regressed_path
+    def get_regression_precision(self):
+        return self.regression_precision
+    def regression_coefficients(self, poly_order=3):
+        # perform regression
+        discreet_path = np.array(self.gradient_path)
+        coeffs = np.polyfit(discreet_path[:,0], discreet_path[:,1], poly_order)
 
+        return coeffs
     def save_image_APF(self):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
         for i in range(len(self.gradient_path)):
-            px_x, px_y = self.gradient_path[i]
+            px_x, px_y = round(self.gradient_path[i][0]), round(self.gradient_path[i][1])
             grayscale[px_x][px_y] = 255
 
         apf_image = Image.fromarray(grayscale, mode="L")
