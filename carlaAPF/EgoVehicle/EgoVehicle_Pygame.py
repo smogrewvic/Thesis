@@ -191,7 +191,7 @@ def get_actor_blueprints(world, filter, generation):
 
 
 class World(object):
-    def __init__(self, carla_world, hud, args):
+    def __init__(self, carla_world, hud, args, spawn_point_name):
         self.world = carla_world
         self.sync = args.sync
         self.actor_role_name = args.rolename
@@ -215,7 +215,7 @@ class World(object):
         self._actor_filter = args.filter
         self._actor_generation = args.generation
         self._gamma = args.gamma
-        self.restart()
+        self.restart(spawn_point_name)
         self.world.on_tick(hud.on_world_tick)
         self.recording_enabled = False
         self.recording_start = 0
@@ -237,7 +237,43 @@ class World(object):
             carla.MapLayer.All
         ]
 
-    def restart(self):
+    def get_spawn_transform(self, spawn_point_name):
+
+        print("trying to spawn at:", spawn_point_name)
+        print("\tOther spawn points:",
+              "\n\trandom",
+              "\n\teasy_track",
+              "\n\tsimple_lane_change",
+              "\n\tlane_change_intersection")
+
+        if spawn_point_name == "random":
+            print("Spawning at random point")
+            spawn_points = self.map.get_spawn_points()
+            spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
+
+        elif spawn_point_name == "easy_track":
+            print("Spawning at easy_track")
+            spawn_point = carla.Transform(carla.Location(x=-114.232773, y=43.821014, z=0.600000),
+                                          carla.Rotation(pitch=0.000000, yaw=90.642235, roll=0.000000))
+
+        elif spawn_point_name == "simple_lane_change":
+            print("Spawning at simple_lane_change")
+            spawn_point = carla.Transform(carla.Location(x=-28.581730, y=140.535553, z=0.600000),
+                                          carla.Rotation(pitch=0.000000, yaw=0.352127, roll=0.000000))
+
+        elif spawn_point_name == "lane_change_intersection":
+            print("Spawning at lane_change_intersection")
+            spawn_point = carla.Transform(carla.Location(x=-48.642700, y=-43.353889, z=0.600000),
+                                      carla.Rotation(pitch=0.000000, yaw=90.432304, roll=0.000000))
+
+        else:
+            print("invalid spawn point name, spawning in random point")
+            spawn_points = self.map.get_spawn_points()
+            spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
+
+        return spawn_point
+
+    def restart(self, spawn_point_name):
         self.player_max_speed = 1.589
         self.player_max_speed_fast = 3.713
         # Keep same camera config if the camera manager exists.
@@ -303,7 +339,9 @@ class World(object):
             # spawn_point = carla.Transform(carla.Location(x=-28.581730, y=140.535553, z=0.600000), carla.Rotation(pitch=0.000000, yaw=0.352127, roll=0.000000))
 
             #### SPAWN POINT LANE CHANGE AND INTERSECTION
-            spawn_point = carla.Transform(carla.Location(x=-48.642700, y=-43.353889, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.432304, roll=0.000000))
+            # spawn_point = carla.Transform(carla.Location(x=-48.642700, y=-43.353889, z=0.600000), carla.Rotation(pitch=0.000000, yaw=90.432304, roll=0.000000))
+
+            spawn_point = self.get_spawn_transform(spawn_point_name)
 
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
             self.show_vehicle_telemetry = False
@@ -1260,7 +1298,7 @@ class CameraManager(object):
 # ==============================================================================
 
 
-def game_loop(args):
+def game_loop(args, spawn_point_name):
     pygame.init()
     pygame.font.init()
     world = None
@@ -1293,7 +1331,7 @@ def game_loop(args):
         pygame.display.flip()
 
         hud = HUD(args.width, args.height)
-        world = World(sim_world, hud, args)
+        world = World(sim_world, hud, args, spawn_point_name)
         controller = KeyboardControl(world, args.autopilot)
 
         if args.sync:
@@ -1331,7 +1369,7 @@ def game_loop(args):
 # ==============================================================================
 
 
-def main():
+def main(spawn_point_name = "random"):
     argparser = argparse.ArgumentParser(
         description='CARLA Manual Control Client')
     argparser.add_argument(
@@ -1396,7 +1434,7 @@ def main():
 
     try:
 
-        game_loop(args)
+        game_loop(args, spawn_point_name)
 
     except KeyboardInterrupt:
         print('\nCancelled by user. Bye!')
