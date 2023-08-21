@@ -1,22 +1,24 @@
 import carla
 # import matplotlib.pyplot as plt
 import plotly.express as px
+import plotly.graph_objects as go
 import numpy as np
+from SpawnPoints import Spawn_Points
 
 
-def plot_points(points):
-    data = np.array(points)
-
+def plot_points(ego_data):
+    data = []
     titles = []
-    for pt in points:
-        x = str(round(pt[0],5))
-        y = str(round(pt[1],5))
-        z = str(round(pt[2],5))
-        pitch = str(round(pt[3],5))
-        roll = str(round(pt[4],5))
-        yaw = str(round(pt[5],5))
+    for key in Spawn_Points.points.value:
+        x = str(round(Spawn_Points.points.value[key][0], 7))
+        y = str(round(Spawn_Points.points.value[key][1], 7))
+        z = str(round(Spawn_Points.points.value[key][2], 7))
+        pitch = str(round(Spawn_Points.points.value[key][3], 7))
+        roll = str(round(Spawn_Points.points.value[key][4], 7))
+        yaw = str(round(Spawn_Points.points.value[key][5], 7))
 
-        name = ['x: ' + x + '\n' +
+        name = ['id: ' + key + '\t\t\n' +
+                'x: ' + x + '\n' +
                 'y: ' + y + '\n' +
                 'z: ' + z + '\n' +
                 'pitch: ' + pitch + '\n' +
@@ -24,13 +26,29 @@ def plot_points(points):
                 'yaw: ' + yaw + '\n']
 
         titles.append(name)
+        data.append(Spawn_Points.points.value[key])
 
-    fig = px.scatter(x=-data[:, 0],  # flip x-axis display
-                     y=data[:, 1],
-                     color=data[:, 3],
-                     hover_name=titles,
-                     range_color=[0, 2],
-                     title="Spawn Points")
+    data = np.array(data)
+
+    fig_spawn_points = px.scatter(x=-data[:, 0],  # flip x-axis display
+                                  y=data[:, 1],
+                                  color=[0] * len(data),
+                                  hover_name=titles,
+                                  range_color=[0, 2],
+                                  title="Spawn Points, use Spawn_Points.points.value['id_VALUE']")
+
+    ego_data = np.array(ego_data)
+    if len(ego_data)>0:
+        fig_ego = px.scatter(x=-ego_data[:, 0],  # flip x-axis display
+                             y=ego_data[:, 1],
+                             color=[1],
+                             hover_name=["ego"],
+                             range_color=[0, 2]
+                             )
+
+        fig = go.Figure(data=fig_spawn_points.data + fig_ego.data)
+    else:
+        fig = fig_spawn_points
 
     fig.show()
 
@@ -45,20 +63,14 @@ if __name__ == '__main__':
         if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
             ego_vehicle = actor
 
-    spawn_points = []
-    for point in map.get_spawn_points():
-        spawn_points.append([point.location.x,
-                             point.location.y,
-                             point.location.z,
-                             point.rotation.pitch,
-                             point.rotation.roll,
-                             point.rotation.yaw,
-                             False])
-
+    ego_data = []
     if ego_vehicle:
-        spawn_points.append([ego_vehicle.get_location().x,
-                             ego_vehicle.get_location().y,
-                             ego_vehicle.get_location().z,
-                             True])
+        ego_data.append([ego_vehicle.get_location().x,
+                         ego_vehicle.get_location().y,
+                         ego_vehicle.get_location().z,
+                         ego_vehicle.get_transform().rotation.pitch,
+                         ego_vehicle.get_transform().rotation.roll,
+                         ego_vehicle.get_transform().rotation.yaw]
+                        )
 
-    plot_points(spawn_points)
+    plot_points(ego_data)

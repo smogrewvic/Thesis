@@ -5,7 +5,7 @@ from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
 
 
-def main():
+def main(autopilot_on = True, holonomic = False, display_apf = True, display_actors = False, display_control_sys = False):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF()
@@ -38,26 +38,31 @@ def main():
                                         potential_field = potential_field.get_potential_field())
     steering_PID.set_PID_values(1, 0.0, 0.8)
 
-
     while True:
 
         potential_field.generate_APF()
-        # potential_field.plot_actor_positions()
 
-        # navigation_path = path_planner.holonomic_gradient_descent()
-        # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
-        navigation_path = path_planner.phi_max_regressed_descent(0.7854)
+        if holonomic == True:
+            navigation_path = path_planner.holonomic_gradient_descent()
+        else:
+            # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
+            navigation_path = path_planner.phi_max_regressed_descent(0.7854)
+
         steering_PID.set_regression_precision(path_planner.get_regression_precision())
-
-        path_planner.save_image_APF()
-        path_planner.show_APF()
-
         steering_control_output = steering_PID.get_control_output(navigation_path)
-        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
-        # steering_PID.display_PID_tracking()
 
+        if autopilot_on == True:
+            ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
 
+        if display_apf == True:
+            path_planner.save_image_APF()
+            path_planner.show_APF()
 
+        if display_actors == True:
+            potential_field.plot_actor_positions()
+
+        if display_control_sys == True:
+            steering_PID.display_PID_tracking()
 
 if __name__ == '__main__':
     main()

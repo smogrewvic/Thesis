@@ -230,8 +230,8 @@ class APF:
                 y_actors.append(self.actor_ids[id].get_state()["position"][1])
 
         plt.cla()
-        plt.scatter(x_actors, y_actors, c="blue")
         plt.scatter(x_navpoints, y_navpoints, c="green")
+        plt.scatter(x_actors, y_actors, c="blue")
         plt.scatter(x_ego, y_ego, c="red")
         plt.xlim(150, -150)
         plt.ylim(-150, 150)
