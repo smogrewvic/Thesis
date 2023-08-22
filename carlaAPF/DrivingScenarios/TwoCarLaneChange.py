@@ -14,18 +14,17 @@ def convert_point_to_carla_transform(x, y, z, pitch, roll, yaw):
 
 
 if __name__ == "__main__":
-    car1 = [-28.581730, 140.535553, 0.600000, 0.000000, 0.000000,0.352127]  # x,y,z,pitch,roll,yaw
-    car2 = [-27.1602516, 137.04422, 0.600000, 0.000000, 0.000000, 0.35127]  # x,y,z,pitch,roll,yaw
+    # car1 = [-28.581730, 140.535553, 0.600000, 0.000000, 0.000000,0.352127]  # x,y,z,pitch,roll,yaw
+    # car2 = [-27.1602516, 137.04422, 0.600000, 0.000000, 0.000000, 0.35127]  # x,y,z,pitch,roll,yaw
     car3 = Spawn_Points.points.value['id_83']
     car_spawn_points = [car3]
 
-    # pawn_point = carla.Transform(carla.Location(x=-28.581730, y=140.535553, z=0.600000), carla.Rotation(pitch=0.000000, yaw=0.352127, roll=0.000000))
     pedestrian1 = [-24.581730, 143.535553, 0.600000, 0.000000, 0.352127, 0.000000]  # x,y,z,pitch,roll,yaw
     pedestrian_spawn_points = [pedestrian1]
 
-    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("lane_change",))
+    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("simple_lane_change",))
     p1.start()
-    p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(False, False, False, True, False))
+    p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True, False, False, True, False))
     p2.start()
     p3 = multiprocessing.Process(target=TrafficGenerators.ActorSpawn.main, args=(car_spawn_points, pedestrian_spawn_points))
     p3.start()

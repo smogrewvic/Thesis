@@ -18,7 +18,7 @@ class Steering_Control_PID:
     def set_regression_precision(self, regression_precision):
         self.regression_precision = regression_precision
         self.pid_look_ahead_distance = int(self.meters_look_ahead_dist/ regression_precision)
-    def set_PID_values(self, p, i, d):
+    def set_PID_values(self, p=0, i=0, d=0):
         self.pid.tunings = (p, i, d)
 
     def angular_position_pid(self, path):

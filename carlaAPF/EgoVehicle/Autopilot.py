@@ -3,6 +3,7 @@ import carla
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
+from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
 
 
 def main(autopilot_on = True, holonomic = False, display_apf = True, display_actors = False, display_control_sys = False):
@@ -38,6 +39,12 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
                                         potential_field = potential_field.get_potential_field())
     steering_PID.set_PID_values(1, 0.0, 0.8)
 
+    ##### Throttle Control #####
+    throttle_PID = Throttle_Control_PID(ego_vehicle,
+                                        potential_field.get_potential_field(),
+                                        potential_field.get_granularity())
+
+    throttle_PID.set_PID_values(1, 0.0, 0.0)
     while True:
 
         potential_field.generate_APF()
@@ -48,8 +55,11 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
             # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
             navigation_path = path_planner.phi_max_regressed_descent(0.7854)
 
+
         steering_PID.set_regression_precision(path_planner.get_regression_precision())
         steering_control_output = steering_PID.get_control_output(navigation_path)
+
+        throttle_control_output = throttle_PID.get_control_output(navigation_path)
 
         if autopilot_on == True:
             ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))

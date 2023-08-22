@@ -4,9 +4,7 @@ import TrafficGenerators.GenerateTraffic
 from time import sleep
 import multiprocessing
 
-
 if __name__ == "__main__":
-
     p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main)
     p1.start()
     p2 = multiprocessing.Process(target=TrafficGenerators.GenerateTraffic.main)

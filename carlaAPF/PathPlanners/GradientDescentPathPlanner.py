@@ -73,11 +73,18 @@ class Gradient_path_planner:
 
         self.gradient_path
         return self.gradient_path
-    def phi_max_regressed_descent(self, phi_max, regression_precision = 0.01):
+    def phi_max_regressed_descent(self, phi_max, regression_precision = 0.01, stop_at_minima = True):
         self.regression_precision = regression_precision
         self.phi_max_gradient_descent(phi_max)
 
+        path_end_x, path_end_y = self.gradient_path[-1][0], self.gradient_path[-1][1]
         self.gradient_path = self.path_regression()
+        if stop_at_minima == True:
+            for i in range(len(self.gradient_path)):
+                if self.gradient_path[i][0]>=path_end_x:
+                    self.gradient_path = self.gradient_path[i:]
+                    return self.gradient_path
+
         return self.gradient_path
 
     def path_regression(self, poly_order=3):
@@ -90,16 +97,6 @@ class Gradient_path_planner:
             for i, c_i in enumerate(coeffs[::-1]):
                 fx += c_i * x ** i
             regressed_path.append([x,fx])
-
-        # old_data = np.array(self.gradient_path)
-        # new_data = np.array(regressed_path)
-        # plt.cla()
-        # plt.plot(old_data[:,0], old_data[:,1], color = 'blue')
-        # plt.plot(new_data[:, 0], new_data[:, 1], color = 'red')
-        # # plt.xlim(30, 30)
-        # # plt.ylim(-30, -30)
-        # plt.draw()
-        # plt.pause(0.01)
 
         return regressed_path
     def get_regression_precision(self):
@@ -115,6 +112,7 @@ class Gradient_path_planner:
         grayscale = np.array(self.potential_field, dtype=np.uint8)
         for i in range(len(self.gradient_path)):
             px_x, px_y = round(self.gradient_path[i][0]), round(self.gradient_path[i][1])
+            px_x, px_y = max(min(px_x, len(grayscale)),0), max(min(px_y, len(grayscale)),0)  # constrain to img size
             grayscale[px_x][px_y] = 255
 
         apf_image = Image.fromarray(grayscale, mode="L")

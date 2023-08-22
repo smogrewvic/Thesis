@@ -61,7 +61,7 @@ def get_actor_blueprints(world, filter, generation):
         return []
 
 
-def generate(vehicle_spawn_transforms, pedestrian_spawn_transforms):
+def generate(vehicle_spawn_transforms, pedestrian_spawn_transforms, autopilot_state = True):
     argparser = argparse.ArgumentParser(
         description=__doc__)
     argparser.add_argument(
@@ -249,7 +249,7 @@ def generate(vehicle_spawn_transforms, pedestrian_spawn_transforms):
 
             # spawn the cars and set their autopilot and light state all together
             batch.append(SpawnActor(blueprint, transform)
-                         .then(SetAutopilot(FutureActor, True, traffic_manager.get_port())))
+                         .then(SetAutopilot(FutureActor, autopilot_state, traffic_manager.get_port())))
 
         for response in client.apply_batch_sync(batch, synchronous_master):
             if response.error:
