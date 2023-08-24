@@ -34,7 +34,6 @@ class Steering_Control_PID:
         self.pid.setpoint = target_lateral
         control_output = self.pid(vehicle_location_lateral)
 
-        # print("PID output", control_output)
         self.tracking_data.append([target_lateral, vehicle_location_lateral])
         return control_output
 
@@ -48,6 +47,7 @@ class Steering_Control_PID:
             y2.append(values[1])
 
         plt.cla()
+        plt.title("Vehicle Steering")
         plt.plot(x, y1, label="target")
         plt.plot(x, y2, label="vehicle position")
         plt.draw()

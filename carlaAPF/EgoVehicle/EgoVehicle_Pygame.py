@@ -92,6 +92,7 @@ import math
 import random
 import re
 import weakref
+from Tools.SpawnPoints import Spawn_Points
 
 try:
     import pygame
@@ -246,7 +247,12 @@ class World(object):
               "\n\tsimple_lane_change",
               "\n\tlane_change_intersection")
 
-        if spawn_point_name == "random":
+        if spawn_point_name in Spawn_Points.points.value:
+            attitude = Spawn_Points.points.value[spawn_point_name]
+            spawn_point = carla.Transform(carla.Location(x=attitude[0], y=attitude[1], z=attitude[2]),
+                                          carla.Rotation(pitch=attitude[3], yaw=attitude[4], roll=attitude[5]))
+
+        elif spawn_point_name == "random":
             print("Spawning at random point")
             spawn_points = self.map.get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()

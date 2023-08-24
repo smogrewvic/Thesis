@@ -37,16 +37,15 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
     steering_PID = Steering_Control_PID(ego_vehicle,
                                         potential_field.get_granularity(),
                                         potential_field = potential_field.get_potential_field())
-    steering_PID.set_PID_values(1, 0.0, 0.8)
+    steering_PID.set_PID_values(0.28, 0.08, 0) # good values p = 1, i = 0, d = 0.8      p =0.3, i = 0.1, d = 0
 
     ##### Throttle Control #####
     throttle_PID = Throttle_Control_PID(ego_vehicle,
                                         potential_field.get_potential_field(),
                                         potential_field.get_granularity())
+    throttle_PID.set_PID_values(0.1, 0.05, 0)
 
-    throttle_PID.set_PID_values(1, 0.0, 0.0)
     while True:
-
         potential_field.generate_APF()
 
         if holonomic == True:
@@ -59,10 +58,15 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
         steering_PID.set_regression_precision(path_planner.get_regression_precision())
         steering_control_output = steering_PID.get_control_output(navigation_path)
 
-        throttle_control_output = throttle_PID.get_control_output(navigation_path)
+        throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph = True)
+
 
         if autopilot_on == True:
-            ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
+            # ego_vehicle.apply_control(carla.VehicleControl(throttle=0.30, steer=steering_control_output))
+            if throttle_control_output>=0:
+                ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_control_output, steer=steering_control_output, brake = 0))
+            elif throttle_control_output<0:
+                ego_vehicle.apply_control(carla.VehicleControl(throttle=0, steer=steering_control_output, brake=throttle_control_output))
 
         if display_apf == True:
             path_planner.save_image_APF()
@@ -73,6 +77,7 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
 
         if display_control_sys == True:
             steering_PID.display_PID_tracking()
+            # throttle_PID.display_PID_tracking()
 
 if __name__ == '__main__':
     main()

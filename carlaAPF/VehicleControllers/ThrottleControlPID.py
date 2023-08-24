@@ -16,22 +16,20 @@ class Throttle_Control_PID:
     def set_PID_values(self, p=0, i=0, d=0):
         self.pid.tunings = (p, i, d)
 
-    def get_control_output(self, path):
+    def get_control_output(self, path, speed_limit, kph = True):
         clear_distance = len(self.potential_field) // 2 * self.potential_field_granularity
         minima_distance = min(path[-1][0], clear_distance)
-        speed_limit = 50
+        speed_limit = speed_limit / 3.6 if kph == True else speed_limit
         minimum_speed = 0
         stop_distance = 0.5
 
         # map target speed to gradient descent distance (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
         target_speed = (minima_distance - stop_distance) * (speed_limit - minimum_speed) / (clear_distance - stop_distance) + minimum_speed
-        current_speed = np.linalg.norm(self.ego_vehicle.get_velocity())
-        print("current speed", current_speed)
+        current_speed = np.linalg.norm([self.ego_vehicle.get_velocity().x, self.ego_vehicle.get_velocity().y, self.ego_vehicle.get_velocity().z])
         self.pid.setpoint = target_speed
         control_output = self.pid(current_speed)
 
-        print("Throttle PID output", control_output)
-
+        self.tracking_data.append([target_speed, current_speed])
         return control_output
 
     def display_PID_tracking(self):
@@ -44,7 +42,8 @@ class Throttle_Control_PID:
             y2.append(values[1])
 
         plt.cla()
-        plt.plot(x, y1, label="target")
-        plt.plot(x, y2, label="vehicle position")
+        plt.title("Vehicle Speed")
+        plt.plot(x, y1, label="Target m/s")
+        plt.plot(x, y2, label="Current m/s")
         plt.draw()
         plt.pause(0.01)

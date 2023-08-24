@@ -6,9 +6,9 @@ import multiprocessing
 
 if __name__ == "__main__":
 
-    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main)
+    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("lane_change_intersection",))
     p1.start()
-    p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main)
+    p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args= (True, False, True, False, True))
     p2.start()
     p1.join()
     p2.join()
