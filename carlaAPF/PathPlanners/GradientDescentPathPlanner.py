@@ -51,6 +51,7 @@ class Gradient_path_planner:
         return phi_max_directions
     def phi_max_gradient_descent(self, phi_max):
         self.gradient_path = []  # reset path
+        origin_i, origin_j = len(self.potential_field[0]) // 2, len(self.potential_field) // 2
         i, j = len(self.potential_field[0]) // 2, len(self.potential_field) // 2
 
         self.gradient_path = [[i, j]]  # reset path starting at ego_vehicle
@@ -81,15 +82,17 @@ class Gradient_path_planner:
         self.gradient_path = self.path_regression()
         if stop_at_minima == True:
             for i in range(len(self.gradient_path)):
-                if self.gradient_path[i][0]<=path_end_x:
+                if self.gradient_path[i][0]>=path_end_x:
                     self.gradient_path = self.gradient_path[i:]
-                    print("self.gradient_path", self.gradient_path)
+
                     return self.gradient_path
 
         return self.gradient_path
 
     def path_regression(self, poly_order=3):
         coeffs = self.regression_coefficients(poly_order)
+        if len(coeffs) == 1: ## poorly conditioned coeffs from regression
+            return self.gradient_path
 
         path_distance = len(self.potential_field) // 2
         regressed_path = []
@@ -105,8 +108,8 @@ class Gradient_path_planner:
     def regression_coefficients(self, poly_order=3):
 
         discreet_path = np.array(self.gradient_path)
-        if len(discreet_path)<= poly_order:  # return null coeffs if polyfit is poorly conditioned
-            return [0]*poly_order
+        if len(discreet_path)<= poly_order+1:  # return null coeffs if polyfit is poorly conditioned
+            return [0]
         coeffs = np.polyfit(discreet_path[:,0], discreet_path[:,1], poly_order)
 
         return coeffs

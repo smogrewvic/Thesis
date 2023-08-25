@@ -27,7 +27,7 @@ class Steering_Control_PID:
     def get_control_output(self, path):
         vehicle_location_lateral = len(self.potential_field)//2 * self.potential_field_granularity
         if len(path) > self.pid_look_ahead_distance:
-            target_lateral = path[self.pid_look_ahead_distance][1] * self.potential_field_granularity
+            target_lateral = path[-self.pid_look_ahead_distance][1] * self.potential_field_granularity
         else:
             target_lateral = path[-1][1] * self.potential_field_granularity
 

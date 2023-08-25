@@ -58,7 +58,7 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
         steering_PID.set_regression_precision(path_planner.get_regression_precision())
         steering_control_output = steering_PID.get_control_output(navigation_path)
 
-        throttle_control_output = throttle_PID.get_control_output(navigation_path, 5, kph = True)
+        throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph = True)
 
 
         if autopilot_on == True:

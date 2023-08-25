@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=20, granularity=0.4):
+    def __init__(self, field_size=20, granularity=0.2):
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
