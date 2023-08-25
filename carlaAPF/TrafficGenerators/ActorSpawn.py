@@ -386,9 +386,9 @@ def generate(vehicle_spawn_transforms, pedestrian_spawn_transforms, autopilot_st
         time.sleep(0.5)
 
 
-def main(vehicle_spawn_transforms= None, pedestrian_spawn_transforms = None):
+def main(vehicle_spawn_transforms= None, pedestrian_spawn_transforms = None, autopilot_state = True):
     try:
-        generate(vehicle_spawn_transforms, pedestrian_spawn_transforms)
+        generate(vehicle_spawn_transforms, pedestrian_spawn_transforms, autopilot_state)
     except KeyboardInterrupt:
         pass
     finally:

@@ -6,7 +6,7 @@ class VehicleAPF(APF_Object):
     def __init__(self, potential_field_size, potential_field_granularity):
         super().__init__(potential_field_size, potential_field_granularity)
         self.width = 1 / potential_field_granularity
-        self.length = 1.5 / potential_field_granularity
+        self.length = 2.5 / potential_field_granularity
         self.safety_radius = 3/potential_field_granularity
 
     def dynamic_APF2(self, x, y):

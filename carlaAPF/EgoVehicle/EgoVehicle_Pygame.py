@@ -250,7 +250,7 @@ class World(object):
         if spawn_point_name in Spawn_Points.points.value:
             attitude = Spawn_Points.points.value[spawn_point_name]
             spawn_point = carla.Transform(carla.Location(x=attitude[0], y=attitude[1], z=attitude[2]),
-                                          carla.Rotation(pitch=attitude[3], yaw=attitude[4], roll=attitude[5]))
+                                          carla.Rotation(pitch=attitude[3], roll=attitude[4], yaw=attitude[5]))
 
         elif spawn_point_name == "random":
             print("Spawning at random point")

@@ -81,8 +81,9 @@ class Gradient_path_planner:
         self.gradient_path = self.path_regression()
         if stop_at_minima == True:
             for i in range(len(self.gradient_path)):
-                if self.gradient_path[i][0]>=path_end_x:
+                if self.gradient_path[i][0]<=path_end_x:
                     self.gradient_path = self.gradient_path[i:]
+                    print("self.gradient_path", self.gradient_path)
                     return self.gradient_path
 
         return self.gradient_path
@@ -98,12 +99,14 @@ class Gradient_path_planner:
                 fx += c_i * x ** i
             regressed_path.append([x,fx])
 
-        return regressed_path
+        return regressed_path #flip the path for it to start at ego
     def get_regression_precision(self):
         return self.regression_precision
     def regression_coefficients(self, poly_order=3):
-        # perform regression
+
         discreet_path = np.array(self.gradient_path)
+        if len(discreet_path)<= poly_order:  # return null coeffs if polyfit is poorly conditioned
+            return [0]*poly_order
         coeffs = np.polyfit(discreet_path[:,0], discreet_path[:,1], poly_order)
 
         return coeffs
