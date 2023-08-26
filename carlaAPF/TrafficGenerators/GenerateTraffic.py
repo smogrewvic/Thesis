@@ -53,7 +53,7 @@ def get_actor_blueprints(world, filter, generation):
         return []
 
 
-def generate(autopilot_state):
+def generate(autopilot_state, percentage_of_speed_limit = 30):
     argparser = argparse.ArgumentParser(
         description=__doc__)
     argparser.add_argument(
@@ -335,7 +335,7 @@ def generate(autopilot_state):
         print('spawned %d vehicles and %d walkers, press Ctrl+C to exit.' % (len(vehicles_list), len(walkers_list)))
 
         # Example of how to use Traffic Manager parameters
-        traffic_manager.global_percentage_speed_difference(30.0)
+        traffic_manager.global_percentage_speed_difference(percentage_of_speed_limit)
 
         while True:
             if not args.asynch and synchronous_master:
@@ -367,9 +367,10 @@ def generate(autopilot_state):
         time.sleep(0.5)
 
 
-def main(autopilot_state = True):
+def main(autopilot_state = True, percentage_of_speed_limit = 30):
     try:
-        generate(autopilot_state)
+        inverse_percent = 100 - percentage_of_speed_limit
+        generate(autopilot_state, inverse_percent)
     except KeyboardInterrupt:
         pass
     finally:

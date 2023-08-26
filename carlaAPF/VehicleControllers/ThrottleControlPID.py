@@ -19,13 +19,11 @@ class Throttle_Control_PID:
     def get_control_output(self, path, speed_limit, kph = True):
         clear_distance = len(self.potential_field) // 2 * self.potential_field_granularity
         minima_distance = clear_distance - path[0][0] * self.potential_field_granularity
-        print("clear distance", clear_distance,"minima_distance", minima_distance, "path[0][0]",path[0][0])
         speed_limit = speed_limit / 3.6 if kph == True else speed_limit
-        minimum_speed = 0
+        minimum_speed = -0.5
         stop_distance = 0.5
 
         # map target speed to gradient descent distance (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-        # print("minima distance", minima_distance, "path[-1]", path[-1][0])
         target_speed = (minima_distance - stop_distance) * (speed_limit - minimum_speed) / (clear_distance - stop_distance) + minimum_speed
         current_speed = np.linalg.norm([self.ego_vehicle.get_velocity().x, self.ego_vehicle.get_velocity().y, self.ego_vehicle.get_velocity().z])
         self.pid.setpoint = target_speed
