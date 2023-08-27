@@ -131,4 +131,3 @@ class APF_Object:
 
     def dynamic_APF(self, x, y):
         return self.static_APF(x, y)
-        # return 255

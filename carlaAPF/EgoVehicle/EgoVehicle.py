@@ -29,8 +29,6 @@ def spectator_follow(view):
 
 if __name__ == '__main__':
 
-
-
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     bp_lib = world.get_blueprint_library()
