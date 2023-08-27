@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=20, granularity=0.3):
+    def __init__(self, field_size=20, granularity=0.6):
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
@@ -25,11 +25,6 @@ class APF:
         self.navpoint_actors = [] # to create lane apf
 
         self.max_steering_angle = 70  # actor.get_physics_control().wheels[0].max_steer_angle
-        # self.lowest_potential = {"value": float('inf'),
-        #                          "relative_position": [0, 0],
-        #                          "absolute_position": [0, 0],
-        #                          "angle": 0,
-        #                          "normalized_angle": 0}
 
 
     def update_actor_states(self):
