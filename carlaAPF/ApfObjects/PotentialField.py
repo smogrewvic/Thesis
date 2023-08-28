@@ -4,11 +4,13 @@ import carla
 from PIL import Image
 from ApfObjects.PedestrianAPF import PedestrianAPF
 from ApfObjects.VehicleAPF import VehicleAPF
-from ApfObjects.LaneAPF import LaneAPF
 from ApfObjects.NavpointAPF import NavpointAPF
 from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
 import cv2
 import matplotlib.pyplot as plt
+
+
+import threading
 
 
 class APF:
@@ -71,56 +73,6 @@ class APF:
 
             self.actor_ids[id].set_state(actor_state)
 
-    def update_lane_states(self):
-
-        # find ego vehicle asset in carla world, can't use self.actor_ids["ego_vehicle"]
-        carla_actors = self.world.get_actors()
-        ego_vehicle = None
-        for actor in carla_actors:
-            if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
-                ego_vehicle = actor
-                break
-        if ego_vehicle == None: return  # ego_vehicle not found
-
-        lane_center = self.world.get_map().get_waypoint(ego_vehicle.get_location(), project_to_road=True, lane_type=(
-                carla.LaneType.Driving | carla.LaneType.Shoulder | carla.LaneType.Sidewalk))
-
-        speed = 0
-        heading = round(lane_center.transform.rotation.yaw, 4)
-
-        position_left = (round(lane_center.transform.location.x, 4) + np.cos(np.radians(heading)-np.pi/2) * self.standard_lane_width / 2,
-                         round(lane_center.transform.location.y, 4) + np.sin(np.radians(heading)-np.pi/2) * self.standard_lane_width / 2,
-                         0)
-        position_right = (round(lane_center.transform.location.x, 4) + np.cos(np.radians(heading)+np.pi/2) * self.standard_lane_width / 2,
-                          round(lane_center.transform.location.y, 4) + np.sin(np.radians(heading)+np.pi/2) * self.standard_lane_width / 2,
-                          0)
-        acceleration = (0, 0, 0)
-        angular_vel = (0, 0, 0)
-        velocity = (0,0,0)
-
-        left_lane_state = {"position": np.array(position_left),
-                           "heading": heading,
-                           "speed": speed,
-                           "angular_velocity": np.array(angular_vel),
-                           "acceleration": np.array(acceleration),
-                           "velocity":velocity}
-
-        right_lane_state = {"position": np.array(position_right),
-                            "heading": heading,
-                            "speed": speed,
-                            "angular_velocity": np.array(angular_vel),
-                            "acceleration": np.array(acceleration),
-                            "velocity":velocity}
-
-        if "left_lane" not in self.actor_ids:
-            self.actor_ids.update({"left_lane": LaneAPF(len(self.potential_field), self.field_granularity)})
-
-        if "right_lane" not in self.actor_ids:
-            self.actor_ids.update({"right_lane": LaneAPF(len(self.potential_field), self.field_granularity)})
-
-        self.actor_ids["left_lane"].set_state(left_lane_state)
-        self.actor_ids["right_lane"].set_state(right_lane_state)
-
     def get_actor_states(self):
         for id in self.actor_ids:
             print(self.actor_ids[id].get_state())
@@ -131,7 +83,6 @@ class APF:
 
         self.potential_field.fill(0)  # erase potential field to not sum between calls
         self.update_actor_states()
-        self.update_lane_states()
 
         for id in self.actor_ids:
             if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
