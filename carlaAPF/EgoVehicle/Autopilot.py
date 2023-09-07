@@ -43,11 +43,7 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
 
 
     #Traffic lights
-    #get navpoints at intersections
-    navpoints = []
-    for waypoint in high_level_route.trace_route(origin, destination):
-        navpoints.append(waypoint[0])
-    potential_field.set_intersections(navpoints)
+    potential_field.set_intersections()
 
 
 
