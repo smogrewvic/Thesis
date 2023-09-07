@@ -2,7 +2,7 @@ import numpy as np
 from ApfObjects.APF_Object import APF_Object
 
 
-class IntersectionAPF(APF_Object):
+class TrafficLightAPF(APF_Object):
     def __init__(self, potential_field_size, potential_field_granularity, traffic_light_actor):
         super().__init__(potential_field_size, potential_field_granularity)
         self.width = 2 / potential_field_granularity

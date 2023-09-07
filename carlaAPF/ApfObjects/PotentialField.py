@@ -6,7 +6,7 @@ from ApfObjects.PedestrianAPF import PedestrianAPF
 from ApfObjects.VehicleAPF import VehicleAPF
 from ApfObjects.NavpointAPF import NavpointAPF
 from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
-from ApfObjects.TrafficLightAPF import IntersectionAPF
+from ApfObjects.TrafficLightAPF import TrafficLightAPF
 from Tools.TrafficLightInfo import TrafficLightInfo
 import cv2
 import matplotlib.pyplot as plt
@@ -96,8 +96,8 @@ class APF:
 
             if type(self.actor_ids[id]) == NavpointAPF: continue  # skip navpoints after this point
 
-            ignore_intersection = type(self.actor_ids[id]) == IntersectionAPF and self.actor_ids[id].get_light_state() != carla.TrafficLightState.Red
-            if ignore_intersection: continue
+            ignore_traffic_light = type(self.actor_ids[id]) == TrafficLightAPF and self.actor_ids[id].get_light_state() != carla.TrafficLightState.Red
+            if ignore_traffic_light: continue
 
             for y in range(len(self.potential_field)):
                 for x in range(len(self.potential_field[0])):
@@ -133,7 +133,7 @@ class APF:
             self.navpoint_actors.append(self.actor_ids[id])
 
 
-    def set_intersections(self):
+    def set_traffic_lights(self):
 
         client = carla.Client('localhost', 2000)
         world = client.get_world()
@@ -143,7 +143,7 @@ class APF:
             conversion_key = ( round(tl_actor.get_location().x, 4), round(tl_actor.get_location().y, 4), round(tl_actor.get_location().z, 4) )
             converted_data = TrafficLightInfo.convert_coordinates[conversion_key]
 
-            id = "intersection_" + str(i)
+            id = "traffic_light_" + str(i)
             speed = 0
             heading = converted_data[5]  # yaw angle
             position = (converted_data[0], converted_data[1], converted_data[2] )
@@ -151,15 +151,15 @@ class APF:
             angular_vel = (0, 0, 0)
             velocity = (0, 0, 0)
 
-            intersection_state = {"position": np.array(position),
+            traffic_light_state = {"position": np.array(position),
                                "heading": heading,
                                "speed": speed,
                                "angular_velocity": np.array(angular_vel),
                                "acceleration": np.array(acceleration),
                                "velocity":np.array(velocity)}
 
-            self.actor_ids.update({id: IntersectionAPF(len(self.potential_field), self.field_granularity, tl_actor)})
-            self.actor_ids[id].set_state(intersection_state)
+            self.actor_ids.update({id: TrafficLightAPF(len(self.potential_field), self.field_granularity, tl_actor)})
+            self.actor_ids[id].set_state(traffic_light_state)
 
     def set_lane_APF(self):
         #get all navpoint actors and send to laneAPF
@@ -195,8 +195,8 @@ class APF:
         x_navpoints = []
         y_navpoints = []
 
-        x_intersections = []
-        y_intersections = []
+        x_traffic_lights = []
+        y_traffic_lights = []
 
         for id in self.actor_ids:
             if id == "ego_vehicle":
@@ -205,11 +205,11 @@ class APF:
             elif type(self.actor_ids[id]) is NavpointAPF:
                 x_navpoints.append(self.actor_ids[id].get_state()["position"][0])
                 y_navpoints.append(self.actor_ids[id].get_state()["position"][1])
-            elif type(self.actor_ids[id]) is IntersectionAPF:
-                x_intersections.append(self.actor_ids[id].get_state()["position"][0])
-                y_intersections.append(self.actor_ids[id].get_state()["position"][1])
-                # x_intersections.append(self.actor_ids[id].get_state()["position"][0]+5*np.cos(self.actor_ids[id].get_state()["heading"]))
-                # y_intersections.append(self.actor_ids[id].get_state()["position"][1]+5*np.sin(self.actor_ids[id].get_state()["heading"]))
+            elif type(self.actor_ids[id]) is TrafficLightAPF:
+                x_traffic_lights.append(self.actor_ids[id].get_state()["position"][0])
+                y_traffic_lights.append(self.actor_ids[id].get_state()["position"][1])
+                # x_traffic_lights.append(self.actor_ids[id].get_state()["position"][0]+5*np.cos(self.actor_ids[id].get_state()["heading"]))
+                # y_traffic_lights.append(self.actor_ids[id].get_state()["position"][1]+5*np.sin(self.actor_ids[id].get_state()["heading"]))
             else:
                 x_actors.append(self.actor_ids[id].get_state()["position"][0])
                 y_actors.append(self.actor_ids[id].get_state()["position"][1])
@@ -218,7 +218,7 @@ class APF:
         plt.cla()
         plt.scatter(x_navpoints, y_navpoints, c="green")
         plt.scatter(x_actors, y_actors, c="blue")
-        plt.scatter(x_intersections, y_intersections, c = "orange")
+        plt.scatter(x_traffic_lights, y_traffic_lights, c = "orange")
         plt.scatter(x_ego, y_ego, c="red")
 
         plt.xlim(150, -150)
