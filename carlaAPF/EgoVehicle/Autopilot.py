@@ -41,6 +41,18 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
                                         potential_field.get_granularity())
     throttle_PID.set_PID_values(0.1, 0.05, 0)
 
+
+    #Traffic lights
+    #get navpoints at intersections
+    navpoints = []
+    for waypoint in high_level_route.trace_route(origin, destination):
+        navpoints.append(waypoint[0])
+    potential_field.set_intersections(navpoints)
+
+
+
+
+
     while True:
         potential_field.generate_APF()
 
@@ -73,6 +85,15 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
         if display_control_sys == True:
             # steering_PID.display_PID_tracking()
             throttle_PID.display_PID_tracking()
+
+        # print("current",
+        #       round(ego_vehicle.get_location().x,4), "\t",
+        #       round(ego_vehicle.get_location().y,4), "\t",
+        #       round(ego_vehicle.get_location().z,4), "\t",
+        #       round(ego_vehicle.get_transform().rotation.pitch, 4), "\t",
+        #       round(ego_vehicle.get_transform().rotation.roll, 4), "\t",
+        #       round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
+        #       )
 
 if __name__ == '__main__':
     main()
