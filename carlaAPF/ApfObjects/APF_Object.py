@@ -131,3 +131,10 @@ class APF_Object:
 
     def dynamic_APF(self, x, y):
         return self.static_APF(x, y)
+
+    def centroid_APF(self, x, y):
+        position = self.scaled_egocentric_state["position"]
+        if x == int(position[0]) and y == int(position[1]):
+            return 255
+        else:
+            return 0

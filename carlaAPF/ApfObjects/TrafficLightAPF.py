@@ -11,13 +11,7 @@ class IntersectionAPF(APF_Object):
         self.traffic_light_actor = traffic_light_actor
         self.light_state = None
 
-
     def dynamic_APF(self, x, y):
-        # position = self.scaled_egocentric_state["position"]
-        # if x == int(position[0]) and y == int(position[1]):
-        #     return 255
-        # else:
-        #     return 0
 
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         theta = np.radians(self.relative_state["heading"])

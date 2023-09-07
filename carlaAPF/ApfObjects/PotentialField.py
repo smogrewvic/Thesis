@@ -6,7 +6,7 @@ from ApfObjects.PedestrianAPF import PedestrianAPF
 from ApfObjects.VehicleAPF import VehicleAPF
 from ApfObjects.NavpointAPF import NavpointAPF
 from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
-from ApfObjects.IntersectionAPF import IntersectionAPF
+from ApfObjects.TrafficLightAPF import IntersectionAPF
 from Tools.TrafficLightInfo import TrafficLightInfo
 import cv2
 import matplotlib.pyplot as plt
@@ -138,7 +138,6 @@ class APF:
         client = carla.Client('localhost', 2000)
         world = client.get_world()
 
-
         for i, tl_actor in enumerate(world.get_actors().filter('traffic.traffic_light*')):
             #convert actor position to traffic light effect position
             conversion_key = ( round(tl_actor.get_location().x, 4), round(tl_actor.get_location().y, 4), round(tl_actor.get_location().z, 4) )
@@ -161,62 +160,6 @@ class APF:
 
             self.actor_ids.update({id: IntersectionAPF(len(self.potential_field), self.field_granularity, tl_actor)})
             self.actor_ids[id].set_state(intersection_state)
-
-
-
-
-
-
-        # client = carla.Client('localhost', 2000)
-        # world = client.get_world()
-        #
-        # i = 0
-        # for tl_helper in TrafficLightInfo:
-        #     temp_id = int(tl_helper.name[3:])  # make id compatible with carla actor naming
-        #     for tl_actor in world.get_actors().filter('traffic.traffic_light*'):
-        #         if tl_actor.id == temp_id:
-        #             i+=1
-        #             id = "intersection_" + str(i)
-        #             speed = 0
-        #             heading = tl_helper.value[5]  # yaw angle
-        #             position = (tl_helper.value[0], tl_helper.value[1], tl_helper.value[2] )
-        #             acceleration = (0, 0, 0)
-        #             angular_vel = (0, 0, 0)
-        #             velocity = (0, 0, 0)
-        #
-        #             intersection_state = {"position": np.array(position),
-        #                                "heading": heading,
-        #                                "speed": speed,
-        #                                "angular_velocity": np.array(angular_vel),
-        #                                "acceleration": np.array(acceleration),
-        #                                "velocity":np.array(velocity)}
-        #
-        #             self.actor_ids.update({id: IntersectionAPF(len(self.potential_field), self.field_granularity, tl_actor)})
-        #             self.actor_ids[id].set_state(intersection_state)
-        #
-        #             break
-
-
-
-
-
-
-
-                # client = carla.Client('localhost', 2000)
-                # world = client.get_world()
-                #
-                # traffic_lights = []
-                # for tl in world.get_actors().filter('traffic.traffic_light*'):
-                #     # Trigger/bounding boxes contain half extent and offset relative to the actor.
-                #     trigger_transform = tl.get_transform()
-                #     print("light",
-                #           tl.id, "\t",
-                #           round(tl.get_location().x, 4), "\t",
-                #           round(tl.get_location().y, 4), "\t",
-                #           round(tl.get_location().z, 4), "\t",
-                #           tl.get_state()
-                # )
-
 
     def set_lane_APF(self):
         #get all navpoint actors and send to laneAPF
