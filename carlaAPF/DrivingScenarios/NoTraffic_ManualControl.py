@@ -10,7 +10,7 @@ if __name__ == "__main__":
     p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(False,  # autopilot_on
                                                                          False,  # holonomic
                                                                          True,  # display apf
-                                                                         True,  # display actors
+                                                                         False,  # display actors
                                                                          False  # display control system
                                                                          ))
     p2.start()
