@@ -5,10 +5,10 @@ import skfuzzy as fuzz
 import skfuzzy.control as ctrl
 
 class SVO_Fuzzy:
-    def __init__(self, actor):
-        self.actor = actor
+    def __init__(self):
+        # self.actor = actor
         self.fuzzy_controller = self.fuzzy_setup()
-        
+
     def fuzzy_setup(self):
         # Create fuzzy variables
         input1 = ctrl.Antecedent(np.arange(0, 5, 0.1), 'following_distance')
@@ -17,10 +17,9 @@ class SVO_Fuzzy:
         input4 = ctrl.Antecedent(np.arange(0, 200, 0.1), 'speed_limit')
         input5 = ctrl.Antecedent(np.arange(0, 5, 0.1), 'smoothness')
 
-        output1 = ctrl.Consequent(np.arange(0, 6, 0.1), 'front_APF')
-        output2 = ctrl.Consequent(np.arange(0, 6, 0.1), 'rear_APF')
-        output3 = ctrl.Consequent(np.arange(0, 3, 0.1), 'lateral_APF')
-
+        output1 = ctrl.Consequent(np.arange(0, 6, 0.1), 'svo_front')
+        output2 = ctrl.Consequent(np.arange(0, 6, 0.1), 'svo_rear')
+        output3 = ctrl.Consequent(np.arange(0, 3, 0.1), 'svo_lateral')
 
         # input membership functions
         input1['competitive'] = fuzz.zmf(input1.universe, 1, 3)
@@ -48,62 +47,23 @@ class SVO_Fuzzy:
         output3['low'] = fuzz.zmf(output3.universe, 0.25, 1.5)
         output3['high'] = fuzz.smf(output3.universe, 0.4, 1.5)
 
-
         # Create fuzzy rules
         rule1 = ctrl.Rule(input1['competitive'], output1['high'] & output2['high'])
         rule2 = ctrl.Rule(input2['competitive'], output1['high'] & output3['low'])
         rule3 = ctrl.Rule(input3['competitive'], output2['high'] & output3['high'])
         rule4 = ctrl.Rule(input4['competitive'], output1['high'] & output3['low'])
         rule5 = ctrl.Rule(input5['competitive'], output1['low'] & output2['low' ]& output3['high']) #TODO: revise
-
         rule6 = ctrl.Rule(input1['prosocial'], output1['low'] & output2['low'])
         rule7 = ctrl.Rule(input2['prosocial'], output2['low'])
         rule8 = ctrl.Rule(input3['prosocial'], output1['low'] & output2['low'] & output3['low']) #TODO: revise
         rule9 = ctrl.Rule(input4['prosocial'], output1['low'] & output2['low'] & output3['low'])
         rule10 = ctrl.Rule(input5['prosocial'], output1['low'] & output2['low'] & output3['low'])
 
-
         # Create fuzzy control system
-        control_system = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8, rule9, rule10 ])
+        control_system = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8, rule9, rule10])
         fisSimulation = ctrl.ControlSystemSimulation(control_system)
 
         return fisSimulation
-
-    def calculateAngles(self):
-        targetVector = [self.target[0] - self.vehicle.getPosition()[0],
-                        self.target[1] - self.vehicle.getPosition()[1]]
-        if np.linalg.norm(targetVector) != 0:
-            self.targetForceVectors = targetVector/ np.linalg.norm(targetVector)
-        else:
-            self.targetForceVectors = targetVector / np.linalg.norm(targetVector)
-
-        for i in range(len(self.obstacles)):
-            currentObstacle = self.obstacles[i]
-            obstacleVector = [currentObstacle.getPosition()[0] - self.vehicle.getPosition()[0],
-                              currentObstacle.getPosition()[1] - self.vehicle.getPosition()[1]]
-
-            # angleObstacleTarget = np.arccos(round(np.dot(obstacleVector, targetVector),5) / round((np.linalg.norm(obstacleVector) * np.linalg.norm(targetVector)),5)) # floating point error mitigation
-            angleObstacleTarget = np.arccos(np.dot(obstacleVector, targetVector) / (np.linalg.norm(obstacleVector) * np.linalg.norm(targetVector)))
-
-            self.fuzzyInputs[i][1] = abs(angleObstacleTarget)
-            self.obstacleForceVectors[i] = obstacleVector / np.linalg.norm(obstacleVector)
-
-            return angleObstacleTarget
-
-    def calculateDistanceRatios(self):
-        targetVector = [self.target[0] - self.vehicle.getPosition()[0],
-                        self.target[1] - self.vehicle.getPosition()[1]]
-
-        for i in range(len(self.obstacles)):
-            currentObstacle = self.obstacles[i]
-            obstacleVector = [currentObstacle.getPosition()[0] - self.vehicle.getPosition()[0],
-                              currentObstacle.getPosition()[1] - self.vehicle.getPosition()[1]]
-
-            distanceRatio = (np.linalg.norm(obstacleVector) / np.linalg.norm(targetVector))
-
-            self.fuzzyInputs[i][0] = distanceRatio
-
-        return distanceRatio
 
     def saturateValue(self, value, saturationHigh, saturationLow):
 
@@ -114,53 +74,29 @@ class SVO_Fuzzy:
 
         return value
 
-    def calculateSteeringInput(self, headingRequest):
-
-        currentHeading = self.vehicle.getHeading()
-
-        netAngle = headingRequest - currentHeading  # positive CCW
-        if netAngle > np.pi:
-            netAngle = netAngle - 2*np.pi   # convert from 360degs to left/right
-
-        maxAngle = self.vehicle.carModel.maxTireAngleRads.value
-        netAngle = self.saturateValue(netAngle, maxAngle, -maxAngle)
-
-        return netAngle
-
-
-    def navigate(self, display=False):
-        self.vehicle.updateState()
-        self.updateTarget()
-        self.updateObstacles()
-        self.calculateAngles()
-        self.calculateDistanceRatios()
+    def get_actor_svo(self, actor):
 
         # Set inputs and compute output
-        self.fuzzy_controller.input['distanceRatio'] = self.fuzzyInputs[0][0]
-        self.fuzzy_controller.input['relativeAngle'] = self.fuzzyInputs[0][1]
+        self.fuzzy_controller.input['following_distance'] = self.fuzzyInputs[0][0]
+        self.fuzzy_controller.input['merge_speed_change'] = self.fuzzyInputs[0][1]
+        self.fuzzy_controller.input['lane_changes'] = self.fuzzyInputs[0][0]
+        self.fuzzy_controller.input['speed_limit'] = self.fuzzyInputs[0][0]
+        self.fuzzy_controller.input['smoothness'] = self.fuzzyInputs[0][0]
 
         try:
             self.fuzzy_controller.compute()
         except:
             print("crisp output not possible")
-            return False
+            return 1, 1, 1
 
-        repulsionVector = -1 * self.fuzzy_controller.output['output'] * np.array(self.obstacleForceVectors[0])
-        attractionVector = (1 - self.fuzzy_controller.output['output']) * np.array(self.targetForceVectors)
+        svo_front = self.fuzzy_controller.output['svo_front']
+        svo_rear = self.fuzzy_controller.output['svo_rear']
+        svo_lateral = self.fuzzy_controller.output['svo_lateral']
 
-        resultForceVector = np.add(repulsionVector, attractionVector)
-        resultForceAngle = math.atan2(resultForceVector[1], resultForceVector[0])
+        return svo_front, svo_rear, svo_lateral
 
-        # using tire angle to steer
-        tireAngle = self.calculateSteeringInput(resultForceAngle)
-        self.vehicle.setTireAngle(tireAngle)
 
-        if display == True:
-            self.displayPlots([self.inputMF1, self.inputMF2], [self.outputMF1], [self.rule1, self.rule2])
-
-        return resultForceVector, repulsionVector, attractionVector
-
-    def displayPlots(self, inputMemberships, outputMemberships, rules):
+    def display_memberships(self, inputMemberships, outputMemberships, rules):
 
         fis = ctrl.ControlSystem(rules)
         controlSystem = ctrl.ControlSystemSimulation(fis)
