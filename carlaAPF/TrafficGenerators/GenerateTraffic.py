@@ -361,7 +361,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         for i in range(0, len(all_id), 2):
             all_actors[i].stop()
 
-        print('\ndestroying %d walkers' % len(walkers_list))
+        print('\ndestroying %d walkers' % len(walkers_list)) #
         client.apply_batch([carla.command.DestroyActor(x) for x in all_id])
 
         time.sleep(0.5)
