@@ -6,6 +6,10 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
+
+from SVO.Vehicle_Behavior_Types import Behavior_Types
+
+
 """Example script to generate traffic in the simulation"""
 
 import glob
@@ -26,6 +30,8 @@ import carla
 import argparse
 import logging
 from numpy import random
+
+from SVO.Vehicle_Behavior_Manager import Vehicle_Behavior_Manager
 
 
 def get_actor_blueprints(world, filter, generation):
@@ -234,11 +240,12 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
                 blueprint.set_attribute('role_name', 'hero')
                 hero = False
             else:
-                blueprint.set_attribute('role_name', 'autopilot')
+                # blueprint.set_attribute('role_name', 'autopilot')
+                blueprint.set_attribute('role_name', 'altruistic')  # todo: messign around here for behavior
+
 
             # spawn the cars and set their autopilot and light state all together
-            batch.append(SpawnActor(blueprint, transform)
-                         .then(SetAutopilot(FutureActor, autopilot_state, traffic_manager.get_port())))
+            batch.append(SpawnActor(blueprint, transform).then(SetAutopilot(FutureActor, autopilot_state, traffic_manager.get_port())))
 
         for response in client.apply_batch_sync(batch, synchronous_master):
             if response.error:
@@ -251,6 +258,26 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
             all_vehicle_actors = world.get_actors(vehicles_list)
             for actor in all_vehicle_actors:
                 traffic_manager.update_vehicle_lights(actor, True)
+
+
+        ##### ACTOR BEHAVIOR ######
+        # for actor in world.get_actors(vehicles_list):
+            # behavior = Behavior.sadistic()
+            #
+            # traffic_manager.distance_to_leading_vehicle(actor, behavior['distance_to_leading_vehicle'])
+            # traffic_manager.keep_right_rule_percentage(actor, behavior['keep_right_rule_percentage'])
+            # traffic_manager.random_left_lanechange_percentage(actor, behavior['random_left_lanechange_percentage'])
+            # traffic_manager.random_right_lanechange_percentage(actor, behavior['random_right_lanechange_percentage'])
+            # traffic_manager.vehicle_lane_offset(actor, behavior['vehicle_lane_offset'])
+            # traffic_manager.vehicle_percentage_speed_difference(actor, behavior['vehicle_percentage_speed_difference'])
+        # vehicles_list = world.get_actors().filter('vehicle.*')
+        # print("in generate: world", world)
+        # print("in generate: vehicle_list", vehicles_list)
+        vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
+        vehicle_behavior.set_behaviors()
+
+
+
 
         # -------------
         # Spawn Walkers
@@ -340,7 +367,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         while True:
             if not args.asynch and synchronous_master:
                 world.tick()
-                # pf.APF.write_actor_data(world.get_actors())
+                # vehicle_behavior.update_follow_time()
             else:
                 world.wait_for_tick()
 
