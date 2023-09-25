@@ -4,9 +4,9 @@ from SVO.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 
 
 class Pedestrian_Behavior_Manager():
-    def __init__(self, vehicles_list, traffic_manager):
-        self.vehicles_list = vehicles_list
-        self.traffic_manager = traffic_manager
+    def __init__(self, pedestrian_list):
+        self.vehicles_list = pedestrian_list
+
 
     def update_follow_time(self):
         for actor in self.vehicles_list:

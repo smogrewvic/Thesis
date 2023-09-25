@@ -7,7 +7,7 @@ from ApfObjects.VehicleAPF import VehicleAPF
 from ApfObjects.NavpointAPF import NavpointAPF
 from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
 from ApfObjects.TrafficLightAPF import TrafficLightAPF
-from Tools.TrafficLightInfo import TrafficLightInfo
+from Tools.Traffic_Light_Info import Traffic_Light_Info
 import cv2
 import matplotlib.pyplot as plt
 
@@ -141,7 +141,7 @@ class APF:
         for i, tl_actor in enumerate(world.get_actors().filter('traffic.traffic_light*')):
             #convert actor position to traffic light effect position
             conversion_key = ( round(tl_actor.get_location().x, 4), round(tl_actor.get_location().y, 4), round(tl_actor.get_location().z, 4) )
-            converted_data = TrafficLightInfo.convert_coordinates[conversion_key]
+            converted_data = Traffic_Light_Info.convert_coordinates[conversion_key]
 
             id = "traffic_light_" + str(i)
             speed = 0

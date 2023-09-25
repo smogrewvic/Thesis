@@ -7,6 +7,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 
+from SVO.Vehicle_Behavior_Types import Behavior_Types
 
 
 """Example script to generate traffic in the simulation"""
@@ -239,8 +240,8 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
                 blueprint.set_attribute('role_name', 'hero')
                 hero = False
             else:
-                blueprint.set_attribute('role_name', 'autopilot')
-                # blueprint.set_attribute('role_name', 'altruistic')  # todo: messign around here for behavior
+                # blueprint.set_attribute('role_name', 'autopilot')
+                blueprint.set_attribute('role_name', 'altruistic')  # todo: messign around here for behavior
 
 
             # spawn the cars and set their autopilot and light state all together
@@ -260,8 +261,8 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
 
 
         ##### VEHICLE ACTOR BEHAVIOR ######
-        # vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
-        # vehicle_behavior.set_behaviors()
+        vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
+        vehicle_behavior.set_behaviors()
 
 
 
@@ -288,6 +289,8 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         walker_speed = []
         for spawn_point in spawn_points:
             walker_bp = random.choice(blueprintsWalkers)
+            walker_bp.set_attribute('roll_name', 'sadistic')  #TODO: messing with behavior here
+
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):
                 walker_bp.set_attribute('is_invincible', 'false')

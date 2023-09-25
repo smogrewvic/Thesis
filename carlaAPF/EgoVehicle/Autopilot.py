@@ -52,20 +52,19 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
     while True:
         potential_field.generate_APF()
 
-        if holonomic == True:
-            navigation_path = path_planner.holonomic_gradient_descent()
-        else:
-            # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
-            navigation_path = path_planner.phi_max_regressed_descent(0.7854)
+        # if holonomic == True:
+        #     navigation_path = path_planner.holonomic_gradient_descent()
+        # else:
+        #     # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
+        #     navigation_path = path_planner.phi_max_regressed_descent(0.7854)
 
-
-        steering_PID.set_regression_precision(path_planner.get_regression_precision())
-        steering_control_output = steering_PID.get_control_output(navigation_path)
-
-        throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph = True)
 
 
         if autopilot_on == True:
+            steering_PID.set_regression_precision(path_planner.get_regression_precision())
+            steering_control_output = steering_PID.get_control_output(navigation_path)
+            throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph=True)
+
             if throttle_control_output>=0:
                 ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_control_output, steer=steering_control_output, brake = 0))
             elif throttle_control_output<0:
@@ -82,14 +81,14 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
             # steering_PID.display_PID_tracking()
             throttle_PID.display_PID_tracking()
 
-        # print("current",
-        #       round(ego_vehicle.get_location().x,4), "\t",
-        #       round(ego_vehicle.get_location().y,4), "\t",
-        #       round(ego_vehicle.get_location().z,4), "\t",
-        #       round(ego_vehicle.get_transform().rotation.pitch, 4), "\t",
-        #       round(ego_vehicle.get_transform().rotation.roll, 4), "\t",
-        #       round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
-        #       )
+        print("current",
+              round(ego_vehicle.get_location().x,4), "\t",
+              round(ego_vehicle.get_location().y,4), "\t",
+              round(ego_vehicle.get_location().z,4), "\t",
+              round(ego_vehicle.get_transform().rotation.pitch, 4), "\t",
+              round(ego_vehicle.get_transform().rotation.roll, 4), "\t",
+              round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
+              )
 
 if __name__ == '__main__':
     main()
