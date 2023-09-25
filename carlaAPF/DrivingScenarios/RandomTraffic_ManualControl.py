@@ -14,7 +14,7 @@ if __name__ == "__main__":
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(False,  # autopilot_on
                                                                          False,  # holonomic
                                                                          False,  # display apf
-                                                                         False,  # display actors
+                                                                         True,  # display actors
                                                                          False  # display control system
                                                                          ))
 

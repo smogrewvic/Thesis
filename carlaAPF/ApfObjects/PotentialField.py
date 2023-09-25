@@ -8,6 +8,7 @@ from ApfObjects.NavpointAPF import NavpointAPF
 from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
 from ApfObjects.TrafficLightAPF import TrafficLightAPF
 from Tools.Traffic_Light_Info import Traffic_Light_Info
+from Tools.Crosswalk_Info import Crosswalk_Info
 import cv2
 import matplotlib.pyplot as plt
 
@@ -197,6 +198,8 @@ class APF:
 
         x_traffic_lights = []
         y_traffic_lights = []
+        x_crosswalks = []
+        y_crosswalks = []
 
         for id in self.actor_ids:
             if id == "ego_vehicle":
@@ -208,17 +211,20 @@ class APF:
             elif type(self.actor_ids[id]) is TrafficLightAPF:
                 x_traffic_lights.append(self.actor_ids[id].get_state()["position"][0])
                 y_traffic_lights.append(self.actor_ids[id].get_state()["position"][1])
-                # x_traffic_lights.append(self.actor_ids[id].get_state()["position"][0]+5*np.cos(self.actor_ids[id].get_state()["heading"]))
-                # y_traffic_lights.append(self.actor_ids[id].get_state()["position"][1]+5*np.sin(self.actor_ids[id].get_state()["heading"]))
             else:
                 x_actors.append(self.actor_ids[id].get_state()["position"][0])
                 y_actors.append(self.actor_ids[id].get_state()["position"][1])
+
+        for coordinate in Crosswalk_Info.crosswalk_points:
+            x_crosswalks.append(coordinate[0])
+            y_crosswalks.append(coordinate[1])
 
 
         plt.cla()
         plt.scatter(x_navpoints, y_navpoints, c="green")
         plt.scatter(x_actors, y_actors, c="blue")
         plt.scatter(x_traffic_lights, y_traffic_lights, c = "orange")
+        plt.scatter(x_crosswalks, y_crosswalks, c = "purple")
         plt.scatter(x_ego, y_ego, c="red")
 
         plt.xlim(150, -150)
