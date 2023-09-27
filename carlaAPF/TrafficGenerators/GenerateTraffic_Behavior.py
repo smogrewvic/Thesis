@@ -289,7 +289,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         walker_speed = []
         for spawn_point in spawn_points:
             walker_bp = random.choice(blueprintsWalkers)
-            walker_bp.set_attribute('roll_name', 'altruistic')  #TODO: messing with behavior here
+            walker_bp.set_attribute('role_name', 'altruistic')  #TODO: messing with behavior here
 
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):

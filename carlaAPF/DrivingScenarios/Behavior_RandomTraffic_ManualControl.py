@@ -5,7 +5,7 @@ from time import sleep
 import multiprocessing
 
 if __name__ == "__main__":
-    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("id_83",))
+    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("id_98",))
 
     p2 = multiprocessing.Process(target=TrafficGenerators.GenerateTraffic_Behavior.main, args = (True,  # actor autopilot
                                                                                                  30     # percentage of speed limit
