@@ -81,14 +81,14 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
             # steering_PID.display_PID_tracking()
             throttle_PID.display_PID_tracking()
 
-        print("current",
-              round(ego_vehicle.get_location().x,4), "\t",
-              round(ego_vehicle.get_location().y,4), "\t",
-              round(ego_vehicle.get_location().z,4), "\t",
-              round(ego_vehicle.get_transform().rotation.pitch, 4), "\t",
-              round(ego_vehicle.get_transform().rotation.roll, 4), "\t",
-              round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
-              )
+        # print("current",
+        #       round(ego_vehicle.get_location().x,4), "\t",
+        #       round(ego_vehicle.get_location().y,4), "\t",
+        #       round(ego_vehicle.get_location().z,4), "\t",
+        #       round(ego_vehicle.get_transform().rotation.pitch, 4), "\t",
+        #       round(ego_vehicle.get_transform().rotation.roll, 4), "\t",
+        #       round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
+        #       )
 
 if __name__ == '__main__':
     main()

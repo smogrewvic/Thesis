@@ -7,7 +7,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 
-from SVO.Vehicle_Behavior_Types import Behavior_Types
+
 
 
 """Example script to generate traffic in the simulation"""
@@ -32,7 +32,7 @@ import logging
 from numpy import random
 
 from SVO.Vehicle_Behavior_Manager import Vehicle_Behavior_Manager
-
+from SVO.Pedestrian_Behavior_Manager import Pedestrian_Behavior_Manager
 
 def get_actor_blueprints(world, filter, generation):
     bps = world.get_blueprint_library().filter(filter)
@@ -289,7 +289,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         walker_speed = []
         for spawn_point in spawn_points:
             walker_bp = random.choice(blueprintsWalkers)
-            walker_bp.set_attribute('roll_name', 'sadistic')  #TODO: messing with behavior here
+            walker_bp.set_attribute('roll_name', 'altruistic')  #TODO: messing with behavior here
 
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):
@@ -338,7 +338,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         else:
             world.tick()
 
-        # 5. initialize each controller and set target to walk to (list is [controler, actor, controller, actor ...])
+        # 5. initialize each controller and set target to walk to (list is [controller, actor, controller, actor ...])
         # set how many pedestrians can cross the road
         world.set_pedestrians_cross_factor(percentagePedestriansCrossing)
         for i in range(0, len(all_id), 2):
@@ -354,10 +354,16 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         # Example of how to use Traffic Manager parameters
         traffic_manager.global_percentage_speed_difference(percentage_of_speed_limit)
 
+        ##### PEDESTRIAN ACTOR BEHAVIOR ######
+        pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
+        pedestrian_behavior.set_behaviors()
+
+
         while True:
             if not args.asynch and synchronous_master:
                 world.tick()
                 # vehicle_behavior.update_follow_time()
+                pedestrian_behavior.set_behaviors()
             else:
                 world.wait_for_tick()
 
