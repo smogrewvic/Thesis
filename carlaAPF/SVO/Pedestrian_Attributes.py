@@ -3,7 +3,6 @@ import json
 class Pedestrian_Attributes:
     def __init__(self):
         pass
-
     @staticmethod
     def encode_string(data):
         """
