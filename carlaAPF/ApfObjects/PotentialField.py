@@ -79,13 +79,11 @@ class APF:
 
         return self.actor_ids
 
-    def generate_APF(self):
-
-        self.potential_field.fill(0)  # erase potential field to not sum between calls
+    def set_actor_APF(self):
         self.update_actor_states()
 
         for id in self.actor_ids:
-            if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
+            if id == "ego_vehicle": continue  # ignore ego_vehicle APF
 
             # update egocentric actor state to center in APF relative to ego vehicle
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
@@ -106,7 +104,34 @@ class APF:
                     # indexed from top left
                     self.potential_field[-x - 1][y] = min(
                         self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
+    def generate_APF(self):
 
+        self.potential_field.fill(0)  # erase potential field to not sum between calls
+        # self.update_actor_states()
+        #
+        # for id in self.actor_ids:
+        #     if id == "ego_vehicle" : continue  # ignore ego_vehicle APF
+        #
+        #     # update egocentric actor state to center in APF relative to ego vehicle
+        #     self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
+        #                                                len(self.potential_field) // 2, len(self.potential_field) // 2)
+        #
+        #     distance = np.linalg.norm(self.actor_ids[id].get_relative_state()["position"])
+        #     if abs(distance) >= self.field_size: #skip actors out of field
+        #         continue
+        #
+        #     if type(self.actor_ids[id]) == NavpointAPF: continue  # skip navpoints after this point
+        #
+        #     ignore_traffic_light = type(self.actor_ids[id]) == TrafficLightAPF and self.actor_ids[id].get_light_state() != carla.TrafficLightState.Red
+        #     if ignore_traffic_light: continue
+        #
+        #     for y in range(len(self.potential_field)):
+        #         for x in range(len(self.potential_field[0])):
+        #
+        #             # indexed from top left
+        #             self.potential_field[-x - 1][y] = min(
+        #                 self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
+        self.set_actor_APF()
         self.set_lane_APF()
 
     def set_navpoints(self, navpoint_transforms):

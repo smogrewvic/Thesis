@@ -1,6 +1,6 @@
 import json
 
-class Pedestrian_Attributes:
+class Attribute_Encoder:
     def __init__(self):
         pass
     @staticmethod
@@ -17,7 +17,7 @@ class Pedestrian_Attributes:
         return json.dumps(data)
 
     @staticmethod
-    def decode(json_str):
+    def decode_string(json_str):
         """
         Decode a JSON string into a dictionary.
 
@@ -29,20 +29,20 @@ class Pedestrian_Attributes:
         """
         return json.loads(json_str)
 
-# Example usage:
-data = {
-    "behavior_type": "walking",
-    "time_looking": 10,
-    "time_waiting": 5,
-    "distance_to_crosswalk": 20,
-    "currently_crossing": True
-}
-
-# Encode the data as a JSON string
-encoded_data = BehaviorDataEncoderDecoder.encode_string(data)
-print("Encoded JSON:", encoded_data)
-
-# Decode the JSON string back into a dictionary
-decoded_data = BehaviorDataEncoderDecoder.decode(encoded_data)
-print("Decoded Data:", decoded_data)
-print(decoded_data['behavior_type'])
+# # Example usage:
+# data = {
+#     "behavior_type": "walking",
+#     "time_looking": 10,
+#     "time_waiting": 5,
+#     "distance_to_crosswalk": 20,
+#     "currently_crossing": True
+# }
+#
+# # Encode the data as a JSON string
+# encoded_data = BehaviorDataEncoderDecoder.encode_string(data)
+# print("Encoded JSON:", encoded_data)
+#
+# # Decode the JSON string back into a dictionary
+# decoded_data = BehaviorDataEncoderDecoder.decode(encoded_data)
+# print("Decoded Data:", decoded_data)
+# print(decoded_data['behavior_type'])

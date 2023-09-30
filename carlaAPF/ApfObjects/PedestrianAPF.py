@@ -8,6 +8,10 @@ class PedestrianAPF(APF_Object):
         self.length = 4
         self.safety_radius = 5 / potential_field_granularity
 
+    def fuzzy_SVO(self, behavior_params):
+        sigma_front = 12
+        sigma_rear = 12
+        sigma_lateral = 2
 
     def dynamic_APF(self, x, y):
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]

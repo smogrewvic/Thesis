@@ -52,15 +52,15 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
     while True:
         potential_field.generate_APF()
 
-        # if holonomic == True:
-        #     navigation_path = path_planner.holonomic_gradient_descent()
-        # else:
-        #     # navigation_path = path_planner.phi_max_gradient_descent(0.7854)
-        #     navigation_path = path_planner.phi_max_regressed_descent(0.7854)
-
 
 
         if autopilot_on == True:
+            if holonomic == True:
+                navigation_path = path_planner.holonomic_gradient_descent()
+            else:
+
+                navigation_path = path_planner.phi_max_regressed_descent(0.7854)
+
             steering_PID.set_regression_precision(path_planner.get_regression_precision())
             steering_control_output = steering_PID.get_control_output(navigation_path)
             throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph=True)
@@ -78,7 +78,7 @@ def main(autopilot_on = True, holonomic = False, display_apf = True, display_act
             potential_field.plot_actor_positions()
 
         if display_control_sys == True:
-            # steering_PID.display_PID_tracking()
+            steering_PID.display_PID_tracking()
             throttle_PID.display_PID_tracking()
 
         # print("current",

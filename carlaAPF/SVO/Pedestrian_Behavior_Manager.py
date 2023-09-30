@@ -2,6 +2,7 @@ import carla
 import numpy as np
 from SVO.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 from Tools.Crosswalk_Info import Crosswalk_Info
+from Tools.Attribute_Encoder import Attribute_Encoder
 import time
 
 
@@ -31,7 +32,7 @@ class Pedestrian_Behavior_Manager():
                                    'currently_crossing': False
                                    }
 
-    def crosswalk_behavior(self):
+    def _crosswalk_behavior(self):
 
         for i in range(0, len(self.controller_pedestrian_list), 2):
             controller_ai = self.controller_pedestrian_list[i]
@@ -97,8 +98,15 @@ class Pedestrian_Behavior_Manager():
             controller_ai.set_max_speed(1.4)
 
 
-    def change_bones(self):
+    def _change_bones(self):
         pass
 
     def set_behaviors(self):
-        self.crosswalk_behavior()
+        self._crosswalk_behavior()
+
+        for i in range(1, len(self.controller_pedestrian_list), 2):
+            actor = self.controller_pedestrian_list[i]
+            id = actor.id
+            # actor.set_attribute('role_name', 'alt')
+            actor.attributes['role_name'] = '123'
+            print(actor.attributes['role_name'])
