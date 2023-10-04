@@ -2,36 +2,38 @@ import carla
 import numpy as np
 from SVO.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 from Tools.Crosswalk_Info import Crosswalk_Info
-from Tools.Attribute_Encoder import Attribute_Encoder
+
 import time
 
 
 class Pedestrian_Behavior_Manager():
-    def __init__(self, controller_pedestrian_list):
+    def __init__(self,controller_pedestrian_list):
         """
         controller_pedestrian_list: [controller_ai1, actor1, controller_ai2, actor2, ... ]
         """
-        self.controller_pedestrian_list = controller_pedestrian_list
         self.crossing_state = {}
         self.svo_attributes = {}
         self.crosswalk_trigger_distance = 2.5
+
+        self.controller_pedestrian_list = controller_pedestrian_list
 
         for i in range(1, len(self.controller_pedestrian_list), 2):
             actor = self.controller_pedestrian_list[i]
             id = actor.id
             self.crossing_state[id] = {'distance_to_crosswalk': float('inf'),
-                                               'wait_start_time': 0.0,
-                                               'currently_waiting': False,
-                                               'crosswalk_coordinates': (float('inf'), float('inf'), float('inf'))
-                                               }
+                                       'wait_start_time': 0.0,
+                                       'currently_waiting': False,
+                                       'crosswalk_coordinates': (float('inf'), float('inf'), float('inf'))
+                                       }
 
             self.svo_attributes[id] = {'behavior_type': actor.attributes['role_name'],
-                                   'time_looking': 0,
-                                   'time_waiting':0,
-                                   'distance_to_crosswalk': float('inf'),
-                                   'currently_crossing': False
-                                   }
+                                       'time_looking': 0,
+                                       'time_waiting': 0,
+                                       'distance_to_crosswalk': float('inf'),
+                                       'currently_crossing': False
+                                       }
 
+        print("TYPE BEHAVIOR", type(self.controller_pedestrian_list))
     def _crosswalk_behavior(self):
 
         for i in range(0, len(self.controller_pedestrian_list), 2):
@@ -97,16 +99,51 @@ class Pedestrian_Behavior_Manager():
             self.crossing_state[id]['currently_waiting'] = False
             controller_ai.set_max_speed(1.4)
 
-
     def _change_bones(self):
         pass
 
-    def set_behaviors(self):
-        self._crosswalk_behavior()
+    def set_pedestrians(self, world):
+        # client = carla.Client('localhost', 2000)
+        # world = client.get_world()
+
+        pedestrians = list(world.get_actors().filter('walker*'))
+        pedestrians.sort(key=lambda actor: actor.id)
+
+        controllers = list(world.get_actors().filter('controller.ai.walker'))
+        controllers.sort(key=lambda actor: actor.id)
+
+        all_ids = []
+        for i in range(len(pedestrians)):
+            all_ids.append(controllers[i].id)
+            all_ids.append(pedestrians[i].id)
+        all_actors = world.get_actors(all_ids)
+
+        print("\nIDS", all_ids)
+        print("ACTORS", all_actors)
+
+        self.controller_pedestrian_list = world.get_actors(all_ids)
 
         for i in range(1, len(self.controller_pedestrian_list), 2):
             actor = self.controller_pedestrian_list[i]
             id = actor.id
-            # actor.set_attribute('role_name', 'alt')
-            actor.attributes['role_name'] = '123'
-            print(actor.attributes['role_name'])
+            self.crossing_state[id] = {'distance_to_crosswalk': float('inf'),
+                                       'wait_start_time': 0.0,
+                                       'currently_waiting': False,
+                                       'crosswalk_coordinates': (float('inf'), float('inf'), float('inf'))
+                                       }
+
+            self.svo_attributes[id] = {'behavior_type': actor.attributes['role_name'],
+                                       'time_looking': 0,
+                                       'time_waiting': 0,
+                                       'distance_to_crosswalk': float('inf'),
+                                       'currently_crossing': False
+                                       }
+
+    def get_actor_svo_attributes(self):
+        return self.svo_attributes
+    def update_behaviors(self):
+        # if len(self.controller_pedestrian_list) == 0:
+        #     self.set_pedestrians(world)
+
+        self._crosswalk_behavior()
+

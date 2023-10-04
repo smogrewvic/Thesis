@@ -34,7 +34,7 @@ class Vehicle_Behavior_Manager():
 
             self.traffic_manager.distance_to_leading_vehicle(actor, distance)
 
-    def set_behaviors(self):
+    def update_behaviors(self):
         for actor in self.vehicles_list:
             if actor.attributes['role_name'] == 'sadistic':
                 behavior = Vehicle_Behavior_Types.sadistic()
@@ -60,3 +60,6 @@ class Vehicle_Behavior_Manager():
             self.traffic_manager.random_right_lanechange_percentage(actor, behavior['random_right_lanechange_percentage'])
             self.traffic_manager.vehicle_lane_offset(actor, behavior['vehicle_lane_offset'])
             self.traffic_manager.vehicle_percentage_speed_difference(actor, behavior['vehicle_percentage_speed_difference'])
+
+    def get_actor_svo_attributes(self):
+        return self.svo_attributes

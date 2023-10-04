@@ -262,7 +262,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
 
         ##### VEHICLE ACTOR BEHAVIOR ######
         vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
-        vehicle_behavior.set_behaviors()
+        vehicle_behavior.update_behaviors()
 
 
 
@@ -331,6 +331,9 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
             all_id.append(walkers_list[i]["con"])
             all_id.append(walkers_list[i]["id"])
         all_actors = world.get_actors(all_id)
+        print('all id', all_id)
+        print("all actors", all_actors)
+        print('\n')
 
         # wait for a tick to ensure client receives the last transform of the walkers we have just created
         if args.asynch or not synchronous_master:
@@ -356,14 +359,14 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
 
         ##### PEDESTRIAN ACTOR BEHAVIOR ######
         pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
-        pedestrian_behavior.set_behaviors()
+        # pedestrian_behavior.update_behaviors()
 
 
         while True:
             if not args.asynch and synchronous_master:
                 world.tick()
                 # vehicle_behavior.update_follow_time()
-                pedestrian_behavior.set_behaviors()
+                pedestrian_behavior.update_behaviors()
             else:
                 world.wait_for_tick()
 
