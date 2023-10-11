@@ -3,9 +3,10 @@ import EgoVehicle.Autopilot
 import TrafficGenerators.GenerateTraffic_Behavior
 from time import sleep
 import multiprocessing
-import carla
+
 
 if __name__ == "__main__":
+
 
     p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("id_98",)) #98, 113
 

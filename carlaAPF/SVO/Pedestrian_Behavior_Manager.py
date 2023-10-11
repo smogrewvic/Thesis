@@ -6,6 +6,7 @@ from Tools.Crosswalk_Info import Crosswalk_Info
 import time
 
 
+
 class Pedestrian_Behavior_Manager():
     def __init__(self,controller_pedestrian_list):
         """
@@ -16,6 +17,7 @@ class Pedestrian_Behavior_Manager():
         self.crosswalk_trigger_distance = 2.5
 
         self.controller_pedestrian_list = controller_pedestrian_list
+
 
         for i in range(1, len(self.controller_pedestrian_list), 2):
             actor = self.controller_pedestrian_list[i]
@@ -142,8 +144,6 @@ class Pedestrian_Behavior_Manager():
     def get_actor_svo_attributes(self):
         return self.svo_attributes
     def update_behaviors(self):
-        # if len(self.controller_pedestrian_list) == 0:
-        #     self.set_pedestrians(world)
-
         self._crosswalk_behavior()
+
 

@@ -64,7 +64,6 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
     # pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
 
 
-
     while True:
         potential_field.generate_APF()
 

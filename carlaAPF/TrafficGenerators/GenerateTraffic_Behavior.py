@@ -8,8 +8,6 @@
 
 
 
-
-
 """Example script to generate traffic in the simulation"""
 
 import glob
@@ -359,14 +357,15 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
 
         ##### PEDESTRIAN ACTOR BEHAVIOR ######
         pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
-        # pedestrian_behavior.update_behaviors()
 
 
         while True:
             if not args.asynch and synchronous_master:
                 world.tick()
                 # vehicle_behavior.update_follow_time()
+
                 pedestrian_behavior.update_behaviors()
+                # shared_dict = pedestrian_behavior.get_actor_svo_attributes()
             else:
                 world.wait_for_tick()
 
@@ -404,4 +403,6 @@ def main(autopilot_state = True, percentage_of_speed_limit = 30):
 
 
 if __name__ == '__main__':
+    # Writing to the shared dictionary in File 1
+
     main()
