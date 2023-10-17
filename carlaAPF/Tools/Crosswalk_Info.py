@@ -1,5 +1,9 @@
 import numpy as np
 class Crosswalk_Info:
+
+    trigger_distance = 2.5  # cartesian distance meters
+    trigger_overshoot = 0.5  # allowance for pedestrian overshoot
+
     crosswalk_points = (
         (float('inf'), float('inf'), float('inf')),  # dead crosswalk
         (114.5745, 37.5034, 0.0747),

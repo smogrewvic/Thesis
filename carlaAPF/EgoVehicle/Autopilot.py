@@ -5,9 +5,7 @@ from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
 from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
 
-from SVO.Pedestrian_Behavior_Manager import Pedestrian_Behavior_Manager
-from SVO.Vehicle_Behavior_Manager import Vehicle_Behavior_Manager
-
+from SVO.SVO_Behavior_Analyser import SVO_Behavior_Analyser
 
 def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=False, display_control_sys=True, ego_position=False):
     client = carla.Client('localhost', 2000)
@@ -47,21 +45,8 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
     # Traffic lights
     potential_field.set_traffic_lights()
 
-    # Pedestrian Behavior
-    # pedestrians = list(world.get_actors().filter('walker*'))
-    # pedestrians.sort(key=lambda actor: actor.id)
-    #
-    # controllers = list(world.get_actors().filter('controller.ai.walker'))
-    # controllers.sort(key=lambda actor: actor.id)
-    #
-    # all_ids = []
-    # for i in range(len(pedestrians)):
-    #     all_ids.append(controllers[i].id)
-    #     all_ids.append(pedestrians[i].id)
-    # all_actors = world.get_actors(all_ids)
-    # print("\nIDS", all_ids)
-    # print("ACTORS", all_actors)
-    # pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
+    #Behavior analysis
+    behavior_analyser = SVO_Behavior_Analyser(world)
 
 
     while True:
@@ -104,7 +89,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
                   round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
                   )
 
-        # pedestrian_behavior.update_behaviors()
+        behavior_analyser.calculate_svo()
 
 
 if __name__ == '__main__':
