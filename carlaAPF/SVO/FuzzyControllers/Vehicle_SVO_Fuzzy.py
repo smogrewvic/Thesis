@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
 
-from SVO_Fuzzy import SVO_Fuzzy
+from SVO.FuzzyControllers.SVO_Fuzzy import SVO_Fuzzy
 
 
 class Vehicle_SVO_Fuzzy(SVO_Fuzzy):

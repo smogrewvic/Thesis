@@ -1,17 +1,19 @@
 from Tools.Crosswalk_Info import Crosswalk_Info
+from SVO.FuzzyControllers.Pedestrian_SVO_Fuzzy import Pedestrian_SVO_Fuzzy
 import numpy as np
 import time
+
+
 class Pedestrian_Behavior_Analyser:
     def __init__(self, world):
         self.world = world
-        self.pedestrian_behaviors = {}
-        self.pedestrian_time_tracker = {}
+        self.crosswalk_trigger_distance = Crosswalk_Info.trigger_distance + Crosswalk_Info.trigger_overshoot
+        self.fuzzy = Pedestrian_SVO_Fuzzy()
 
         self.pedestrian_actors = self.filter_actors('pedestrian')
-        self.vehicle_actors = self.filter_actors('vehicle')
-
-        self.crosswalk_trigger_distance = Crosswalk_Info.trigger_distance + Crosswalk_Info.trigger_overshoot
-
+        self.pedestrian_social_values = {}
+        self.pedestrian_behaviors = {}
+        self.pedestrian_time_tracker = {}
         for actor in self.pedestrian_actors:
             id = actor.id
             self.pedestrian_behaviors[id] = {'distance_to_crosswalk': float('inf'),
@@ -22,6 +24,8 @@ class Pedestrian_Behavior_Analyser:
                                             'look_start_time': 0.0,
                                             'last_speed': 1,
                                             'last_looking': float('inf')}
+
+            self.pedestrian_social_values[id] = 0
     def filter_actors(self, actor_type):
 
         if actor_type == 'pedestrian':
@@ -83,9 +87,10 @@ class Pedestrian_Behavior_Analyser:
         self._update_distances_to_crosswalks()
         self._update_time_waiting()
 
-        print('\n')
         for actor in self.pedestrian_actors:
             id = actor.id
-            print(self.pedestrian_behaviors[id])
+            self.pedestrian_social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
+            print("ID", id, 'svo', self.pedestrian_social_values[id])
 
+        print('\n')
 

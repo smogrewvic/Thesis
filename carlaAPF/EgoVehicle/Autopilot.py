@@ -1,10 +1,14 @@
-from ApfObjects import PotentialField as pf
 import carla
 from agents.navigation.global_route_planner import GlobalRoutePlanner
+
+from ApfObjects import PotentialField as pf
 from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
+
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
 from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
+
 from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_Behavior_Analyser
+from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavior_Analyser
 
 def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=False, display_control_sys=True, ego_position=False):
     client = carla.Client('localhost', 2000)
@@ -45,7 +49,9 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
     potential_field.set_traffic_lights()
 
     #Behavior analysis
-    behavior_analyser = Pedestrian_Behavior_Analyser(world)
+    pedestrian_behavior_analyser = Pedestrian_Behavior_Analyser(world)
+    vehicle_behavior_analyser = Vehicle_Behavior_Analyser(world)
+    svo_all_actors = {}
 
 
     while True:
@@ -88,7 +94,9 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
                   round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
                   )
 
-        behavior_analyser.calculate_svo()
+
+        svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo())
+        svo_all_actors.update(vehicle_behavior_analyser.calculate_svo())
 
 
 if __name__ == '__main__':
