@@ -1,6 +1,5 @@
-import carla
 import numpy as np
-from SVO.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
+from SVO.ActorBehaviorProfiles.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 from Tools.Crosswalk_Info import Crosswalk_Info
 
 import time

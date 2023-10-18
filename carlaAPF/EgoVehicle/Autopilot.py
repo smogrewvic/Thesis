@@ -4,8 +4,7 @@ from agents.navigation.global_route_planner import GlobalRoutePlanner
 from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
 from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
-
-from SVO.SVO_Behavior_Analyser import SVO_Behavior_Analyser
+from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_Behavior_Analyser
 
 def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=False, display_control_sys=True, ego_position=False):
     client = carla.Client('localhost', 2000)
@@ -46,7 +45,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
     potential_field.set_traffic_lights()
 
     #Behavior analysis
-    behavior_analyser = SVO_Behavior_Analyser(world)
+    behavior_analyser = Pedestrian_Behavior_Analyser(world)
 
 
     while True:

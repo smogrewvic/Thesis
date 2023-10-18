@@ -30,8 +30,6 @@ import argparse
 import logging
 from numpy import random
 
-from SVO.Vehicle_Behavior_Manager import Vehicle_Behavior_Manager
-
 
 def get_actor_blueprints(world, filter, generation):
     bps = world.get_blueprint_library().filter(filter)

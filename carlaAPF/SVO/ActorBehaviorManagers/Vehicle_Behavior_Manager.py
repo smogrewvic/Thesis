@@ -1,6 +1,5 @@
-import carla
 import numpy as np
-from SVO.Vehicle_Behavior_Types import Vehicle_Behavior_Types
+from SVO.ActorBehaviorProfiles.Vehicle_Behavior_Types import Vehicle_Behavior_Types
 
 class Vehicle_Behavior_Manager():
     def __init__(self, vehicles_list, traffic_manager):

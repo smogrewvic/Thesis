@@ -1,7 +1,7 @@
 from Tools.Crosswalk_Info import Crosswalk_Info
 import numpy as np
 import time
-class SVO_Behavior_Analyser:
+class Pedestrian_Behavior_Analyser:
     def __init__(self, world):
         self.world = world
         self.pedestrian_behaviors = {}
@@ -21,7 +21,7 @@ class SVO_Behavior_Analyser:
             self.pedestrian_time_tracker[id] = {'wait_start_time': 0.0,
                                             'look_start_time': 0.0,
                                             'last_speed': 1,
-                                            'last_looking': False}
+                                            'last_looking': float('inf')}
     def filter_actors(self, actor_type):
 
         if actor_type == 'pedestrian':
@@ -87,5 +87,5 @@ class SVO_Behavior_Analyser:
         for actor in self.pedestrian_actors:
             id = actor.id
             print(self.pedestrian_behaviors[id])
-            # print(self.pedestrian_time_tracker[id])
+
 
