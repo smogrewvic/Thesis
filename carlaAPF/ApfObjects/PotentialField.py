@@ -26,8 +26,10 @@ class APF:
         self.actor_ids = {}
         self.navpoint_actors = [] # to create lane apf
 
-        self.max_steering_angle = 70  # actor.get_physics_control().wheels[0].max_steer_angle
+        self.svo_all_actors = {}
 
+    def update_svo_actors(self, svo_data):
+        self.svo_all_actors.update(svo_data)
 
     def update_actor_states(self):
         carla_actors = self.world.get_actors()

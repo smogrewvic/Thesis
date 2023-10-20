@@ -255,10 +255,11 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         if args.car_lights_on:
             all_vehicle_actors = world.get_actors(vehicles_list)
             for actor in all_vehicle_actors:
+
                 traffic_manager.update_vehicle_lights(actor, True)
 
 
-        ##### VEHICLE ACTOR BEHAVIOR ######
+        #####TODO: VEHICLE ACTOR BEHAVIOR ######
         vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
         vehicle_behavior.update_behaviors()
 

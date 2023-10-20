@@ -90,7 +90,5 @@ class Pedestrian_Behavior_Analyser:
         for actor in self.pedestrian_actors:
             id = actor.id
             self.pedestrian_social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
-            print("ID", id, 'svo', self.pedestrian_social_values[id])
 
-        print('\n')
-
+        return self.pedestrian_social_values

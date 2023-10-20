@@ -98,6 +98,8 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
         svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo())
         svo_all_actors.update(vehicle_behavior_analyser.calculate_svo())
 
+        potential_field.update_svo_actors(svo_all_actors)
+
 
 if __name__ == '__main__':
     main()
