@@ -11,7 +11,7 @@ class Pedestrian_Behavior_Analyser:
         self.fuzzy = Pedestrian_SVO_Fuzzy()
 
         self.pedestrian_actors = self.filter_actors('pedestrian')
-        self.pedestrian_social_values = {}
+        self.social_values = {}
         self.pedestrian_behaviors = {}
         self.pedestrian_time_tracker = {}
         for actor in self.pedestrian_actors:
@@ -25,7 +25,7 @@ class Pedestrian_Behavior_Analyser:
                                             'last_speed': 1,
                                             'last_looking': float('inf')}
 
-            self.pedestrian_social_values[id] = 0
+            self.social_values[id] = 0
     def filter_actors(self, actor_type):
 
         if actor_type == 'pedestrian':
@@ -89,6 +89,6 @@ class Pedestrian_Behavior_Analyser:
 
         for actor in self.pedestrian_actors:
             id = actor.id
-            self.pedestrian_social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
+            self.social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
 
-        return self.pedestrian_social_values
+        return self.social_values

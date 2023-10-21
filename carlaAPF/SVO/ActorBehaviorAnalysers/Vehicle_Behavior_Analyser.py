@@ -3,6 +3,7 @@ import numpy as np
 import time
 import collections
 import carla
+from SVO.ActorBehaviorProfiles.Vehicle_Behavior_Types import Vehicle_Behavior_Types
 
 
 class Vehicle_Behavior_Analyser:
@@ -28,10 +29,10 @@ class Vehicle_Behavior_Analyser:
             self.lane_centering_tracker[id] = collections.deque(maxlen=tracking_length)
             self.lane_change_tracker[id] = collections.deque(maxlen=tracking_length)
 
-            self.vehicle_behaviors[id] = {'follow_distance': 0,
+            self.vehicle_behaviors[id] = {'follow_time': 0,
                                           'lane_changes': 0,
                                           'lane_centering': 0,
-                                          'speed_limit': 0.0,
+                                          'speed_limit_percent': 0.0,
                                           'smoothness': 0.0}
             self.social_values[id] = 0
 
@@ -75,6 +76,26 @@ class Vehicle_Behavior_Analyser:
 
         return counter
 
+    def get_actor_behavior_type(self, actor):
+        if actor.attributes['role_name'] == 'sadistic':
+            behavior = Vehicle_Behavior_Types.SADISTIC.value
+
+        elif actor.attributes['role_name'] == 'competitive':
+            behavior = Vehicle_Behavior_Types.COMPETITIVE.value
+
+        elif actor.attributes['role_name'] == 'individualistic':
+            behavior = Vehicle_Behavior_Types.INDIVIDUALISTIC.value
+
+        elif actor.attributes['role_name'] == 'cooperative':
+            behavior = Vehicle_Behavior_Types.COOPERATIVE.value
+
+        elif actor.attributes['role_name'] == 'altruistic':
+            behavior = Vehicle_Behavior_Types.ALTRUISTIC.value
+        else:
+            behavior = Vehicle_Behavior_Types.COOPERATIVE.value  # default value/ego-vehicle
+
+        return behavior
+
     def calculate_smoothness(self, quantification_method='average'):
 
         for actor in self.vehicle_actors:
@@ -100,16 +121,20 @@ class Vehicle_Behavior_Analyser:
                 # todo: implement more quantification methods -- high pass filter??
 
     def calculate_speed_limit(self, quantification_method='average'):
+        # todo: Observe and quantify speed limit of vehicle
+        # for actor in self.vehicle_actors:
+        #     id = actor.id
+        #     vehicle_speed = np.linalg.norm(np.array([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]))
+        #     speed_limit = actor.get_speed_limit()
+        #     self.speed_limit_tracker[id].append(speed_limit)
+        #     if quantification_method == 'average':
+        #         self.vehicle_behaviors[id]['speed_limit'] = self.average_value(self.speed_limit_tracker[id])
 
+        #Direct actor behavior label
         for actor in self.vehicle_actors:
             id = actor.id
-            vehicle_speed = np.linalg.norm(np.array([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]))
-            speed_limit = actor.get_speed_limit() #todo check if getting speed limit of road or speed limit of controller
-            self.speed_limit_tracker[id].append(vehicle_speed - speed_limit)
-
-            if quantification_method == 'average':
-                self.vehicle_behaviors[id]['speed_limit'] = self.average_value(self.speed_limit_tracker[id])
-            # todo: implement more quantification methods -- high pass filter??
+            behavior = self.get_actor_behavior_type(actor)
+            self.vehicle_behaviors[id]['speed_limit_percent'] = behavior['speed_limit_percent']
 
     def calculate_lane_changes(self, quantification_method='quantity'):
         for actor in self.vehicle_actors:
@@ -123,20 +148,31 @@ class Vehicle_Behavior_Analyser:
                 # todo: implement more quantification methods -- high pass filter??
 
 
-    def calculate_follow_distance(self, quantification_method='average'):
-        pass
+    def calculate_follow_time(self, quantification_method='average'):
+        # todo: Observe and quantify following time
+        # for actor in self.vehicle_actors:
+        #     id = actor.id
+        #     do something
+
+        # Direct actor behavior label
+        for actor in self.vehicle_actors:
+            id = actor.id
+            behavior = self.get_actor_behavior_type(actor)
+            self.vehicle_behaviors[id]['follow_time'] = behavior['follow_time']
 
     def calculate_svo(self):
         self.calculate_smoothness('average')
         self.calculate_speed_limit('average')
         self.calculate_lane_centering('average')
         self.calculate_lane_changes('quantity')
-        self.calculate_follow_distance('average')
+        self.calculate_follow_time('average')
 
         for actor in self.vehicle_actors:
             id = actor.id
-            print(self.vehicle_behaviors[id])
+            self.social_values[id] = self.fuzzy.calculate_output(self.vehicle_behaviors[id])
+            print("ID",id, "svo", self.social_values[id])
 
         print('\n')
 
         return self.social_values
+

@@ -67,15 +67,15 @@ class Pedestrian_Behavior_Manager():
         id = actor.id
 
         if self.svo_attributes[id]['behavior_type'] == 'sadistic':
-            behavior = Pedestrian_Behavior_Types.sadistic()
+            behavior = Pedestrian_Behavior_Types.SADISTIC.value
         elif self.svo_attributes[id]['behavior_type'] == 'competitive':
-            behavior = Pedestrian_Behavior_Types.competitive()
+            behavior = Pedestrian_Behavior_Types.COMPETITIVE.value
         elif self.svo_attributes[id]['behavior_type'] == 'individualistic':
-            behavior = Pedestrian_Behavior_Types.individualistic()
+            behavior = Pedestrian_Behavior_Types.INDIVIDUALISTIC.value
         elif self.svo_attributes[id]['behavior_type'] == 'cooperative':
-            behavior = Pedestrian_Behavior_Types.cooperative()
+            behavior = Pedestrian_Behavior_Types.COOPERATIVE.value
         elif self.svo_attributes[id]['behavior_type'] == 'altruistic':
-            behavior = Pedestrian_Behavior_Types.altruistic()
+            behavior = Pedestrian_Behavior_Types.ALTRUISTIC.value
         else:
             print("No behavior_type found actor:", actor.id)
             return
@@ -103,42 +103,6 @@ class Pedestrian_Behavior_Manager():
     def _change_bones(self):
         pass
 
-    # def set_pedestrians(self, world):
-    #     # client = carla.Client('localhost', 2000)
-    #     # world = client.get_world()
-    #
-    #     pedestrians = list(world.get_actors().filter('walker*'))
-    #     pedestrians.sort(key=lambda actor: actor.id)
-    #
-    #     controllers = list(world.get_actors().filter('controller.ai.walker'))
-    #     controllers.sort(key=lambda actor: actor.id)
-    #
-    #     all_ids = []
-    #     for i in range(len(pedestrians)):
-    #         all_ids.append(controllers[i].id)
-    #         all_ids.append(pedestrians[i].id)
-    #     all_actors = world.get_actors(all_ids)
-    #
-    #     print("\nIDS", all_ids)
-    #     print("ACTORS", all_actors)
-    #
-    #     self.controller_pedestrian_list = world.get_actors(all_ids)
-    #
-    #     for i in range(1, len(self.controller_pedestrian_list), 2):
-    #         actor = self.controller_pedestrian_list[i]
-    #         id = actor.id
-    #         self.crossing_state[id] = {'distance_to_crosswalk': float('inf'),
-    #                                    'wait_start_time': 0.0,
-    #                                    'currently_waiting': False,
-    #                                    'crosswalk_coordinates': (float('inf'), float('inf'), float('inf'))
-    #                                    }
-    #
-    #         self.svo_attributes[id] = {'behavior_type': actor.attributes['role_name'],
-    #                                    'time_looking': 0,
-    #                                    'time_waiting': 0,
-    #                                    'distance_to_crosswalk': float('inf'),
-    #                                    'currently_crossing': False
-    #                                    }
 
     def get_actor_svo_attributes(self):
         return self.svo_attributes

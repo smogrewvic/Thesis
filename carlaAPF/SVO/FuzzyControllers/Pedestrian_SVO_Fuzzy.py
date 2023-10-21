@@ -42,9 +42,9 @@ class Pedestrian_SVO_Fuzzy(SVO_Fuzzy):
 
         # Create fuzzy control system
         control_system = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5])
-        fisSimulation = ctrl.ControlSystemSimulation(control_system)
+        fis_simulation = ctrl.ControlSystemSimulation(control_system)
 
-        return fisSimulation
+        return fis_simulation
 
     def calculate_output(self, input_vector):
 

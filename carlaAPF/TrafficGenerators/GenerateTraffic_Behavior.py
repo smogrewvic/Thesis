@@ -239,7 +239,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
                 hero = False
             else:
                 # blueprint.set_attribute('role_name', 'autopilot')
-                blueprint.set_attribute('role_name', 'altruistic')  # todo: messign around here for behavior
+                blueprint.set_attribute('role_name', 'sadistic')  # todo: messign around here for behavior
 
 
             # spawn the cars and set their autopilot and light state all together
