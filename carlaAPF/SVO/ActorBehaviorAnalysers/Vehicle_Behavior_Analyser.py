@@ -170,9 +170,8 @@ class Vehicle_Behavior_Analyser:
         for actor in self.vehicle_actors:
             id = actor.id
             self.social_values[id] = self.fuzzy.calculate_output(self.vehicle_behaviors[id])
-            print("ID",id, "svo", self.social_values[id])
-
-        print('\n')
+            # print("ID",id, "svo", self.social_values[id])
+        # print('\n')
 
         return self.social_values
 

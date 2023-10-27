@@ -1,5 +1,6 @@
 from Tools.Crosswalk_Info import Crosswalk_Info
 from SVO.FuzzyControllers.Pedestrian_SVO_Fuzzy import Pedestrian_SVO_Fuzzy
+from SVO.ActorBehaviorProfiles.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 import numpy as np
 import time
 
@@ -21,11 +22,12 @@ class Pedestrian_Behavior_Analyser:
                                              'time_looking': 0.0}
 
             self.pedestrian_time_tracker[id] = {'wait_start_time': 0.0,
-                                            'look_start_time': 0.0,
-                                            'last_speed': 1,
-                                            'last_looking': float('inf')}
+                                                'look_start_time': 0.0,
+                                                'last_speed': 1,
+                                                'last_looking': float('inf')}
 
             self.social_values[id] = 0
+
     def filter_actors(self, actor_type):
 
         if actor_type == 'pedestrian':
@@ -81,14 +83,43 @@ class Pedestrian_Behavior_Analyser:
                 self.pedestrian_behaviors[id]['time_waiting'] = 0.0
 
             self.pedestrian_time_tracker[id]['last_speed'] = speed
-    def update_time_looking(self):
-        pass
+
+    def _update_time_looking(self):
+        #TODO: Implement true looking behavior analysis, not artificial chronometer
+        for actor in self.pedestrian_actors:
+            id = actor.id
+
+            if actor.attributes['role_name'] == 'sadistic':
+                behavior = Pedestrian_Behavior_Types.SADISTIC.value
+            elif actor.attributes['role_name'] == 'competitive':
+                behavior = Pedestrian_Behavior_Types.COMPETITIVE.value
+            elif actor.attributes['role_name'] == 'individualistic':
+                behavior = Pedestrian_Behavior_Types.INDIVIDUALISTIC.value
+            elif actor.attributes['role_name'] == 'cooperative':
+                behavior = Pedestrian_Behavior_Types.COOPERATIVE.value
+            elif actor.attributes['role_name'] == 'altruistic':
+                behavior = Pedestrian_Behavior_Types.ALTRUISTIC.value
+            else:
+                print("No behavior_type found actor:", actor.id)
+                return
+
+            if self.pedestrian_behaviors[id]['time_waiting'] > 0:
+                remaining_time = behavior['wait_time_to_cross'] - self.pedestrian_behaviors[id]['time_waiting']
+                looking_at_traffic = 0 <= remaining_time <= behavior['look_at_traffic_time']  # bool
+
+                if looking_at_traffic:
+                    self.pedestrian_behaviors[id]['time_looking'] = behavior['look_at_traffic_time'] - remaining_time
+            else:
+                self.pedestrian_behaviors[id]['time_looking'] = 0
+
     def calculate_svo(self):
         self._update_distances_to_crosswalks()
         self._update_time_waiting()
+        self._update_time_looking()
 
         for actor in self.pedestrian_actors:
             id = actor.id
+            print(self.pedestrian_behaviors[id])
             self.social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
-
+        print('\n')
         return self.social_values

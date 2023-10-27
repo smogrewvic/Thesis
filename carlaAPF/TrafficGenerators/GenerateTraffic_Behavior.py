@@ -261,7 +261,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
 
         #####TODO: VEHICLE ACTOR BEHAVIOR ######
         vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
-        vehicle_behavior.update_behaviors()
+        # vehicle_behavior.update_behaviors()
 
 
 

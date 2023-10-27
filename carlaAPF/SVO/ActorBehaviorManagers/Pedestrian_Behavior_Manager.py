@@ -1,22 +1,24 @@
 import numpy as np
 from SVO.ActorBehaviorProfiles.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 from Tools.Crosswalk_Info import Crosswalk_Info
-
+import carla
 import time
 
 
-
 class Pedestrian_Behavior_Manager():
-    def __init__(self,controller_pedestrian_list):
+    def __init__(self, controller_pedestrian_list):
         """
         controller_pedestrian_list: [controller_ai1, actor1, controller_ai2, actor2, ... ]
         """
+        self.client = carla.Client('localhost', 2000)
+        self.world = self.client.get_world()
+        self.controller_pedestrian_list = controller_pedestrian_list
+
+        self.ego_vehicle = None  # ego_vehicle assigned later to have time to load in world
+
         self.crossing_state = {}
         self.svo_attributes = {}
         self.crosswalk_trigger_distance = Crosswalk_Info.trigger_distance
-
-        self.controller_pedestrian_list = controller_pedestrian_list
-
 
         for i in range(1, len(self.controller_pedestrian_list), 2):
             actor = self.controller_pedestrian_list[i]
@@ -24,7 +26,8 @@ class Pedestrian_Behavior_Manager():
             self.crossing_state[id] = {'distance_to_crosswalk': float('inf'),
                                        'wait_start_time': 0.0,
                                        'currently_waiting': False,
-                                       'crosswalk_coordinates': (float('inf'), float('inf'), float('inf'))
+                                       'crosswalk_coordinates': (float('inf'), float('inf'), float('inf')),
+                                       'currently_looking': False
                                        }
 
             self.svo_attributes[id] = {'behavior_type': actor.attributes['role_name'],
@@ -34,7 +37,6 @@ class Pedestrian_Behavior_Manager():
                                        'currently_crossing': False
                                        }
 
-        print("TYPE BEHAVIOR", type(self.controller_pedestrian_list))
     def _crosswalk_behavior(self):
 
         for i in range(0, len(self.controller_pedestrian_list), 2):
@@ -100,13 +102,107 @@ class Pedestrian_Behavior_Manager():
             self.crossing_state[id]['currently_waiting'] = False
             controller_ai.set_max_speed(1.4)
 
-    def _change_bones(self):
-        pass
+    def _find_ego_vehicle(self):
+        for actor in self.world.get_actors():
+            if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
+                return actor
+
+        print('Pedestrian_Behavior_Manager -- ego_vehicle not found')
+        return 0
+
+    def _calculate_look_angle(self, actor):
+        look_point = [self.ego_vehicle.get_location().x, self.ego_vehicle.get_location().y]  # look at ego vehicle
+        actor_point = [actor.get_location().x, actor.get_location().y]
+
+        angle = np.arctan2(look_point[1], look_point[0]) - np.arctan2(actor_point[1], actor_point[0])  # angle in global coordinates
+
+        return angle
+
+    # def _set_head_angle(self, actor, angle):
+    #
+    #     # head_transform = ('crl_Head__C', carla.Transform(rotation=carla.Rotation(yaw=angle, roll = angle, pitch = angle)))
+    #     # bone_control = carla.WalkerBoneControlIn([head_transform])
+    #     # actor.set_bones(bone_control)
+    #
+    #     first_tuple = ('crl_hand__R', carla.Transform(rotation=carla.Rotation(roll=123.456)))
+    #     second_tuple = ('crl_hand__L', carla.Transform(rotation=carla.Rotation(roll=123.456)))
+    #     bone_control = carla.WalkerBoneControlIn([first_tuple, second_tuple])
+    #     actor.set_bones(bone_control)
+    #
+    #
+    # def _look_when_walking_behavior(self):
+    #     while not self.ego_vehicle:
+    #         self.ego_vehicle = self._find_ego_vehicle()  # keep checking until ego_vehicle loads
+    #
+    #     for i in range(1, len(self.controller_pedestrian_list), 2):
+    #         actor = self.controller_pedestrian_list[i]
+    #         head_angle = self._calculate_head_angle(actor)
+    #         self._set_head_angle(actor, 30)
+    #         print(actor.get_bones())
+    #
+    #     print('\n')
+
+
+    def _set_pedestrian_angle(self, look_angle, actor):
+        actor_transform = actor.get_transform()
+        actor_transform.rotation.yaw = look_angle #modify transform to look angle
+        actor_transform.location.x = 0
+        actor_transform.location.y = 0
+        actor_transform.location.z = 0
+        # print("TRANSFORM", actor_transform)
+        actor.set_transform(actor_transform)
+
+
+
+    def _look_at_crosswalk_behavior(self):
+        while not self.ego_vehicle:
+            self.ego_vehicle = self._find_ego_vehicle()  # keep checking until ego_vehicle loads
+
+        for i in range(0, len(self.controller_pedestrian_list), 2):
+            controller_ai = self.controller_pedestrian_list[i]
+            actor = self.controller_pedestrian_list[i + 1]
+            id = actor.id
+
+            if self.svo_attributes[id]['behavior_type'] == 'sadistic':
+                behavior = Pedestrian_Behavior_Types.SADISTIC.value
+            elif self.svo_attributes[id]['behavior_type'] == 'competitive':
+                behavior = Pedestrian_Behavior_Types.COMPETITIVE.value
+            elif self.svo_attributes[id]['behavior_type'] == 'individualistic':
+                behavior = Pedestrian_Behavior_Types.INDIVIDUALISTIC.value
+            elif self.svo_attributes[id]['behavior_type'] == 'cooperative':
+                behavior = Pedestrian_Behavior_Types.COOPERATIVE.value
+            elif self.svo_attributes[id]['behavior_type'] == 'altruistic':
+                behavior = Pedestrian_Behavior_Types.ALTRUISTIC.value
+            else:
+                print("No behavior_type found actor:", actor.id)
+                return
+
+
+            # if self.crossing_state[id]['currently_waiting']:
+            #
+            #     remaining_time = behavior['wait_time_to_cross'] - self.svo_attributes[id]['time_waiting']
+            #     look_at_traffic = 0 <= remaining_time <= behavior['look_at_traffic_time']  # bool
+            #
+            #     if look_at_traffic:
+            #         print("looking")
+            #         # self.crossing_state[id]['currently_looking'] = True
+            #         look_angle = self._calculate_look_angle(actor)
+            #         self._set_pedestrian_angle(look_angle, actor)
+
+            if self.crossing_state[id]['currently_waiting']:
+                look_angle = self._calculate_look_angle(actor)
+                controller_ai.stop()
+                self._set_pedestrian_angle(180, actor)
+                controller_ai.start()
+
+
+            print("transform", actor.get_transform())
+        print('\n')
 
 
     def get_actor_svo_attributes(self):
         return self.svo_attributes
+
     def update_behaviors(self):
         self._crosswalk_behavior()
-
-
+        # self._look_at_crosswalk_behavior() #TODO: NOT IMPLEMENTED
