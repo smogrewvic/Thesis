@@ -8,7 +8,7 @@ class APF_Object:
         self.potential_field_size = potential_field_size
         self.potential_field_granularity = potential_field_granularity
         self.safety_radius = 2/potential_field_granularity
-        self.data_log = collections.deque(maxlen=100)
+        # self.data_log = collections.deque(maxlen=100)
 
         self.state = {"type": "",
                       "position": np.zeros(3),

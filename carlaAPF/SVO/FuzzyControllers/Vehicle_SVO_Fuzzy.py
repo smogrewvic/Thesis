@@ -10,42 +10,62 @@ from SVO.FuzzyControllers.SVO_Fuzzy import SVO_Fuzzy
 class Vehicle_SVO_Fuzzy(SVO_Fuzzy):
     def fuzzy_setup(self):
         # Create fuzzy variables
-        input1 = ctrl.Antecedent(np.arange(0, 8, 0.1), 'follow_time')
-        input2 = ctrl.Antecedent(np.arange(0, 20, 0.1), 'lane_changes')
-        input3 = ctrl.Antecedent(np.arange(0, 1.5, 0.1), 'lane_centering')
-        input4 = ctrl.Antecedent(np.arange(40, 180, 0.1), 'speed_limit_percent')
-        input5 = ctrl.Antecedent(np.arange(0, 10, 0.1), 'smoothness')
+        input1 = ctrl.Antecedent(np.arange(0, 6, 0.1), 'follow_time')
+        input2 = ctrl.Antecedent(np.arange(0, 5, 0.1), 'lane_changes')
+        input3 = ctrl.Antecedent(np.arange(0, 2, 0.1), 'lane_centering')
+        input4 = ctrl.Antecedent(np.arange(0, 200, 0.1), 'speed_limit_percent')
+        # input5 = ctrl.Antecedent(np.arange(0, 10, 0.1), 'smoothness')  # NOT USED
 
         output1 = ctrl.Consequent(np.arange(-1, 1, 0.1), 'svo')
 
         # input membership functions
-        input1['short'] = fuzz.zmf(input1.universe, 0.75, 3.5)
-        input1['long'] = fuzz.smf(input1.universe, 1, 4)
+        input1['close'] = fuzz.zmf(input1.universe, 0.5, 2.5)
+        input1['medium'] = fuzz.gaussmf(input1.universe, 0.5, 2)
+        input1['far'] = fuzz.smf(input1.universe, 1.5, 4)
 
-        input2['low'] = fuzz.zmf(input2.universe, 1, 10)
-        input2['high'] = fuzz.smf(input2.universe, 2, 10)
+        input2['low'] = fuzz.zmf(input2.universe, 0.25, 1.5)
+        input2['medium'] = fuzz.gaussmf(input2.universe, 0.5, 1.5)
+        input2['high'] = fuzz.smf(input2.universe, 1.5, 3)
 
-        input3['good'] = fuzz.zmf(input3.universe, 0.1, 0.8)
-        input3['poor'] = fuzz.smf(input3.universe, 0.3, 1)
+        input3['good'] = fuzz.zmf(input3.universe, 0.2, 0.6)
+        input3['medium'] = fuzz.gaussmf(input3.universe, 0.15, 0.6)
+        input3['poor'] = fuzz.smf(input3.universe, 0.6, 1.2)
 
-        input4['low'] = fuzz.zmf(input4.universe, 80, 130)
-        input4['high'] = fuzz.smf(input4.universe, 80, 150)
+        input4['slow'] = fuzz.zmf(input4.universe, 60, 125)
+        input4['medium'] = fuzz.gaussmf(input4.universe, 10, 110)
+        input4['fast'] = fuzz.smf(input4.universe, 100, 160)
 
-        input5['good'] = fuzz.zmf(input5.universe, 1, 3)
-        input5['poor'] = fuzz.smf(input5.universe, 1, 4)
+        # input5['good'] = fuzz.zmf(input5.universe, 0.25, 1)  # NOT USED
+        # input5['medium'] = fuzz.gaussmf(input5.universe, 0.75, 1)  # NOT USED
+        # input5['poor'] = fuzz.smf(input5.universe, 1, 3)  # NOT USED
 
         # output memberships
-        output1['cooperative'] = fuzz.zmf(output1.universe, -1, 0.5)
-        output1['individualistic'] = fuzz.gaussmf(output1.universe, 0, 0.25)
-        output1['egoistic'] = fuzz.smf(output1.universe, -0.5, 1)
+        output1['altruistic'] = fuzz.gaussmf(output1.universe, 0.25, -1)
+        output1['cooperative'] = fuzz.gaussmf(output1.universe, 0.25, -0.5)
+        output1['individualistic'] = fuzz.gaussmf(output1.universe, 0.25, 0)
+        output1['egoistic'] = fuzz.gaussmf(output1.universe, 0.25, 0.5)
+        output1['sadistic'] = fuzz.gaussmf(output1.universe, 0.25, 1)
 
         # Create fuzzy rules
-        rule1 = ctrl.Rule(input1['short'] & input2['high'] & input3['poor'] & input4['high'] & input5['poor'], output1['egoistic'])
-        rule2 = ctrl.Rule(input1['long'] & input2['low'] & input3['good'] & input4['low'] & input5['good'], output1['cooperative'])
-        rule3 = ctrl.Rule(input1['short'] | input2['high'] | input3['poor'] | input4['high'] | input5['poor'], output1['individualistic'])
+        rule1 = ctrl.Rule(input1['far'] & input2['low'] & input3['good'] & input4['slow'], output1['altruistic'])
+        rule2 = ctrl.Rule(input1['far'] & input2['low'] & input3['medium'] & input4['medium'], output1['cooperative'])
+        rule3 = ctrl.Rule(input1['far'] & input2['medium'] & input3['good'] & input4['medium'], output1['cooperative'])
+        rule4 = ctrl.Rule(input1['far'] & input2['medium'] & input3['medium'] & input4['slow'], output1['cooperative'])
+        rule5 = ctrl.Rule(input1['medium'] & input2['low'] & input3['good'] & input4['medium'], output1['cooperative'])
+        rule6 = ctrl.Rule(input1['medium'] & input2['low'] & input3['medium'] & input4['slow'], output1['cooperative'])
+        rule7 = ctrl.Rule(input1['medium'] & input2['medium'] & input3['good'] & input4['slow'], output1['cooperative'])
+        rule8 = ctrl.Rule(input1['medium'] & input2['medium'] & input3['medium'] & input4['medium'], output1['individualistic'])
+        rule9 = ctrl.Rule(input1['close'] & input2['high'] & input3['medium'] & input4['medium'], output1['egoistic'])
+        rule10 = ctrl.Rule(input1['close'] & input2['medium'] & input3['poor'] & input4['medium'], output1['egoistic'])
+        rule11 = ctrl.Rule(input1['close'] & input2['medium'] & input3['medium'] & input4['fast'], output1['egoistic'])
+        rule12 = ctrl.Rule(input1['medium'] & input2['high'] & input3['poor'] & input4['medium'], output1['egoistic'])
+        rule13 = ctrl.Rule(input1['medium'] & input2['high'] & input3['medium'] & input4['fast'], output1['egoistic'])
+        rule14 = ctrl.Rule(input1['medium'] & input2['medium'] & input3['poor'] & input4['fast'], output1['egoistic'])
+        rule15 = ctrl.Rule(input1['close'] & input2['high'] & input3['poor'] & input4['fast'], output1['sadistic'])
 
         # Create fuzzy control system
-        control_system = ctrl.ControlSystem([rule1, rule2, rule3])
+        control_system = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8,
+                                             rule9, rule10, rule11, rule12, rule13, rule14, rule15])
         fis_simulation = ctrl.ControlSystemSimulation(control_system)
 
         return fis_simulation
@@ -57,7 +77,7 @@ class Vehicle_SVO_Fuzzy(SVO_Fuzzy):
         self.fuzzy_controller.input['lane_changes'] = input_vector['lane_changes']
         self.fuzzy_controller.input['lane_centering'] = input_vector['lane_centering']
         self.fuzzy_controller.input['speed_limit_percent'] = input_vector['speed_limit_percent']
-        self.fuzzy_controller.input['smoothness'] = input_vector['smoothness']
+        # self.fuzzy_controller.input['smoothness'] = input_vector['smoothness']
 
         try:
             self.fuzzy_controller.compute()

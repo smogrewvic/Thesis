@@ -259,13 +259,6 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
                 traffic_manager.update_vehicle_lights(actor, True)
 
 
-        #####TODO: VEHICLE ACTOR BEHAVIOR ######
-        vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
-        # vehicle_behavior.update_behaviors()
-
-
-
-
         # -------------
         # Spawn Walkers
         # -------------
@@ -356,17 +349,16 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         # Example of how to use Traffic Manager parameters
         traffic_manager.global_percentage_speed_difference(percentage_of_speed_limit)
 
-        ##### PEDESTRIAN ACTOR BEHAVIOR ######
-        pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
 
+        ##### ACTOR BEHAVIOR MANAGERS ######
+        pedestrian_behavior = Pedestrian_Behavior_Manager(all_actors)
+        vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
 
         while True:
             if not args.asynch and synchronous_master:
                 world.tick()
-                # vehicle_behavior.update_follow_time()
-
+                vehicle_behavior.update_behaviors()
                 pedestrian_behavior.update_behaviors()
-                # shared_dict = pedestrian_behavior.get_actor_svo_attributes()
             else:
                 world.wait_for_tick()
 

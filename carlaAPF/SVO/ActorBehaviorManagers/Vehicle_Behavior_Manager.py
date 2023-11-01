@@ -6,7 +6,7 @@ class Vehicle_Behavior_Manager():
         self.vehicles_list = vehicles_list
         self.traffic_manager = traffic_manager
 
-    def update_follow_time(self):
+    def _update_follow_time(self):
         for actor in self.vehicles_list:
             speed = round(np.linalg.norm([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]), 4)
             if actor.attributes['role_name'] == 'sadistic':
@@ -33,7 +33,7 @@ class Vehicle_Behavior_Manager():
 
             self.traffic_manager.distance_to_leading_vehicle(actor, distance)
 
-    def update_behaviors(self):
+    def set_behaviors(self):
         for actor in self.vehicles_list:
             if actor.attributes['role_name'] == 'sadistic':
                 behavior = Vehicle_Behavior_Types.SADISTIC.value
@@ -60,5 +60,7 @@ class Vehicle_Behavior_Manager():
             self.traffic_manager.vehicle_lane_offset(actor, behavior['vehicle_lane_offset'])
             self.traffic_manager.vehicle_percentage_speed_difference(actor, behavior['vehicle_percentage_speed_difference'])
 
+    def update_behaviors(self):
+        self._update_follow_time()
     def get_actor_svo_attributes(self):
         return self.svo_attributes
