@@ -8,7 +8,7 @@ class Vehicle_Behavior_Types(enum.Enum):
                 'random_left_lanechange_percentage': 100,
                 'random_right_lanechange_percentage': 100,
                 'vehicle_lane_offset': 1,
-                'vehicle_percentage_speed_difference': -60,  # for internal carla use = 160%
+                'vehicle_percentage_speed_difference': -60,  # for internal carla use (160%)
                 'speed_limit_percent': 160
                 }
 
@@ -18,7 +18,7 @@ class Vehicle_Behavior_Types(enum.Enum):
                    'random_left_lanechange_percentage': 25,
                    'random_right_lanechange_percentage': 25,
                    'vehicle_lane_offset': 0.2,
-                   'vehicle_percentage_speed_difference': -40,  # for internal carla use = 140%
+                   'vehicle_percentage_speed_difference': -40,  # for internal carla use (140%)
                    'speed_limit_percent': 140
                    }
 
@@ -28,7 +28,7 @@ class Vehicle_Behavior_Types(enum.Enum):
                        'random_left_lanechange_percentage': 10,
                        'random_right_lanechange_percentage': 10,
                        'vehicle_lane_offset': 0.1,
-                       'vehicle_percentage_speed_difference': -20,   # for internal carla use = 120%
+                       'vehicle_percentage_speed_difference': -20,   # for internal carla use (120%)
                        'speed_limit_percent': 120
                        }
 
@@ -38,7 +38,7 @@ class Vehicle_Behavior_Types(enum.Enum):
                    'random_left_lanechange_percentage': 3,
                    'random_right_lanechange_percentage': 3,
                    'vehicle_lane_offset': 0,
-                   'vehicle_percentage_speed_difference': 0,  # for internal carla use = 100%
+                   'vehicle_percentage_speed_difference': 0,  # for internal carla use (100%)
                    'speed_limit_percent': 100
                    }
 
@@ -48,7 +48,7 @@ class Vehicle_Behavior_Types(enum.Enum):
                   'random_left_lanechange_percentage': 0,
                   'random_right_lanechange_percentage': 0,
                   'vehicle_lane_offset': 0,
-                  'vehicle_percentage_speed_difference': 20,   # for internal carla use = 80%
+                  'vehicle_percentage_speed_difference': 20,   # for internal carla use (80%)
                   'speed_limit_percent': 80
                   }
 

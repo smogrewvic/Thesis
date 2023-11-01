@@ -1,5 +1,5 @@
 from Tools.Crosswalk_Info import Crosswalk_Info
-from SVO.FuzzyControllers.Pedestrian_SVO_Fuzzy import Pedestrian_SVO_Fuzzy
+from SVO.FuzzyEstimators.Pedestrian_SVO_Fuzzy import Pedestrian_SVO_Fuzzy
 from SVO.ActorBehaviorProfiles.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 import numpy as np
 import time
@@ -119,7 +119,7 @@ class Pedestrian_Behavior_Analyser:
 
         for actor in self.pedestrian_actors:
             id = actor.id
-            print(self.pedestrian_behaviors[id])
             self.social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
-        print('\n')
+        #     print('ID',id, 'svo:', self.social_values[id], self.pedestrian_behaviors[id])
+        # print('\n')
         return self.social_values

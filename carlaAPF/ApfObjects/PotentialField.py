@@ -102,10 +102,11 @@ class APF:
 
             for y in range(len(self.potential_field)):
                 for x in range(len(self.potential_field[0])):
-
                     # indexed from top left
+                    # self.potential_field[-x - 1][y] = min(
+                    #     self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
                     self.potential_field[-x - 1][y] = min(
-                        self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
+                        self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF_sigma_SVO(x, y, self.svo_all_actors[id]), 255)
     def generate_APF(self):
 
         self.potential_field.fill(0)  # erase potential field to not sum between calls

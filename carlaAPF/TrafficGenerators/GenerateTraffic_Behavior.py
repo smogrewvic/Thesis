@@ -323,9 +323,9 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
             all_id.append(walkers_list[i]["con"])
             all_id.append(walkers_list[i]["id"])
         all_actors = world.get_actors(all_id)
-        print('all id', all_id)
-        print("all actors", all_actors)
-        print('\n')
+        # print('all id', all_id)
+        # print("all actors", all_actors)
+        # print('\n')
 
         # wait for a tick to ensure client receives the last transform of the walkers we have just created
         if args.asynch or not synchronous_master:

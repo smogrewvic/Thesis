@@ -1,4 +1,4 @@
-from SVO.FuzzyControllers.Vehicle_SVO_Fuzzy import Vehicle_SVO_Fuzzy
+from SVO.FuzzyEstimators.Vehicle_SVO_Fuzzy import Vehicle_SVO_Fuzzy
 import numpy as np
 import time
 import collections
@@ -161,7 +161,7 @@ class Vehicle_Behavior_Analyser:
             self.vehicle_behaviors[id]['follow_time'] = behavior['follow_time']
 
     def calculate_svo(self):
-        self.calculate_smoothness('average')
+        # self.calculate_smoothness('average')
         self.calculate_speed_limit('average')
         self.calculate_lane_centering('average')
         self.calculate_lane_changes('quantity')
@@ -170,7 +170,7 @@ class Vehicle_Behavior_Analyser:
         for actor in self.vehicle_actors:
             id = actor.id
             self.social_values[id] = self.fuzzy.calculate_output(self.vehicle_behaviors[id])
-            # print("ID",id, "svo", self.social_values[id])
+        #     print('ID',id, 'svo:', self.social_values[id], self.vehicle_behaviors[id])
         # print('\n')
 
         return self.social_values
