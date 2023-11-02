@@ -103,10 +103,10 @@ class APF:
             for y in range(len(self.potential_field)):
                 for x in range(len(self.potential_field[0])):
                     # indexed from top left
-                    # self.potential_field[-x - 1][y] = min(
-                    #     self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
                     self.potential_field[-x - 1][y] = min(
-                        self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF_sigma_SVO(x, y, self.svo_all_actors[id]), 255)
+                        self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
+                    # self.potential_field[-x - 1][y] = min(
+                    #     self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF_sigma_SVO(x, y, self.svo_all_actors[id]), 255)
     def generate_APF(self):
 
         self.potential_field.fill(0)  # erase potential field to not sum between calls
@@ -141,10 +141,7 @@ class APF:
 
     def set_traffic_lights(self):
 
-        client = carla.Client('localhost', 2000)
-        world = client.get_world()
-
-        for i, tl_actor in enumerate(world.get_actors().filter('traffic.traffic_light*')):
+        for i, tl_actor in enumerate(self.world.get_actors().filter('traffic.traffic_light*')):
             #convert actor position to traffic light effect position
             conversion_key = ( round(tl_actor.get_location().x, 4), round(tl_actor.get_location().y, 4), round(tl_actor.get_location().z, 4) )
             converted_data = Traffic_Light_Info.convert_coordinates[conversion_key]
@@ -166,6 +163,8 @@ class APF:
 
             self.actor_ids.update({id: TrafficLightAPF(len(self.potential_field), self.field_granularity, tl_actor)})
             self.actor_ids[id].set_state(traffic_light_state)
+
+        print(self.actor_ids)
 
     def set_lane_APF(self):
         #get all navpoint actors and send to laneAPF
