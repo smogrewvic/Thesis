@@ -1,7 +1,7 @@
 import carla
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 
-from ApfObjects import PotentialField as pf
+from Data_Generators import PotentialFieldTrainer as pft
 from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
@@ -10,10 +10,23 @@ from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
 from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_Behavior_Analyser
 from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavior_Analyser
 
+from Data_Generators.TrainingDataManager import Training_Data_Manager
+from Tools.SpawnPoints import Spawn_Points
+import random
+
 def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=False, display_control_sys=True, ego_position=False):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
-    potential_field = pf.APF()
+
+    # settings = world.get_settings()
+    # settings.fixed_delta_seconds = 0.16
+    # settings.max_substeps = 16
+    # world.apply_settings(settings)
+
+
+
+
+    potential_field = pft.APF_Trainer()
     high_level_route = GlobalRoutePlanner(world.get_map(), 1)
     ego_vehicle = None
 
@@ -22,11 +35,12 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
         if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
             ego_vehicle = actor
 
-    # find current ego_vehicle location and find random point to navigate to
     navpoint_transforms = []
     origin = ego_vehicle.get_location()
-    destination = carla.Location(x=105.868706, y=72.938820, z=0.000000)
+    destination_coords = random.choice(list(Spawn_Points.points.value.values()))
+    destination = carla.Location(x=destination_coords[0], y=destination_coords[1], z=destination_coords[2])
 
+    # TODO: Check for minimum distance?
     for waypoint in high_level_route.trace_route(origin, destination):
         navpoint_transforms.append(waypoint[0].transform)
 
@@ -37,10 +51,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
     steering_PID = Steering_Control_PID(ego_vehicle,
                                         potential_field.get_granularity(),
                                         potential_field=potential_field.get_potential_field())
-    # steering_PID.set_PID_values(0.28, 0.08, 0)  # good values p = 1, i = 0, d = 0.8      p =0.3, i = 0.1, d = 0
-
-    steering_PID.set_PID_values(0.5, 0.08, 0) # good turning response
-
+    steering_PID.set_PID_values(0.28, 0.08, 0)  # good values p = 1, i = 0, d = 0.8      p =0.3, i = 0.1, d = 0
 
     ##### Throttle Control #####
     throttle_PID = Throttle_Control_PID(ego_vehicle,
@@ -64,6 +75,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
 
         potential_field.generate_APF()
 
+        training_output = []
         if autopilot_on == True:
             if holonomic == True:
                 navigation_path = path_planner.holonomic_gradient_descent()
@@ -107,7 +119,10 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
         #
         # print(svo_all_actors)
         # potential_field.update_svo_actors(svo_all_actors)
-
+        # training_data = Training_Data_Manager()
+        # training_inputs = potential_field.get_input_training_data()
+        #
+        # training_data.save_training_data(training_inputs[0],training_inputs[1],training_inputs[2], navigation_path)
 
 if __name__ == '__main__':
     main()

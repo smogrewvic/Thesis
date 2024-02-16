@@ -57,7 +57,7 @@ def get_actor_blueprints(world, filter, generation):
         return []
 
 
-def generate(autopilot_state, percentage_of_speed_limit = 30):
+def generate(autopilot_state, percentage_of_speed_limit = 30, sim_timestep = 0.05, sub_step = 0.01):
     argparser = argparse.ArgumentParser(
         description=__doc__)
     argparser.add_argument(
@@ -184,7 +184,7 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
             if not settings.synchronous_mode:
                 synchronous_master = True
                 settings.synchronous_mode = True
-                settings.fixed_delta_seconds = 0.05
+                settings.fixed_delta_seconds = sim_timestep
             else:
                 synchronous_master = False
         else:
@@ -385,10 +385,10 @@ def generate(autopilot_state, percentage_of_speed_limit = 30):
         time.sleep(0.5)
 
 
-def main(autopilot_state = True, percentage_of_speed_limit = 30):
+def main(autopilot_state = True, percentage_of_speed_limit = 30, sim_timestep = 0.05, sub_step = 0.01):
     try:
         inverse_percent = 100 - percentage_of_speed_limit
-        generate(autopilot_state, inverse_percent)
+        generate(autopilot_state, inverse_percent, sim_timestep, sub_step)
     except KeyboardInterrupt:
         pass
     finally:
