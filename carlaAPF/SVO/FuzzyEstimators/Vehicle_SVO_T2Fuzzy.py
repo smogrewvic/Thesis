@@ -49,11 +49,11 @@ class Vehicle_SVO_T2Fuzzy():
         svo['competitive'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0.5, 0.25, 1.0], gaussian_mf, [0.5, 0.2, 1.0], check_set=True)
         svo['sadistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [1, 0.25, 1.0], gaussian_mf, [1, 0.2, 1.0], check_set=True)
 
-        IT2FS_plot(follow_time['close'],follow_time['medium'], follow_time['far'], legends=["close", "medium", "far"], filename="simp_ex_sets")
-        IT2FS_plot(lane_changes['low'], lane_changes['medium'], lane_changes['high'], legends=["low", "medium", "high"], filename="simp_ex_sets")
-        IT2FS_plot(lane_centering['good'], lane_centering['medium'],lane_centering['poor'], legends=["good", "medium", "poor"], filename="simp_ex_sets")
-        IT2FS_plot(speed_limit_percent['slow'], speed_limit_percent['medium'], speed_limit_percent['fast'], legends=["slow", "medium", "fast"], filename="simp_ex_sets")
-        IT2FS_plot(svo['altruistic'], svo['cooperative'], svo['individualistic'],svo['competitive'],svo['sadistic'], legends=["altruistic", "cooperative", "individualistic", "competitive", "sadistic"], filename="simp_ex_sets")
+        # IT2FS_plot(follow_time['close'],follow_time['medium'], follow_time['far'], legends=["close", "medium", "far"], filename="simp_ex_sets")
+        # IT2FS_plot(lane_changes['low'], lane_changes['medium'], lane_changes['high'], legends=["low", "medium", "high"], filename="simp_ex_sets")
+        # IT2FS_plot(lane_centering['good'], lane_centering['medium'],lane_centering['poor'], legends=["good", "medium", "poor"], filename="simp_ex_sets")
+        # IT2FS_plot(speed_limit_percent['slow'], speed_limit_percent['medium'], speed_limit_percent['fast'], legends=["slow", "medium", "fast"], filename="simp_ex_sets")
+        # IT2FS_plot(svo['altruistic'], svo['cooperative'], svo['individualistic'],svo['competitive'],svo['sadistic'], legends=["altruistic", "cooperative", "individualistic", "competitive", "sadistic"], filename="simp_ex_sets")
 
 
         it2fis = IT2Mamdani(min_t_norm, max_s_norm, method="Centroid", algorithm="KM")
@@ -137,9 +137,9 @@ class Vehicle_SVO_T2Fuzzy():
 
 
 
-test = Vehicle_SVO_T2Fuzzy()
-input_vector = {'follow_time': 3, 'lane_changes': 0,'lane_centering': 0.2 ,'speed_limit_percent':100}
-
-print(test.calculate_output(input_vector))
+# test = Vehicle_SVO_T2Fuzzy()
+# input_vector = {'follow_time': 3, 'lane_changes': 0,'lane_centering': 0.2 ,'speed_limit_percent':100}
+#
+# print(test.calculate_output(input_vector))
 
 
