@@ -2,7 +2,9 @@ import EgoVehicle.EgoVehicle_Pygame
 import EgoVehicle.Autopilot
 from Tools.SpawnPoints import Spawn_Points
 import TrafficGenerators.GenerateTraffic
+import TrafficGenerators.GenerateTraffic_Behavior
 import TrafficGenerators.ActorSpawn
+import TrafficGenerators.ActorSpawn_Behavior
 from time import sleep
 import multiprocessing
 import carla
@@ -23,6 +25,8 @@ if __name__ == "__main__":
     pedestrian_spawn_points = [pedestrian1]
 
     p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args=('id_16',))
+
+
     p1.start()
     p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True,  # autopilot_on
                                                                          False,  # holonomic
@@ -37,3 +41,21 @@ if __name__ == "__main__":
     p1.join()
     p2.join()
     p3.join()
+
+
+    # p2 = multiprocessing.Process(target=TrafficGenerators.GenerateTraffic_Behavior.main, args = (True,  # autopilot state
+    #                                                                                              30,    #percent speed limit
+    #                                                                                              0.01)) #sim_timestep
+    #
+    # p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True,  # autopilot_on
+    #                                                                      False,  # holonomic
+    #                                                                      True,  # display apf
+    #                                                                      False,  # display actors
+    #                                                                      True,  # display control system
+    #                                                                      False   # ego position
+    #                                                                      ))
+    #
+    # p1.start()
+    # p2.start()
+    # p3.start()
+    #

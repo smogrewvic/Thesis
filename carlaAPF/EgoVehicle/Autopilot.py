@@ -73,7 +73,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
 
             steering_PID.set_regression_precision(path_planner.get_regression_precision())
             steering_control_output = steering_PID.get_control_output(navigation_path)
-            throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph=True)
+            throttle_control_output = throttle_PID.get_control_output(navigation_path, 25, kph=True)
 
             if throttle_control_output >= 0:
                 ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_control_output, steer=steering_control_output, brake=0))
@@ -88,7 +88,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
             potential_field.plot_actor_positions()
 
         if display_control_sys == True:
-            steering_PID.display_PID_tracking()
+            # steering_PID.display_PID_tracking()
             throttle_PID.display_PID_tracking()
 
         if ego_position == True:

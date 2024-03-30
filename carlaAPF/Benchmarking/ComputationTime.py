@@ -14,14 +14,14 @@ def type1_loop(n):
     pedestrian_input = {'distance_to_crosswalk':10,'time_looking':3, 'time_waiting':2}
     vehicle_input = {'follow_time': 3, 'lane_changes': 0,'lane_centering': 0.2 ,'speed_limit_percent':100}
 
-    vehicle_estimator = Vehicle_SVO_Fuzzy()
-    # pedestrian_estimator = Pedestrian_SVO_Fuzzy()
+    # vehicle_estimator = Vehicle_SVO_Fuzzy()
+    pedestrian_estimator = Pedestrian_SVO_Fuzzy()
 
 
     start_time = time.time()*1000
     for _ in range(n):
-        vehicle_estimator.calculate_output(vehicle_input)
-        # pedestrian_estimator.calculate_output(pedestrian_input)
+        # vehicle_estimator.calculate_output(vehicle_input)
+        pedestrian_estimator.calculate_output(pedestrian_input)
     end_time = time.time()*1000
     return end_time - start_time
 
@@ -29,19 +29,19 @@ def type2_loop(n):
     pedestrian_input = {'distance_to_crosswalk':10,'time_looking':3, 'time_waiting':2}
     vehicle_input = {'follow_time': 3, 'lane_changes': 0,'lane_centering': 0.2 ,'speed_limit_percent':100}
 
-    vehicle_estimator = Vehicle_SVO_T2Fuzzy()
-    # pedestrian_estimator = Pedestrian_SVO_T2Fuzzy()
+    # vehicle_estimator = Vehicle_SVO_T2Fuzzy()
+    pedestrian_estimator = Pedestrian_SVO_T2Fuzzy()
     start_time = time.time()*1000
     for _ in range(n):
-        vehicle_estimator.calculate_output(vehicle_input)
-        # pedestrian_estimator.calculate_output(pedestrian_input)
+        # vehicle_estimator.calculate_output(vehicle_input)
+        pedestrian_estimator.calculate_output(pedestrian_input)
 
     end_time = time.time()*1000
     return end_time - start_time
 
 if __name__ == "__main__":
     loop_iterations = 1000
-    num_runs = 50  # Number of times to run each method
+    num_runs = 5  # Number of times to run each method
 
     # Perform timings for the first method
     method1_times = [type1_loop(loop_iterations)/loop_iterations for _ in range(num_runs)]
@@ -60,12 +60,12 @@ if __name__ == "__main__":
     rects1 = ax.bar(x - width/2, [method1_mean, method2_mean], width, label='Mean Time (ms)')
     rects2 = ax.bar(x + width/2, [np.std(method1_times), np.std(method2_times)], width, label='Standard Deviation')
 
-    ax.set_ylabel('Time (ms)', fontsize = 18)
+    ax.set_ylabel('Time (ms)', fontsize = 30)
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=18)
-    ax.legend()
-    ax.tick_params(axis='y', labelsize=14)
-    plt.rc('font', size=14)
+    ax.set_xticklabels(labels, fontsize=30)
+    ax.legend(fontsize=22)
+    ax.tick_params(axis='y', labelsize=22)
+    plt.rc('font', size=22)
 
     def autolabel(rects):
         """Attach a text label above each bar in *rects*, displaying its height."""

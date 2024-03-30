@@ -56,9 +56,9 @@ class Pedestrian_SVO_T2Fuzzy():
         svo['competitive'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0.5, 0.25, 1.0], gaussian_mf, [0.5, 0.2, 1.0], check_set=True)
         svo['sadistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [1, 0.25, 1.0], gaussian_mf, [1, 0.2, 1.0], check_set=True)
 
-        IT2FS_plot(distance_to_crosswalk['close'], distance_to_crosswalk['far'], legends=["close", "far"])
-        IT2FS_plot(wait_time['short'], wait_time['medium'],wait_time['long'], legends=["short", "medium", "long"])
-        IT2FS_plot(look_time['short'], look_time['medium'], look_time['long'], legends=["short", "medium", "long"])
+        # IT2FS_plot(distance_to_crosswalk['close'], distance_to_crosswalk['far'], legends=["close", "far"])
+        # IT2FS_plot(wait_time['short'], wait_time['medium'],wait_time['long'], legends=["short", "medium", "long"])
+        # IT2FS_plot(look_time['short'], look_time['medium'], look_time['long'], legends=["short", "medium", "long"])
         # IT2FS_plot(svo['altruistic'], svo['cooperative'], svo['individualistic'],svo['competitive'],svo['sadistic'], legends=["altruistic", "cooperative", "individualistic", "competitive", "sadistic"], filename="simp_ex_sets")
 
 
