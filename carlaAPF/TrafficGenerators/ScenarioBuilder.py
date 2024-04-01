@@ -31,6 +31,11 @@ from numpy import random
 
 from SVO.ActorBehaviorManagers.Vehicle_Behavior_Manager import Vehicle_Behavior_Manager
 from SVO.ActorBehaviorManagers.Pedestrian_Behavior_Manager import Pedestrian_Behavior_Manager
+from TrafficGenerators.ActorInfo import VehicleInfo
+from agents.navigation.basic_agent import BasicAgent
+from agents.navigation.behavior_agent import BehaviorAgent
+
+from SVO.ActorBehaviorManagers.behavior_agent_extended import BehaviorAgentExtended
 
 def convert_point_to_carla_transform(point):
 
@@ -239,31 +244,31 @@ def generate(vehicle_spawns, pedestrian_spawn_transforms, autopilot_state, perce
         batch = []
         hero = args.hero
         for n, vehicle in enumerate(vehicle_spawns):
-            transform = vehicle['spawn_transform']
+            transform = convert_point_to_carla_transform(vehicle['spawn_location'])
             if n >= args.number_of_vehicles:
                 break
             # blueprint = random.choice(blueprints)
-            blueprint = vehicle['model_blueprint']
+            blueprint = world.get_blueprint_library().filter(vehicle['model_blueprint'])[0]
+
             if blueprint.has_attribute('color'):
                 # color = random.choice(blueprint.get_attribute('color').recommended_values)
                 # blueprint.set_attribute('color', color)
                 blueprint.set_attribute('color', vehicle['model_color'])
             if blueprint.has_attribute('driver_id'):
-                driver_id = random.choice(blueprint.get_attribute('driver_id').recommended_values)
-                blueprint.set_attribute('driver_id', driver_id)
+                # driver_id = random.choice(blueprint.get_attribute('driver_id').recommended_values)
+                # blueprint.set_attribute('driver_id', driver_id)
+                blueprint.set_attribute('driver_id', str(n))
+                vehicle['driver_id'] = str(n)
             if hero:
                 blueprint.set_attribute('role_name', 'hero')
                 hero = False
             else:
                 # blueprint.set_attribute('role_name', 'autopilot')
+                print(vehicle['behavior_type'])
                 blueprint.set_attribute('role_name', vehicle['behavior_type'])  # todo: messign around here for behavior
 
             # spawn the cars and set their autopilot and light state all together
             batch.append(SpawnActor(blueprint, transform).then(SetAutopilot(FutureActor, autopilot_state, traffic_manager.get_port())))
-
-
-
-
 
         for response in client.apply_batch_sync(batch, synchronous_master):
             if response.error:
@@ -271,13 +276,30 @@ def generate(vehicle_spawns, pedestrian_spawn_transforms, autopilot_state, perce
             else:
                 vehicles_list.append(response.actor_id)
 
+
+
         # Set automatic vehicle lights update if specified
         if args.car_lights_on:
             all_vehicle_actors = world.get_actors(vehicles_list)
             for actor in all_vehicle_actors:
-
                 traffic_manager.update_vehicle_lights(actor, True)
 
+
+        #set basicAgent functionality
+        all_vehicle_actors = world.get_actors(vehicles_list)
+        agent_vehicle_actor_pairs = []
+        for actor in all_vehicle_actors:
+            driver_id = actor.attributes['driver_id']
+            for vehicle in vehicle_spawns:
+                if driver_id == vehicle['driver_id']:
+                    agent = BasicAgent(actor)
+                    # agent = BehaviorAgent(actor, behavior='normal')
+                    # agent = BehaviorAgentExtended(actor, behavior='normal')
+                    # spawn_points = world.get_map().get_spawn_points()
+                    # destination = random.choice(spawn_points).location
+                    carla_location = carla.Location(vehicle['destination_location'][0],vehicle['destination_location'][1],vehicle['destination_location'][2])
+                    agent.set_destination(carla_location)
+                    agent_vehicle_actor_pairs.append([agent, actor])
 
         # -------------
         # Spawn Walkers
@@ -384,10 +406,16 @@ def generate(vehicle_spawns, pedestrian_spawn_transforms, autopilot_state, perce
         vehicle_behavior = Vehicle_Behavior_Manager(world.get_actors(vehicles_list), traffic_manager)
 
         while True:
+            # vehicle_behavior.update_behaviors()
+            pedestrian_behavior.update_behaviors()
             if not args.asynch and synchronous_master:
                 world.tick()
-                vehicle_behavior.update_behaviors()
-                pedestrian_behavior.update_behaviors()
+                for agent, vehicle in agent_vehicle_actor_pairs:
+                    vehicle.apply_control(agent.run_step())
+                    # if agent.done():
+                    #     print("The target has been reached, stopping the simulation")
+                    #     vehicle.set_autopilot(False, args.tm_port)
+
             else:
                 world.wait_for_tick()
 
@@ -414,10 +442,10 @@ def generate(vehicle_spawns, pedestrian_spawn_transforms, autopilot_state, perce
         time.sleep(0.5)
 
 
-def main(vehicle_spawn_transforms = [], pedestrian_spawn_transforms = [] ,autopilot_state = True, percentage_of_speed_limit = 30, sim_timestep = 0.05, sub_step = 0.01):
+def main(vehicle_spawns = [], pedestrian_spawn_transforms = [] ,autopilot_state = True, percentage_of_speed_limit = 30, sim_timestep = 0.05, sub_step = 0.01):
     try:
         inverse_percent = 100 - percentage_of_speed_limit
-        generate(vehicle_spawn_transforms, pedestrian_spawn_transforms, autopilot_state, inverse_percent, sim_timestep, sub_step)
+        generate(vehicle_spawns, pedestrian_spawn_transforms, autopilot_state, inverse_percent, sim_timestep, sub_step)
     except KeyboardInterrupt:
         pass
     finally:

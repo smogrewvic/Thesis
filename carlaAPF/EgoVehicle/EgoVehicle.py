@@ -37,6 +37,7 @@ if __name__ == '__main__':
     vehicle_bp = bp_lib.find('vehicle.lincoln.mkz_2020')
     vehicle_bp.set_attribute('role_name', 'ego_vehicle')
     ego_vehicle = world.try_spawn_actor(vehicle_bp, random.choice(spawn_points))
+    print('EGO_VEHICLE', ego_vehicle)
     spectator = world.get_spectator()
     transform = carla.Transform(ego_vehicle.get_transform().transform(carla.Location(x=-4, z=2.5)), ego_vehicle.get_transform().rotation)
     spectator.set_transform(transform)
