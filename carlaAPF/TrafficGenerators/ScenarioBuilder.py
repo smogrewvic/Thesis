@@ -36,6 +36,7 @@ from agents.navigation.basic_agent import BasicAgent
 from agents.navigation.behavior_agent import BehaviorAgent
 
 from SVO.ActorBehaviorManagers.behavior_agent_extended import BehaviorAgentExtended
+from Tools.SpawnPoints import Spawn_Points
 
 def convert_point_to_carla_transform(point):
 
@@ -339,7 +340,7 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
                 # walker_bp = pedestrian['model_blueprint']
                 walker_bp = world.get_blueprint_library().filter(pedestrian['model_blueprint'])[0]
                 walker_bp.set_attribute('role_name', pedestrian['behavior_type'])
-
+                # print('ATTRIBUTES', walker_bp.attributes)
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):
                 walker_bp.set_attribute('is_invincible', 'false')
@@ -356,8 +357,10 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
                 walker_speed.append(0.0)
 
             spawn_point = convert_point_to_carla_transform(pedestrian['spawn_location'])
-            batch.append(SpawnActor(walker_bp, spawn_point))
-
+            walker = SpawnActor(walker_bp, spawn_point)
+            # pedestrian['actor'] = walker
+            # batch.append(SpawnActor(walker_bp, spawn_point))
+            batch.append(walker)
 
         results = client.apply_batch_sync(batch, True)
         walker_speed2 = []
@@ -373,8 +376,12 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
         # 3. we spawn the walker controller
         batch = []
         walker_controller_bp = world.get_blueprint_library().find('controller.ai.walker')
-        for i in range(len(walkers_list)):
-            batch.append(SpawnActor(walker_controller_bp, carla.Transform(), walkers_list[i]["id"]))
+
+        for i, pedestrian in enumerate(pedestrian_spawns):
+            controller = SpawnActor(walker_controller_bp, carla.Transform(), walkers_list[i]["id"])
+            batch.append(controller)
+
+
         results = client.apply_batch_sync(batch, True)
         for i in range(len(results)):
             if results[i].error:
@@ -387,7 +394,6 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
             all_id.append(walkers_list[i]["con"])
             all_id.append(walkers_list[i]["id"])
         all_actors = world.get_actors(all_id)
-
         # wait for a tick to ensure client receives the last transform of the walkers we have just created
         if args.asynch or not synchronous_master:
             world.wait_for_tick()
@@ -397,13 +403,26 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
         # 5. initialize each controller and set target to walk to (list is [controller, actor, controller, actor ...])
         # set how many pedestrians can cross the road
         world.set_pedestrians_cross_factor(percentagePedestriansCrossing)
-        for i in range(0, len(all_id), 2):
-            # start walker
-            all_actors[i].start()
-            # set walk to random point
-            all_actors[i].go_to_location(world.get_random_location_from_navigation())
+
+        # for i in range(0, len(all_id), 2):
+        #     # start walker
+        #     all_actors[i].start()
+        #     destination = Spawn_Points.pedestrian_points.value['id_754']
+        #     all_actors[i].go_to_location(carla.Location(destination[0], destination[1], destination[2]))
+        #     # max speed
+        #     all_actors[i].set_max_speed(float(walker_speed[int(i / 2)]))
+
+
+        for i, pedestrian in enumerate(pedestrian_spawns):
+            j = i*2
+            pedestrian['controller'] = all_actors[j]
+            pedestrian['actor'] = all_actors[j+1]
+            pedestrian['controller'].start()
+            destination = pedestrian['destination_location']
+            pedestrian['controller'].go_to_location(carla.Location(destination[0], destination[1], destination[2]))
             # max speed
-            all_actors[i].set_max_speed(float(walker_speed[int(i / 2)]))
+            pedestrian['controller'].set_max_speed(float(walker_speed[int(i / 2)]))
+
 
         print('spawned %d vehicles and %d walkers, press Ctrl+C to exit.' % (len(vehicles_list), len(walkers_list)))
 

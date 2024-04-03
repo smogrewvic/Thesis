@@ -1,7 +1,6 @@
 import EgoVehicle.EgoVehicle_Pygame
 import EgoVehicle.Autopilot
-# import TrafficGenerators.GenerateTraffic_Behavior
-from time import sleep
+
 import multiprocessing
 import TrafficGenerators.ScenarioBuilder
 from TrafficGenerators.ActorInfo import VehicleInfo, PedestrianInfo
@@ -13,16 +12,17 @@ if __name__ == "__main__":
     # cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_12', model_category='sedan', behavior_type='individualistic').data)
 
     pedestrians = []
-    pedestrians.append(PedestrianInfo(spawn_point_id='id_172', model_category='adult', behavior_type='cooperative').data)
-    pedestrians.append(PedestrianInfo(spawn_point_id='id_52', model_category='adult', behavior_type='cooperative').data)
-    pedestrians.append(PedestrianInfo(spawn_point_id='id_13', model_category='adult', behavior_type='cooperative').data)
+    pedestrians.append(PedestrianInfo(spawn_point_id='id_172', destination_point_id= 'id_754', model_category='adult', behavior_type='cooperative').data)
+    pedestrians.append(PedestrianInfo(spawn_point_id='id_52',  destination_point_id= 'id_172', model_category='adult', behavior_type='sadistic').data)
+
+    # pedestrians.append(PedestrianInfo(spawn_point_id='id_13', model_category='adult', behavior_type='cooperative').data)
 
 
     p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args=("id_113",))  # 98, 113, 66
     p2 = multiprocessing.Process(target=TrafficGenerators.ScenarioBuilder.main, args=(cars,
                                                                                       pedestrians,
                                                                                       True,  # autopilot
-                                                                                      25,  # percent speed limit
+                                                                                      100,  # percent speed limit
                                                                                       0.05))  # sim timestep    0.01 slow mo
 
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True,  # autopilot_on
