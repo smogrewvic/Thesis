@@ -5,7 +5,7 @@ import random
 
 class VehicleInfo:
     def __init__(self, spawn_point_id='random', destination_point_id='random', model_category='sedan', behavior_type='individualistic',
-                 behavior_override=False, autopilot_state = True):
+                 behavior_override=False, autopilot_state=True):
 
         if model_category == 'sedan':
             model_blueprint = 'vehicle.lincoln.mkz_2020'
@@ -40,7 +40,6 @@ class VehicleInfo:
         if destination_point_id == 'random':
             destination_location = random.choice(list(Spawn_Points.points.value.values()))
         else:
-            print("destination ID", )
             destination_location = Spawn_Points.points.value[destination_point_id]
 
         self.data = {'type': 'vehicle',
@@ -51,54 +50,55 @@ class VehicleInfo:
                      'destination_id': destination_point_id,
                      'destination_location': destination_location,
                      'behavior_type': behavior_type,
-                     'autopilot_state':autopilot_state}
+                     'autopilot_state': autopilot_state}
 
 
-#
-#     def convert_point_to_carla_transform(self, point):
-#
-#         return carla.Transform(carla.Location(x=point[0], y=point[1], z=point[2]),
-#                                carla.Rotation(pitch=point[3], yaw=point[4], roll=point[5]))
-#
-#
-#
-#
-# class PedestrianInfo:
-#     def __init__(self, spawn_point_id='random', destination_point_id='random', age_category='adult', behavior_type='individualistic',
-#                  behavior_override=False):
-#
-#         if age_category == 'child':
-#             model_blueprint = 'vehicle.lincoln.mkz_2020'
-#         else:
-#             model_blueprint = 'vehicle.lincoln.mkz_2020'
-#
-#         if behavior_override == True:
-#             svo_value_map = {'altruistic': 0.75,
-#                              'cooperative': 0.35,
-#                              'individualistic': 0,
-#                              'competitive': -0.35,
-#                              'sadistic': -0.75}
-#             behavior_type = svo_value_map[behavior_type]
-#
-#         if spawn_point_id == 'random':
-#             spawn_point = random.choice(list(Spawn_Points.points.value.values()))
-#         else:
-#             spawn_point = Spawn_Points.points.value[spawn_point_id]
-#
-#         if destination_point_id == 'random':
-#             destination_transform = random.choice(list(Spawn_Points.points.value.values()))
-#         else:
-#             destination_transform = Spawn_Points.points.value[spawn_point_id]
-#
-#         self.data = {'type': 'vehicle',
-#                      'model_blueprint': model_blueprint,
-#                      'spawn_id': spawn_point_id,
-#                      # 'spawn_transform': self.convert_point_to_carla_transform(spawn_point),
-#                      'destination_id': destination_point_id,
-#                      'destination_transform': destination_transform,
-#                      'behavior_type': behavior_type}
-#
-#     def convert_point_to_carla_transform(self, point):
-#
-#         return carla.Transform(carla.Location(x=point[0], y=point[1], z=point[2]),
-#                                carla.Rotation(pitch=point[3], yaw=point[4], roll=point[5]))
+class PedestrianInfo:
+    def __init__(self, spawn_point_id='random', destination_point_id='random', model_category='sedan', behavior_type='individualistic',
+                 behavior_override=False, autopilot_state=True):
+
+        # pedestrian colors can not be set directly.
+        if model_category == 'adult':
+            if behavior_type == 'altruistic':
+                model_blueprint = 'walker.pedestrian.0006'  # dark green shirt
+            if behavior_type == 'cooperative':
+                model_blueprint = 'walker.pedestrian.0005'  # light green shirt
+            if behavior_type == 'individualistic':
+                model_blueprint = 'walker.pedestrian.0004'  # yellow shirt
+            if behavior_type == 'competitive':
+                model_blueprint = 'walker.pedestrian.0007'  # purple shirt
+            if behavior_type == 'sadistic':
+                model_blueprint = 'walker.pedestrian.0008'  # bright orange shirt
+        elif model_category == 'child':
+            model_blueprint = 'walker.pedestrian.0009'  # no relevant color options for children
+        else:
+            print(model_category, "model_category not recognized, setting default adult pedestrian")
+            model_blueprint = 'walker.pedestrian.0004'
+
+
+        if behavior_override == True:
+            svo_value_map = {'altruistic': 0.75,
+                             'cooperative': 0.35,
+                             'individualistic': 0,
+                             'competitive': -0.35,
+                             'sadistic': -0.75}
+            behavior_type = svo_value_map[behavior_type]
+
+        if spawn_point_id == 'random':
+            spawn_location = random.choice(list(Spawn_Points.pedestrian_points.value.values()))
+        else:
+            spawn_location = Spawn_Points.pedestrian_points.value[spawn_point_id]
+
+        if destination_point_id == 'random':
+            destination_location = random.choice(list(Spawn_Points.pedestrian_points.value.values()))
+        else:
+            destination_location = Spawn_Points.pedestrian_points.value[destination_point_id]
+
+        self.data = {'type': 'vehicle',
+                     'model_blueprint': model_blueprint,
+                     'spawn_id': spawn_point_id,
+                     'spawn_location': spawn_location,
+                     'destination_id': destination_point_id,
+                     'destination_location': destination_location,
+                     'behavior_type': behavior_type,
+                     'autopilot_state': autopilot_state}

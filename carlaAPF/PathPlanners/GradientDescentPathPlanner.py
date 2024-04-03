@@ -61,7 +61,7 @@ class Gradient_path_planner:
             directions = self.__calculate_phi_max_directions(phi_max, self.gradient_heading[-1])
             temp_i, temp_j = i, j
             for dr, dc in directions:
-                if i+dr > len(self.potential_field[0]) or j+dc > len(self.potential_field):
+                if i+dr >= len(self.potential_field[0]) or j+dc >= len(self.potential_field):
                     break
                 if self.potential_field[temp_i][temp_j] > self.potential_field[i + dr][j + dc]:
                     temp_i, temp_j = i + dr, j + dc

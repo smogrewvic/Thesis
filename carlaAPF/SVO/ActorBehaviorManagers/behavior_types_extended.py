@@ -38,7 +38,7 @@ class Aggressive(object):
 
 
 class Altruistic(object):
-    max_speed = 40
+    max_speed = 10
     speed_lim_dist = 6  # how far your vehicle's target speed will be from the current speed limit
     speed_decrease = 12  # How quickly in km/h your vehicle will slow down when approaching a slower vehicle
     safety_time = 3  # time to impact
