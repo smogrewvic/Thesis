@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=30, granularity=0.6): # 15-0.2 high fidelity, #20-0.6 decent
+    def __init__(self, field_size=30, granularity=0.3): # 15-0.2 high fidelity, #20-0.6 decent
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 

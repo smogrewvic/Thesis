@@ -8,7 +8,7 @@ from DrivingScenarios import Scenarios
 
 if __name__ == "__main__":
 
-    scenario = Scenarios.Scenario('empty_world')
+    scenario = Scenarios.Scenario('pedestrian_crossing')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
@@ -18,11 +18,11 @@ if __name__ == "__main__":
                                                                                       pedestrians,
                                                                                       True,  # autopilot
                                                                                       100,  # percent of max speed limit
-                                                                                      0.01))  # sim timestep    0.01 slow mo
+                                                                                      0.005))  # sim timestep    0.01 slow mo
 
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True,  # autopilot_on
                                                                          False,  # holonomic
-                                                                         False,  # display apf
+                                                                         True,  # display apf
                                                                          False,  # display actors
                                                                          False,  # display control system
                                                                          False,  # ego position

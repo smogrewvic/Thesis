@@ -38,15 +38,17 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
                                         potential_field.get_granularity(),
                                         potential_field=potential_field.get_potential_field())
     # steering_PID.set_PID_values(0.28, 0.08, 0)  # good values p = 1, i = 0, d = 0.8      p =0.3, i = 0.1, d = 0
-    #
-    steering_PID.set_PID_values(0.5, 0.08, 0) # good turning response
+
+    steering_PID.set_PID_values(0.25, 0, 0) # good turning response
+    steering_PID.set_look_ahead(20)
 
 
     ##### Throttle Control #####
     throttle_PID = Throttle_Control_PID(ego_vehicle,
                                         potential_field.get_potential_field(),
                                         potential_field.get_granularity())
-    throttle_PID.set_PID_values(0.1, 0.05, 0)
+
+    throttle_PID.set_PID_values(0.6, 0.001, 0) #good for 20kph setpoint
 
     # Traffic lights
     potential_field.set_traffic_lights()
@@ -73,7 +75,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
 
             steering_PID.set_regression_precision(path_planner.get_regression_precision())
             steering_control_output = steering_PID.get_control_output(navigation_path)
-            throttle_control_output = throttle_PID.get_control_output(navigation_path, 10, kph=True)
+            throttle_control_output = throttle_PID.get_control_output(navigation_path, 20, kph=True)
 
             if throttle_control_output >= 0:
                 ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_control_output, steer=steering_control_output, brake=0))

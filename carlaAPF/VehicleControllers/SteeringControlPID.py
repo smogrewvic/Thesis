@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 class Steering_Control_PID:
-    def __init__(self, ego_vehicle, potential_field_granularity, regression_precision=1, meters_look_ahead_dist=5, potential_field=None):
+    def __init__(self, ego_vehicle, potential_field_granularity, regression_precision=1, meters_look_ahead_dist=20, potential_field=None):
         self.potential_field = potential_field
         self.potential_field_granularity = potential_field_granularity
         self.regression_precision = regression_precision
@@ -24,6 +24,8 @@ class Steering_Control_PID:
     def angular_position_pid(self, path):
         pass
 
+    def set_look_ahead(self, distance):
+        self.pid_look_ahead_distance = int(distance/self.regression_precision)
     def get_control_output(self, path):
         vehicle_location_lateral = len(self.potential_field)//2 * self.potential_field_granularity
         if len(path) > self.pid_look_ahead_distance:
