@@ -240,13 +240,6 @@ class World(object):
 
     def get_spawn_transform(self, spawn_point_name):
 
-        print("trying to spawn at:", spawn_point_name)
-        print("\tOther spawn points:",
-              "\n\trandom",
-              "\n\teasy_track",
-              "\n\tsimple_lane_change",
-              "\n\tlane_change_intersection")
-
         if spawn_point_name in Spawn_Points.points.value:
             attitude = Spawn_Points.points.value[spawn_point_name]
             spawn_point = carla.Transform(carla.Location(x=attitude[0], y=attitude[1], z=attitude[2]),

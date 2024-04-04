@@ -4,6 +4,7 @@ from SVO.ActorBehaviorProfiles.Pedestrian_Behavior_Types import Pedestrian_Behav
 import numpy as np
 import time
 
+from SVO.ActorBehaviorProfiles.Reference_SVO import Reference_SVO
 
 class Pedestrian_Behavior_Analyser:
     def __init__(self, world):
@@ -112,7 +113,11 @@ class Pedestrian_Behavior_Analyser:
             else:
                 self.pedestrian_behaviors[id]['time_looking'] = 0
 
-    def calculate_svo(self):
+    def calculate_svo(self, override_svo = False):
+        if override_svo == True:
+            self.generic_svo()
+            return self.social_values
+
         self._update_distances_to_crosswalks()
         self._update_time_waiting()
         self._update_time_looking()
@@ -120,6 +125,22 @@ class Pedestrian_Behavior_Analyser:
         for actor in self.pedestrian_actors:
             id = actor.id
             self.social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
-        #     print('ID',id, 'svo:', self.social_values[id], self.pedestrian_behaviors[id])
-        # print('\n')
+
         return self.social_values
+
+
+    def generic_svo(self):
+        for actor in self.pedestrian_actors:
+            id = actor.id
+            if actor.attributes['role_name'] == 'sadistic':
+                self.social_values[id] = Reference_SVO.SADISTIC.value
+            elif actor.attributes['role_name'] == 'competitive':
+                self.social_values[id] = Reference_SVO.COMPETITIVE.value
+            elif actor.attributes['role_name'] == 'individualistic':
+                self.social_values[id] = Reference_SVO.INDIVIDUALISTIC.value
+            elif actor.attributes['role_name'] == 'cooperative':
+                self.social_values[id] = Reference_SVO.COOPERATIVE.value
+            elif actor.attributes['role_name'] == 'altruistic':
+                self.social_values[id] = Reference_SVO.ALTRUISTIC.value
+            else:
+                self.social_values[id] = Reference_SVO.INDIVIDUALISTIC.value

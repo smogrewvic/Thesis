@@ -10,7 +10,7 @@ from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
 from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_Behavior_Analyser
 from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavior_Analyser
 
-def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=False, display_control_sys=True, ego_position=False):
+def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=False, display_control_sys=True, ego_position=False, generic_svo = False):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF()
@@ -38,7 +38,7 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
                                         potential_field.get_granularity(),
                                         potential_field=potential_field.get_potential_field())
     # steering_PID.set_PID_values(0.28, 0.08, 0)  # good values p = 1, i = 0, d = 0.8      p =0.3, i = 0.1, d = 0
-
+    #
     steering_PID.set_PID_values(0.5, 0.08, 0) # good turning response
 
 
@@ -58,8 +58,8 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
 
 
     while True:
-        svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo())
-        svo_all_actors.update(vehicle_behavior_analyser.calculate_svo())
+        svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo(override_svo=generic_svo))
+        svo_all_actors.update(vehicle_behavior_analyser.calculate_svo(override_svo=generic_svo))
         potential_field.update_svo_actors(svo_all_actors)
 
         potential_field.generate_APF()
@@ -101,12 +101,6 @@ def main(autopilot_on=True, holonomic=False, display_apf=True, display_actors=Fa
                   round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
                   )
 
-
-        # svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo())
-        # svo_all_actors.update(vehicle_behavior_analyser.calculate_svo())
-        #
-        # print(svo_all_actors)
-        # potential_field.update_svo_actors(svo_all_actors)
 
 
 if __name__ == '__main__':

@@ -332,15 +332,9 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
         walker_speed = []
         for pedestrian in pedestrian_spawns:
             # walker_bp = random.choice(blueprintsWalkers)
-            if len(pedestrian_spawns) == 0:
-                walker_bp = random.choice(blueprintsWalkers)
-                walker_bp.set_attribute('role_name', 'altruistic')
-                print('default pedestrian behavior set to altruistic')
-            else:
-                # walker_bp = pedestrian['model_blueprint']
-                walker_bp = world.get_blueprint_library().filter(pedestrian['model_blueprint'])[0]
-                walker_bp.set_attribute('role_name', pedestrian['behavior_type'])
-                # print('ATTRIBUTES', walker_bp.attributes)
+
+            walker_bp = world.get_blueprint_library().filter(pedestrian['model_blueprint'])[0]
+            walker_bp.set_attribute('role_name', pedestrian['behavior_type'])
             # set as not invincible
             if walker_bp.has_attribute('is_invincible'):
                 walker_bp.set_attribute('is_invincible', 'false')

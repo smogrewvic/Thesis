@@ -4,7 +4,7 @@ import time
 import collections
 import carla
 from SVO.ActorBehaviorProfiles.Vehicle_Behavior_Types import Vehicle_Behavior_Types
-
+from SVO.ActorBehaviorProfiles.Reference_SVO import Reference_SVO
 
 class Vehicle_Behavior_Analyser:
     def __init__(self, world):
@@ -96,6 +96,8 @@ class Vehicle_Behavior_Analyser:
 
         return behavior
 
+
+
     def calculate_smoothness(self, quantification_method='average'):
 
         for actor in self.vehicle_actors:
@@ -160,7 +162,12 @@ class Vehicle_Behavior_Analyser:
             behavior = self.get_actor_behavior_type(actor)
             self.vehicle_behaviors[id]['follow_time'] = behavior['follow_time']
 
-    def calculate_svo(self):
+    def calculate_svo(self, override_svo = False):
+        if override_svo == True:
+            self.generic_svo()
+            return self.social_values
+
+
         # self.calculate_smoothness('average')
         self.calculate_speed_limit('average')
         self.calculate_lane_centering('average')
@@ -170,8 +177,22 @@ class Vehicle_Behavior_Analyser:
         for actor in self.vehicle_actors:
             id = actor.id
             self.social_values[id] = self.fuzzy.calculate_output(self.vehicle_behaviors[id])
-        #     print('ID',id, 'svo:', self.social_values[id], self.vehicle_behaviors[id])
-        # print('\n')
 
         return self.social_values
 
+
+    def generic_svo(self):
+        for actor in self.vehicle_actors:
+            id = actor.id
+            if actor.attributes['role_name'] == 'sadistic':
+                self.social_values[id] = Reference_SVO.SADISTIC.value
+            elif actor.attributes['role_name'] == 'competitive':
+                self.social_values[id] = Reference_SVO.COMPETITIVE.value
+            elif actor.attributes['role_name'] == 'individualistic':
+                self.social_values[id] = Reference_SVO.INDIVIDUALISTIC.value
+            elif actor.attributes['role_name'] == 'cooperative':
+                self.social_values[id] = Reference_SVO.COOPERATIVE.value
+            elif actor.attributes['role_name'] == 'altruistic':
+                self.social_values[id] = Reference_SVO.ALTRUISTIC.value
+            else:
+                self.social_values[id] = Reference_SVO.INDIVIDUALISTIC.value

@@ -76,10 +76,10 @@ class APF:
             self.actor_ids[id].set_state(actor_state)
 
     def get_actor_states(self):
+        states = []
         for id in self.actor_ids:
-            print(self.actor_ids[id].get_state())
-
-        return self.actor_ids
+            states.append(self.actor_ids[id].get_state())
+        return states
 
     def set_actor_APF(self):
         self.update_actor_states()
@@ -164,7 +164,7 @@ class APF:
             self.actor_ids.update({id: TrafficLightAPF(len(self.potential_field), self.field_granularity, tl_actor)})
             self.actor_ids[id].set_state(traffic_light_state)
 
-        print(self.actor_ids)
+        # print(self.actor_ids)
 
     def set_lane_APF(self):
         #get all navpoint actors and send to laneAPF
