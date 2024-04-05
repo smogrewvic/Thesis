@@ -4,28 +4,29 @@ import EgoVehicle.Autopilot
 import multiprocessing
 import TrafficGenerators.ScenarioBuilder
 from TrafficGenerators.ActorInfo import VehicleInfo, PedestrianInfo
-from DrivingScenarios import Scenarios
+from DrivingScenarios.Scenarios import Scenario
 
 if __name__ == "__main__":
 
-    scenario = Scenarios.Scenario('pedestrian_crossing')
+    scenario = Scenario('pedestrian_crossing')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
+    origin = scenario.get_origin()
+    destination = scenario.get_destination()
 
-    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args=("id_113",))  # 98, 113, 66
+    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args=(origin,))  # spawn point         98, 113, 66
     p2 = multiprocessing.Process(target=TrafficGenerators.ScenarioBuilder.main, args=(cars,
                                                                                       pedestrians,
                                                                                       True,  # autopilot
                                                                                       100,  # percent of max speed limit
-                                                                                      0.005))  # sim timestep    0.01 slow mo
+                                                                                      0.005))  # sim timestep    0.005 slow mo
 
-    p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True,  # autopilot_on
-                                                                         False,  # holonomic
+    p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destination, # destination
+                                                                         True,  # autopilot_on
                                                                          True,  # display apf
                                                                          False,  # display actors
                                                                          False,  # display control system
-                                                                         False,  # ego position
                                                                          False))  # SVO override
 
     p1.start()

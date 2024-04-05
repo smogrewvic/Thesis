@@ -1,9 +1,7 @@
 import EgoVehicle.EgoVehicle_Pygame
 import EgoVehicle.Autopilot
 from Tools.SpawnPoints import Spawn_Points
-import TrafficGenerators.GenerateTraffic
-import TrafficGenerators.ActorSpawn
-from time import sleep
+import TrafficGenerators.Archived.ActorSpawn
 import multiprocessing
 import carla
 
@@ -26,7 +24,7 @@ if __name__ == "__main__":
     p1.start()
     p2 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True, False, False, True, False))
     p2.start()
-    p3 = multiprocessing.Process(target=TrafficGenerators.ActorSpawn.main, args=(car_spawn_points, pedestrian_spawn_points))
+    p3 = multiprocessing.Process(target=TrafficGenerators.Archived.ActorSpawn.main, args=(car_spawn_points, pedestrian_spawn_points))
     p3.start()
 
     p1.join()

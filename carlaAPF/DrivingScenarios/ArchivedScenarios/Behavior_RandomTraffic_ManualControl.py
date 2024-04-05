@@ -1,7 +1,6 @@
 import EgoVehicle.EgoVehicle_Pygame
 import EgoVehicle.Autopilot
-import TrafficGenerators.GenerateTraffic_Behavior
-from time import sleep
+import TrafficGenerators.Archived.GenerateTraffic_Behavior
 import multiprocessing
 
 
@@ -10,9 +9,9 @@ if __name__ == "__main__":
 
     p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args = ("id_113",)) #98, 113, 66
 
-    p2 = multiprocessing.Process(target=TrafficGenerators.GenerateTraffic_Behavior.main, args = (True,  # autopilot state
-                                                                                                 30,    #percent speed limit
-                                                                                                 0.01)) #sim_timestep
+    p2 = multiprocessing.Process(target=TrafficGenerators.Archived.GenerateTraffic_Behavior.main, args = (True,  # autopilot state
+                                                                                                          30,  #percent speed limit
+                                                                                                          0.01)) #sim_timestep
 
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(True,  # autopilot_on
                                                                          False,  # holonomic

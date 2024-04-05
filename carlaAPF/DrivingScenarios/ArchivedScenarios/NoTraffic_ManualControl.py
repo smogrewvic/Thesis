@@ -1,7 +1,5 @@
 import EgoVehicle.EgoVehicle_Pygame
 import EgoVehicle.Autopilot
-import TrafficGenerators.GenerateTraffic
-from time import sleep
 import multiprocessing
 
 if __name__ == "__main__":
