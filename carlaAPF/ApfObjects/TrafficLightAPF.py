@@ -29,21 +29,6 @@ class TrafficLightAPF(APF_Object):
 
 
 
-
-    # def dynamic_APF(self, x, y):
-    #
-    #     i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
-    #     theta = np.radians(self.relative_state["heading"])
-    #     speed = 2*abs(self.relative_state["speed"]) / 3.6  # distance traveled in 2 seconds from meters/second velocity
-    #
-    #     lat_term = ((x*np.cos(theta)+y*np.sin(theta) - (i*np.cos(theta)+j*np.sin(theta))-0.659*speed) / (2*self.length + speed)) ** 10
-    #     long_term = ((y * np.cos(theta) - x * np.sin(theta) - (j * np.cos(theta) - i * np.sin(theta))) / (2*self.width + 0.01*speed)) ** 10
-    #     exponent = lat_term+long_term
-    #
-    #     potential = 255*np.e**(-exponent)  # gaussian eq defined from 0 to 255
-    #
-    #     return potential
-
     def get_light_state(self):
         self.light_state = self.traffic_light_actor.get_state()
         return self.light_state

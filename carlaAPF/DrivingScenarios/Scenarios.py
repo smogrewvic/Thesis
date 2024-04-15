@@ -9,9 +9,13 @@ class Scenario:
         self.origin = None
         self.destination = None
 
-        if scenario_name == ('empty_world'):
+        if scenario_name == ('empty_world_1'):
             self.origin = 'id_113'
             self.destination = 'id_62'
+
+        elif scenario_name == ('empty_world_2'):
+            self.origin = 'id_117'
+            self.destination = 'id_14'
 
         elif scenario_name == 'generic':
             self.origin = 'id_113'
@@ -27,6 +31,12 @@ class Scenario:
                 PedestrianInfo(spawn_point_id='id_172', destination_point_id='id_754', model_category='adult', behavior_type='cooperative').data)
             self.pedestrians.append(
                 PedestrianInfo(spawn_point_id='id_52', destination_point_id='id_172', model_category='adult', behavior_type='sadistic').data)
+
+        elif scenario_name == 'basic_merge':
+            self.origin = 'id_66'
+            self.destination = 'id_62'
+
+            self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_63', model_category='sedan', behavior_type='sadistic').data)
 
         elif scenario_name == 'pedestrian_crossing':
             self.origin = 'id_113'

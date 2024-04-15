@@ -5,7 +5,7 @@ import random
 
 class VehicleInfo:
     def __init__(self, spawn_point_id='random', destination_point_id='random', model_category='sedan', behavior_type='individualistic',
-                 behavior_override=False, autopilot_state=True):
+                 static_svo=False, autopilot_state=True):
 
         if model_category == 'sedan':
             model_blueprint = 'vehicle.lincoln.mkz_2020'
@@ -24,7 +24,7 @@ class VehicleInfo:
                           'sadistic': '155,0,0'}
         model_color = color_info_map[behavior_type]
 
-        if behavior_override == True:
+        if static_svo == True:
             svo_value_map = {'altruistic': 0.75,
                              'cooperative': 0.35,
                              'individualistic': 0,
@@ -55,7 +55,7 @@ class VehicleInfo:
 
 class PedestrianInfo:
     def __init__(self, spawn_point_id='random', destination_point_id='random', model_category='sedan', behavior_type='individualistic',
-                 behavior_override=False, autopilot_state=True):
+                 static_svo=False, autopilot_state=True):
 
         # pedestrian colors can not be set directly.
         if model_category == 'adult':
@@ -76,7 +76,7 @@ class PedestrianInfo:
             model_blueprint = 'walker.pedestrian.0004'
 
 
-        if behavior_override == True:
+        if static_svo==True:
             svo_value_map = {'altruistic': 0.75,
                              'cooperative': 0.35,
                              'individualistic': 0,

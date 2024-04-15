@@ -6,16 +6,20 @@ import TrafficGenerators.ScenarioBuilder
 from TrafficGenerators.ActorInfo import VehicleInfo, PedestrianInfo
 from DrivingScenarios.Scenarios import Scenario
 
+import keyboard
+
 if __name__ == "__main__":
 
-    scenario = Scenario('pedestrian_crossing')
+    scenario = Scenario('basic_merge')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
     origin = scenario.get_origin()
     destination = scenario.get_destination()
 
-    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args=(origin,))  # spawn point         98, 113, 66
+    results = multiprocessing.Queue()
+    p1 = multiprocessing.Process(target=EgoVehicle.EgoVehicle_Pygame.main, args=(origin,))  # spawn point
+
     p2 = multiprocessing.Process(target=TrafficGenerators.ScenarioBuilder.main, args=(cars,
                                                                                       pedestrians,
                                                                                       True,  # autopilot
@@ -25,50 +29,21 @@ if __name__ == "__main__":
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destination, # destination
                                                                          True,  # autopilot_on
                                                                          True,  # display apf
-                                                                         False,  # display actors
-                                                                         False,  # display control system
-                                                                         False))  # SVO override
+                                                                         False,  # display control system and actor positions
+                                                                         'none',
+                                                                         results))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
 
     p1.start()
     p2.start()
     p3.start()
 
+    # keyboard.wait('q')
+    # p1.terminate()
+    # p2.terminate()
+    # p3.terminate()
 
+    plot_data = []
+    while not results.empty():
+        plot_data.append(results.get())
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # cars = []
-    # cars.append(VehicleInfo(spawn_point_id='id_66', destination_point_id='id_12', model_category='sedan', behavior_type='sadistic').data)
-    # cars.append(VehicleInfo(spawn_point_id='id_31', destination_point_id='id_12', model_category='sedan', behavior_type='altruistic').data)
-    # cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_12', model_category='sedan', behavior_type='individualistic').data)
-    #
-    # pedestrians = []
-    # pedestrians.append(PedestrianInfo(spawn_point_id='id_172', destination_point_id= 'id_754', model_category='adult', behavior_type='cooperative').data)
-    # pedestrians.append(PedestrianInfo(spawn_point_id='id_52',  destination_point_id= 'id_172', model_category='adult', behavior_type='sadistic').data)
-    # pedestrians.append(PedestrianInfo(spawn_point_id='id_13', model_category='adult', behavior_type='cooperative').data)
+    print(plot_data)

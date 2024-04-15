@@ -10,7 +10,7 @@ class Vehicle_Behavior_Analyser:
     def __init__(self, world):
         self.world = world
         self.map = world.get_map()
-        self.fuzzy = Vehicle_SVO_Fuzzy()
+        self.type1_fuzzy = Vehicle_SVO_Fuzzy()
         self.social_values = {}
         self.vehicle_actors = self.filter_actors('vehicle')
 
@@ -162,11 +162,12 @@ class Vehicle_Behavior_Analyser:
             behavior = self.get_actor_behavior_type(actor)
             self.vehicle_behaviors[id]['follow_time'] = behavior['follow_time']
 
-    def calculate_svo(self, override_svo = False):
-        if override_svo == True:
+    def calculate_svo(self, estimation_type = 'generic'):
+        if estimation_type == 'generic':
             self.generic_svo()
             return self.social_values
-
+        elif estimation_type == 'none':
+            self.no_svo()
 
         # self.calculate_smoothness('average')
         self.calculate_speed_limit('average')
@@ -174,9 +175,14 @@ class Vehicle_Behavior_Analyser:
         self.calculate_lane_changes('quantity')
         self.calculate_follow_time('average')
 
-        for actor in self.vehicle_actors:
-            id = actor.id
-            self.social_values[id] = self.fuzzy.calculate_output(self.vehicle_behaviors[id])
+        if estimation_type == 'type_1':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                self.social_values[id] = self.type1_fuzzy.calculate_output(self.vehicle_behaviors[id])
+        elif estimation_type == 'type_2':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                self.social_values[id] = self.type1_fuzzy.calculate_output(self.vehicle_behaviors[id])
 
         return self.social_values
 
@@ -196,3 +202,9 @@ class Vehicle_Behavior_Analyser:
                 self.social_values[id] = Reference_SVO.ALTRUISTIC.value
             else:
                 self.social_values[id] = Reference_SVO.INDIVIDUALISTIC.value
+
+
+    def no_svo(self):
+        for actor in self.vehicle_actors:
+            id = actor.id
+            self.social_values[id] = 0

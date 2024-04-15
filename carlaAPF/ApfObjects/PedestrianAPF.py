@@ -7,8 +7,7 @@ class PedestrianAPF(APF_Object):
         super().__init__(potential_field_size, potential_field_granularity)
         self.width = 3
         self.length = 4
-        # self.safety_radius = 5 / potential_field_granularity
-        self.alpha = 0.2  # svo effect
+        self.alpha = 1  # svo effect gain
 
     def dynamic_APF(self, x, y):
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
@@ -25,12 +24,12 @@ class PedestrianAPF(APF_Object):
 
         return potential
 
-    def dynamic_APF_sigma_SVO(self, x, y, svo):
+    def dynamic_APF_SVO(self, x, y, svo):
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         theta = np.radians(self.relative_state["heading"])
         speed_factor = 2*abs(self.relative_state["speed"]) / 3.6  # distance traveled in 2 seconds from meters/second velocity
-        sigma_x = (self.length + speed_factor) - self.alpha * svo
-        sigma_y = (self.width + 0.01 * speed_factor) - self.alpha * svo
+        sigma_x = (self.length + speed_factor) + self.alpha * svo
+        sigma_y = (self.width + 0.01 * speed_factor) + self.alpha * svo
 
         long_term = (x * np.cos(theta) + y * np.sin(theta) - (i * np.cos(theta) + j * np.sin(theta)) - 0.659 * speed_factor) ** 2 / (2 * sigma_x ** 2)
         lat_term = (y * np.cos(theta) - x * np.sin(theta) - (j * np.cos(theta) - i * np.sin(theta))) ** 2 / (2 * sigma_y ** 2)
@@ -40,8 +39,6 @@ class PedestrianAPF(APF_Object):
 
         return potential
 
-    def dynamic_APF_hann_SVO(self, x, y, svo):
-        pass
 
     def dynamic_APF_gauss_SVO(self, x, y, svo):
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]

@@ -1,7 +1,7 @@
 import carla
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 
-from Data_Generators import PotentialFieldTrainer as pft
+from DataGenerators import PotentialFieldTrainer as pft
 from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
 
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
@@ -10,7 +10,7 @@ from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
 from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_Behavior_Analyser
 from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavior_Analyser
 
-from Data_Generators.TrainingDataManager import Training_Data_Manager
+from DataGenerators.TrainingDataManager import Training_Data_Manager
 from Tools.SpawnPoints import Spawn_Points
 import random
 

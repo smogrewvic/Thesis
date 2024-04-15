@@ -14,10 +14,11 @@ import matplotlib.pyplot as plt
 
 
 class APF:
-    def __init__(self, field_size=30, granularity=0.3): # 15-0.2 high fidelity, #20-0.6 decent
+    def __init__(self, field_size, granularity): # 15-0.2 high fidelity, #20-0.6 decent
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
+        # self.svo_estimation = svo_estimation  # None, 'type_1', 'type_2'
         self.field_size = field_size  # meters
         self.field_granularity = granularity  # meters
         self.potential_field = np.zeros(
@@ -27,7 +28,7 @@ class APF:
         self.navpoint_actors = [] # to create lane apf
 
         self.svo_all_actors = {}
-
+        self.set_traffic_lights() # get traffic light positions and info from map
     def update_svo_actors(self, svo_data):
         self.svo_all_actors.update(svo_data)
 
@@ -75,11 +76,17 @@ class APF:
 
             self.actor_ids[id].set_state(actor_state)
 
-    def get_actor_states(self):
-        states = []
-        for id in self.actor_ids:
-            states.append(self.actor_ids[id].get_state())
-        return states
+    def get_actor_info(self):
+        # actors = {}
+        # info = {}
+        #
+        # for id in self.actor_ids:
+        #     actor = self.actor_ids[id]
+        #     print(actor)
+        #     info = {'type':type(actor) , 'state': actor.get_state(), 'relative_state':1 }
+        #     actors
+
+        return self.actor_ids
 
     def set_actor_APF(self):
         self.update_actor_states()
@@ -103,10 +110,13 @@ class APF:
             for y in range(len(self.potential_field)):
                 for x in range(len(self.potential_field[0])):
                     # indexed from top left
-                    self.potential_field[-x - 1][y] = min(
-                        self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
-                    # self.potential_field[-x - 1][y] = min(
-                    #     self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF_sigma_SVO(x, y, self.svo_all_actors[id]), 255)
+                    if type(self.actor_ids[id]) == TrafficLightAPF:
+                        self.potential_field[-x - 1][y] = min(
+                            self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF(x, y), 255)
+                    else:
+                        self.potential_field[-x - 1][y] = min(
+                            self.potential_field[-x - 1][y] + self.actor_ids[id].dynamic_APF_SVO(x, y, self.svo_all_actors[id]), 255)
+
     def generate_APF(self):
 
         self.potential_field.fill(0)  # erase potential field to not sum between calls

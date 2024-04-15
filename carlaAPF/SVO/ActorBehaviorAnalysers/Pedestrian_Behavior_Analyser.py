@@ -10,7 +10,7 @@ class Pedestrian_Behavior_Analyser:
     def __init__(self, world):
         self.world = world
         self.crosswalk_trigger_distance = Crosswalk_Info.trigger_distance + Crosswalk_Info.trigger_overshoot
-        self.fuzzy = Pedestrian_SVO_Fuzzy()
+        self.type1_fuzzy = Pedestrian_SVO_Fuzzy()
 
         self.pedestrian_actors = self.filter_actors('pedestrian')
         self.social_values = {}
@@ -113,18 +113,25 @@ class Pedestrian_Behavior_Analyser:
             else:
                 self.pedestrian_behaviors[id]['time_looking'] = 0
 
-    def calculate_svo(self, override_svo = False):
-        if override_svo == True:
+    def calculate_svo(self, estimation_type = 'generic'):
+
+        if estimation_type == 'generic':
             self.generic_svo()
             return self.social_values
-
+        elif estimation_type == 'none':
+            self.no_svo()
         self._update_distances_to_crosswalks()
         self._update_time_waiting()
         self._update_time_looking()
 
-        for actor in self.pedestrian_actors:
-            id = actor.id
-            self.social_values[id] = self.fuzzy.calculate_output(self.pedestrian_behaviors[id])
+        if estimation_type == 'type_1':
+            for actor in self.pedestrian_actors:
+                id = actor.id
+                self.social_values[id] = self.type1_fuzzy.calculate_output(self.pedestrian_behaviors[id])
+        elif estimation_type == 'type_2':
+            for actor in self.pedestrian_actors:
+                id = actor.id
+                self.social_values[id] = self.type1_fuzzy.calculate_output(self.pedestrian_behaviors[id])
 
         return self.social_values
 
@@ -144,3 +151,9 @@ class Pedestrian_Behavior_Analyser:
                 self.social_values[id] = Reference_SVO.ALTRUISTIC.value
             else:
                 self.social_values[id] = Reference_SVO.INDIVIDUALISTIC.value
+
+
+    def no_svo(self):
+        for actor in self.pedestrian_actors:
+            id = actor.id
+            self.social_values[id] = 0
