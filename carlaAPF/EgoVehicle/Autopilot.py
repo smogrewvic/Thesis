@@ -1,4 +1,6 @@
 import carla
+
+import EgoVehicle.EgoVehicle_Pygame
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 
 from ApfObjects import PotentialField as pf
@@ -13,6 +15,12 @@ from Tools.SpawnPoints import Spawn_Points
 from DataRecorders.ActorStateRecorder import Actor_State_Recorder
 
 import keyboard
+key_flag = False
+
+def key_press(event):
+    global key_flag
+    key_flag = True
+
 
 def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none', results = []):
     client = carla.Client('localhost', 2000)
@@ -53,9 +61,13 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
     svo_all_actors = {}
 
     # Data Recorder
-    recorder = Actor_State_Recorder(potential_field.get_actor_info())
+    # current_timestamp = world.get_snapshot().timestamp
+    recorder = Actor_State_Recorder(potential_field.get_actor_info(), world)
 
     while True:
+
+
+
         svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo(estimation_type=svo_estimation))
         svo_all_actors.update(vehicle_behavior_analyser.calculate_svo(estimation_type=svo_estimation))
         potential_field.update_svo_actors(svo_all_actors)
@@ -92,9 +104,19 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
                   )
 
         # results.put(recorder.plot_positions())
-        recorder.record_data(filters = ['ego_vehicle', 'vehicles'])
-        keyboard.on_press_key("q", lambda _: recorder.plot_data())
+        recorder.record_data(filters = ['ego_vehicle'])
 
+        global key_flag
+        keyboard.on_press_key("up", key_press)
+        if key_flag:
+            print("Plotting Data")
+            # recorder.plot_positions()
+            recorder.plot_accelerations()
+            key_flag = False
+
+
+
+        #print('timestamp', EgoVehicle.EgoVehicle_Pygame.HUD.get_timestamp , ' doc ', carla.Timestamp.elapsed_seconds.__doc__ )
 
 if __name__ == '__main__':
     main()

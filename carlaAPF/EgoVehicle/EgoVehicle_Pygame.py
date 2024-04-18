@@ -746,6 +746,8 @@ class HUD(object):
         self._show_ackermann_info = False
         self._ackermann_control = carla.VehicleAckermannControl()
 
+    def get_timestamp(self):
+        return self.simulation_time
     def on_world_tick(self, timestamp):
         self._server_clock.tick()
         self.server_fps = self._server_clock.get_fps()
@@ -1323,6 +1325,7 @@ def game_loop(args, spawn_point_name):
             print("WARNING: You are currently in asynchronous mode and could "
                   "experience some issues with the traffic simulation")
 
+        print('PYGAME ARGS WIDTH AND HEIGHT', args.width, args.height)
         display = pygame.display.set_mode(
             (args.width, args.height),
             pygame.HWSURFACE | pygame.DOUBLEBUF)
@@ -1394,7 +1397,7 @@ def main(spawn_point_name = "random"):
     argparser.add_argument(
         '--res',
         metavar='WIDTHxHEIGHT',
-        default='1280x720',
+        default='1920x1080', # TODO: CHANGE RES TO SCREEN original '1280x720'
         help='window resolution (default: 1280x720)')
     argparser.add_argument(
         '--filter',

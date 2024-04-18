@@ -8,6 +8,7 @@ class VehicleAPF(APF_Object):
         self.width = 1 / potential_field_granularity
         self.length = 2.5 / potential_field_granularity
         self.alpha = 1  # svo gain
+        self.svo = 0
 
     def dynamic_APF(self, x, y):
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
@@ -24,6 +25,7 @@ class VehicleAPF(APF_Object):
 
     def dynamic_APF_SVO(self, x, y, svo):
         svo = 1
+        self.svo  = svo
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         theta = np.radians(self.relative_state["heading"])
         speed_factor = 1*abs(self.relative_state["speed"]) / 3.6  # distance traveled in 2 seconds from meters/second velocity
@@ -37,3 +39,6 @@ class VehicleAPF(APF_Object):
         potential = 255 * np.e ** (-exponent)  # defined from 0 to 255
 
         return potential
+
+    def get_svo(self):
+        return self.svo

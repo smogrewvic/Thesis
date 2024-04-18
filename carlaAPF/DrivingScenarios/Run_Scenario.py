@@ -46,4 +46,4 @@ if __name__ == "__main__":
     while not results.empty():
         plot_data.append(results.get())
 
-    print(plot_data)
+    # print(plot_data)
