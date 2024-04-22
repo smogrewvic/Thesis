@@ -11,6 +11,7 @@ from Tools.Traffic_Light_Info import Traffic_Light_Info
 from Tools.Crosswalk_Info import Crosswalk_Info
 import cv2
 import matplotlib.pyplot as plt
+import time
 
 
 class APF:
@@ -60,12 +61,22 @@ class APF:
                         round(actor.get_velocity().y, 4),
                         round(actor.get_velocity().z, 4))
 
+            controls = actor.get_control()
+            if id == "ego_vehicle":
+                svo = 0
+            else:
+                svo = self.svo_all_actors[id]
+
             actor_state = {"position": np.array(position),
                            "heading": heading,
                            "speed": speed,
                            "angular_velocity": np.array(angular_vel),
                            "acceleration": np.array(acceleration),
-                           "velocity": np.array(velocity)}
+                           "velocity": np.array(velocity),
+                           "steering": controls.steer,
+                           "throttle": controls.throttle,
+                           "brake":controls.brake,
+                           "svo": svo}
 
             if id not in self.actor_ids:  # create apf object
                 if vehicle:
@@ -77,14 +88,6 @@ class APF:
             self.actor_ids[id].set_state(actor_state)
 
     def get_actor_info(self):
-        # actors = {}
-        # info = {}
-        #
-        # for id in self.actor_ids:
-        #     actor = self.actor_ids[id]
-        #     print(actor)
-        #     info = {'type':type(actor) , 'state': actor.get_state(), 'relative_state':1 }
-        #     actors
 
         return self.actor_ids
 
@@ -95,6 +98,7 @@ class APF:
             if id == "ego_vehicle": continue  # ignore ego_vehicle APF
 
             # update egocentric actor state to center in APF relative to ego vehicle
+
             self.actor_ids[id].update_alternate_states(self.actor_ids["ego_vehicle"].get_state(),
                                                        len(self.potential_field) // 2, len(self.potential_field) // 2)
 
@@ -120,6 +124,9 @@ class APF:
     def generate_APF(self):
 
         self.potential_field.fill(0)  # erase potential field to not sum between calls
+        if "ego_vehicle" not in self.actor_ids.keys():
+            self.update_actor_states()
+            return  # wait for ego_vehicle to be spawned
 
         self.set_actor_APF()
         self.set_lane_APF()

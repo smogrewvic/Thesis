@@ -5,8 +5,8 @@ from ApfObjects.APF_Object import APF_Object
 class VehicleAPF(APF_Object):
     def __init__(self, potential_field_size, potential_field_granularity):
         super().__init__(potential_field_size, potential_field_granularity)
-        self.width = 1 / potential_field_granularity
-        self.length = 2.5 / potential_field_granularity
+        self.width = 1.8542 / potential_field_granularity
+        self.length = 4.9276 / potential_field_granularity
         self.alpha = 1  # svo gain
         self.svo = 0
 
@@ -24,7 +24,7 @@ class VehicleAPF(APF_Object):
         return potential
 
     def dynamic_APF_SVO(self, x, y, svo):
-        svo = 1
+        # svo = 0
         self.svo  = svo
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         theta = np.radians(self.relative_state["heading"])

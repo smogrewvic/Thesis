@@ -13,6 +13,7 @@ from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_B
 from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavior_Analyser
 from Tools.SpawnPoints import Spawn_Points
 from DataRecorders.ActorStateRecorder import Actor_State_Recorder
+import time
 
 import keyboard
 key_flag = False
@@ -22,7 +23,7 @@ def key_press(event):
     key_flag = True
 
 
-def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none', results = []):
+def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none'):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF(field_size=30, granularity=0.3) #meters, meters
@@ -53,7 +54,7 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
 
     # Throttle Control
     throttle_PID = Throttle_Control_PID(ego_vehicle, potential_field.get_potential_field(), potential_field.get_granularity())
-    throttle_PID.set_PID_values(0.6, 0.001, 0)  # good for 20kph setpoint
+    throttle_PID.set_PID_values(0.25, 0.005, 0)  # (0.6, 0, 0) good for 20kph setpoint    (0.06, 0.01, 0)
 
     # Behavior Analysis
     pedestrian_behavior_analyser = Pedestrian_Behavior_Analyser(world)
@@ -61,13 +62,10 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
     svo_all_actors = {}
 
     # Data Recorder
-    # current_timestamp = world.get_snapshot().timestamp
     recorder = Actor_State_Recorder(potential_field.get_actor_info(), world)
 
+
     while True:
-
-
-
         svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo(estimation_type=svo_estimation))
         svo_all_actors.update(vehicle_behavior_analyser.calculate_svo(estimation_type=svo_estimation))
         potential_field.update_svo_actors(svo_all_actors)
@@ -77,16 +75,14 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
         if autopilot_on == True:
             navigation_path = path_planner.phi_max_regressed_descent(0.7854)
             steering_PID.set_regression_precision(path_planner.get_regression_precision())
-            steering_control_output = steering_PID.get_control_output(navigation_path)
-            throttle_control_output = throttle_PID.get_control_output(navigation_path, 20, kph=True)
 
-            if throttle_control_output >= 0:
-                ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_control_output, steer=steering_control_output, brake=0))
-            elif throttle_control_output < 0:
-                ego_vehicle.apply_control(carla.VehicleControl(throttle=0, steer=steering_control_output, brake=throttle_control_output))
+            steering_output = steering_PID.get_control_output(navigation_path)
+            throttle_output, brake_output = throttle_PID.get_control_output(navigation_path, 20, kph=True)
+
+            ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_output, steer=steering_output, brake=brake_output))
 
         if display_apf == True:
-            path_planner.save_image_APF()
+            path_planner.save_image_APF(show_path = False)
             path_planner.show_APF()
 
         if display_debug == True:
@@ -104,19 +100,16 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
                   )
 
         # results.put(recorder.plot_positions())
-        recorder.record_data(filters = ['ego_vehicle'])
+        recorder.record_data(filters = ['ego_vehicle', 'vehicles'])
 
         global key_flag
         keyboard.on_press_key("up", key_press)
         if key_flag:
             print("Plotting Data")
-            # recorder.plot_positions()
-            recorder.plot_accelerations()
+            recorder.plot_positions()
+            # recorder.plot_accelerations()
             key_flag = False
 
-
-
-        #print('timestamp', EgoVehicle.EgoVehicle_Pygame.HUD.get_timestamp , ' doc ', carla.Timestamp.elapsed_seconds.__doc__ )
 
 if __name__ == '__main__':
     main()

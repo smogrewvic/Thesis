@@ -115,20 +115,22 @@ class Gradient_path_planner:
         coeffs = np.polyfit(discreet_path[:,0], discreet_path[:,1], poly_order)
 
         return coeffs
-    def save_image_APF(self):
+    def save_image_APF(self, show_path):
 
         grayscale = np.array(self.potential_field, dtype=np.uint8)
-        for i in range(len(self.gradient_path)):
-            px_x, px_y = round(self.gradient_path[i][0]), round(self.gradient_path[i][1])
-            px_x, px_y = max(min(px_x, len(grayscale)),0), max(min(px_y, len(grayscale)),0)  # constrain to img size
-            grayscale[px_x][px_y] = 255
+        if show_path == True:
+            for i in range(len(self.gradient_path)):
+                px_x, px_y = round(self.gradient_path[i][0]), round(self.gradient_path[i][1])
+                px_x, px_y = max(min(px_x, len(grayscale)//2),0), max(min(px_y, len(grayscale)//2),0)  # constrain to img size
+                grayscale[px_x][px_y] = 255
 
         apf_image = Image.fromarray(grayscale, mode="L")
         apf_image.save("APF_Image.bmp")
 
     def show_APF(self):
         img = cv2.imread("APF_Image.bmp")
-        resized = cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA)
+        # resized = cv2.resize(img, (500, 500), interpolation=cv2.INTER_AREA)
+        resized = cv2.resize(img, (720, 720), interpolation=cv2.INTER_AREA)
         cv2.imshow("image",resized)
 
         ## TODO: WARNING - Normalizing can make everything 0 for a flat apf

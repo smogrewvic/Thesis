@@ -8,6 +8,8 @@ class Scenario:
         self.pedestrians = []
         self.origin = None
         self.destination = None
+        self.ego_delay = 0
+        self.traffic_delay = 0
 
         if scenario_name == ('empty_world_1'):
             self.origin = 'id_113'
@@ -35,6 +37,8 @@ class Scenario:
         elif scenario_name == 'basic_merge':
             self.origin = 'id_66'
             self.destination = 'id_62'
+            self.ego_delay = 2
+            self.traffic_delay = 0
 
             self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_63', model_category='sedan', behavior_type='sadistic').data)
 
@@ -58,3 +62,9 @@ class Scenario:
 
     def get_destination(self):
         return self.destination
+
+    def get_traffic_delay(self):
+        return self.traffic_delay
+
+    def get_ego_delay(self):
+        return self.ego_delay

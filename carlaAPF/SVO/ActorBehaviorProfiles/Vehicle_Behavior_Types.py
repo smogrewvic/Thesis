@@ -9,7 +9,8 @@ class Vehicle_Behavior_Types(enum.Enum):
                 'random_right_lanechange_percentage': 100,
                 'vehicle_lane_offset': 1,
                 'vehicle_percentage_speed_difference': -60,  # for internal carla use (160%)
-                'speed_limit_percent': 160
+                'speed_limit_percent': 160,
+                'lane_changes': 6
                 }
 
     COMPETITIVE = {'follow_time': 0.5,
@@ -19,7 +20,8 @@ class Vehicle_Behavior_Types(enum.Enum):
                    'random_right_lanechange_percentage': 25,
                    'vehicle_lane_offset': 0.2,
                    'vehicle_percentage_speed_difference': -40,  # for internal carla use (140%)
-                   'speed_limit_percent': 140
+                   'speed_limit_percent': 140,
+                   'lane_changes': 4
                    }
 
     INDIVIDUALISTIC = {'follow_time': 1,
@@ -28,8 +30,9 @@ class Vehicle_Behavior_Types(enum.Enum):
                        'random_left_lanechange_percentage': 10,
                        'random_right_lanechange_percentage': 10,
                        'vehicle_lane_offset': 0.1,
-                       'vehicle_percentage_speed_difference': -20,   # for internal carla use (120%)
-                       'speed_limit_percent': 120
+                       'vehicle_percentage_speed_difference': -20,  # for internal carla use (120%)
+                       'speed_limit_percent': 120,
+                       'lane_changes': 2
                        }
 
     COOPERATIVE = {'follow_time': 2,
@@ -39,7 +42,8 @@ class Vehicle_Behavior_Types(enum.Enum):
                    'random_right_lanechange_percentage': 3,
                    'vehicle_lane_offset': 0,
                    'vehicle_percentage_speed_difference': 0,  # for internal carla use (100%)
-                   'speed_limit_percent': 100
+                   'speed_limit_percent': 100,
+                   'lane_changes': 0.5
                    }
 
     ALTRUISTIC = {'follow_time': 4,
@@ -48,7 +52,7 @@ class Vehicle_Behavior_Types(enum.Enum):
                   'random_left_lanechange_percentage': 0,
                   'random_right_lanechange_percentage': 0,
                   'vehicle_lane_offset': 0,
-                  'vehicle_percentage_speed_difference': 20,   # for internal carla use (80%)
-                  'speed_limit_percent': 80
+                  'vehicle_percentage_speed_difference': 20,  # for internal carla use (80%)
+                  'speed_limit_percent': 80,
+                  'lane_changes': 0
                   }
-

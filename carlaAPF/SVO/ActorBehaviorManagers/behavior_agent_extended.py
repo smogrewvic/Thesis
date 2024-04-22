@@ -76,3 +76,4 @@ class BehaviorAgentExtended(BehaviorAgent):  # Class extended to have more behav
             self._behavior = Competitive()
         elif behavior == 'sadistic':
             self._behavior = Sadistic()
+

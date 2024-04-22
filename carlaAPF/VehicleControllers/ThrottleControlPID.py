@@ -10,7 +10,9 @@ class Throttle_Control_PID:
         self.potential_field_granularity = potential_field_granularity
         self.pid = PID(0, 0, 0, setpoint=0)
         self.pid.output_limits = (-1, 1)
-
+        self.throttle_range = [0,1]  # max [0, 1]
+        self.brake_range = [0,1]  # max [0, 1]
+        self.dead_zone = {'throttle':0.05, 'brake': 0.05}
         self.tracking_data = []
 
     def set_PID_values(self, p=0, i=0, d=0):
@@ -30,7 +32,15 @@ class Throttle_Control_PID:
         control_output = self.pid(current_speed)
 
         self.tracking_data.append([target_speed, current_speed])
-        return control_output
+
+        if control_output >= 0:
+            brake_output = 0
+            throttle_output = min(control_output, self.throttle_range[1])
+        else:
+            brake_output = max(control_output, self.brake_range[1])
+            throttle_output = 0
+
+        return throttle_output, brake_output
 
     def display_PID_tracking(self):
         x = []

@@ -11,6 +11,7 @@ class Regression_Lane_APF():
         self.coeffs = []
         self.ego_vehicle_state = ego_vehicle_state
         self.sub_goal = []
+        self.lane_width = 3
 
     def set_navpoints(self, navpoints):
         self.navpoints = navpoints
@@ -93,14 +94,14 @@ class Regression_Lane_APF():
         # fxy = ((y -fx)**2)/1 + slope
 
         ### Gaussian lane equation
-        gain = 64
-        sigma = 1.5 / self.potential_field_granularity
+        gain = 100
+        sigma = (self.lane_width/2) / self.potential_field_granularity
         exponent = -((y - fx) ** 2) / (2 * sigma ** 2)
         lane = gain*(1 - np.e ** exponent)
 
         a_width = 2.8/self.potential_field_granularity
         b_width = 2.8/self.potential_field_granularity
-        # print('SUB_GOAL_XY', self.sub_goal)
+
         goal = ((x-self.sub_goal[0])/a_width)**2 + ((y-self.sub_goal[1])/b_width)**2
 
 

@@ -136,10 +136,3 @@ class Vehicle_SVO_T2Fuzzy():
         return crisp(tr["svo"])
 
 
-
-# test = Vehicle_SVO_T2Fuzzy()
-# input_vector = {'follow_time': 3, 'lane_changes': 0,'lane_centering': 0.2 ,'speed_limit_percent':100}
-#
-# print(test.calculate_output(input_vector))
-
-

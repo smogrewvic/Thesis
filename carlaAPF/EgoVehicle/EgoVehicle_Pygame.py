@@ -1397,7 +1397,7 @@ def main(spawn_point_name = "random"):
     argparser.add_argument(
         '--res',
         metavar='WIDTHxHEIGHT',
-        default='1920x1080', # TODO: CHANGE RES TO SCREEN original '1280x720'
+        default='1280x720', # TODO: CHANGE RES TO SCREEN original '1280x720'
         help='window resolution (default: 1280x720)')
     argparser.add_argument(
         '--filter',

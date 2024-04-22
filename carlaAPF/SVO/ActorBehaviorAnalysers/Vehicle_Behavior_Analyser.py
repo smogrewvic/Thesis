@@ -120,47 +120,58 @@ class Vehicle_Behavior_Analyser:
 
             if quantification_method == 'average':
                 self.vehicle_behaviors[id]['lane_centering'] = self.average_value( self.lane_centering_tracker[id])
-                # todo: implement more quantification methods -- high pass filter??
+
+            elif quantification_method == 'live':
+                self.vehicle_behaviors[id]['lane_centering'] = offset
+
 
     def calculate_speed_limit(self, quantification_method='average'):
         # todo: Observe and quantify speed limit of vehicle
-        # for actor in self.vehicle_actors:
-        #     id = actor.id
-        #     vehicle_speed = np.linalg.norm(np.array([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]))
-        #     speed_limit = actor.get_speed_limit()
-        #     self.speed_limit_tracker[id].append(speed_limit)
-        #     if quantification_method == 'average':
-        #         self.vehicle_behaviors[id]['speed_limit'] = self.average_value(self.speed_limit_tracker[id])
 
-        #Direct actor behavior label
-        for actor in self.vehicle_actors:
-            id = actor.id
-            behavior = self.get_actor_behavior_type(actor)
-            self.vehicle_behaviors[id]['speed_limit_percent'] = behavior['speed_limit_percent']
+        if quantification_method == 'generic':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                behavior = self.get_actor_behavior_type(actor)
+                self.vehicle_behaviors[id]['speed_limit_percent'] = behavior['speed_limit_percent']
 
+        elif quantification_method == 'peak':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                speed = round(np.linalg.norm([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]), 4)
+                self.vehicle_behaviors[id]['speed_limit_percent'] = max(self.vehicle_behaviors[id]['speed_limit_percent'], speed)
+
+        elif quantification_method == 'live':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                speed = round(np.linalg.norm([actor.get_velocity().x, actor.get_velocity().y, actor.get_velocity().z]), 4)
+                self.vehicle_behaviors[id]['speed_limit_percent'] = max(self.vehicle_behaviors[id]['speed_limit_percent'], speed)
     def calculate_lane_changes(self, quantification_method='quantity'):
-        for actor in self.vehicle_actors:
-            id = actor.id
-            waypoint = self.map.get_waypoint(actor.get_location(), project_to_road=True, lane_type=(carla.LaneType.Driving | carla.LaneType.Shoulder | carla.LaneType.Sidewalk))
-            current_lane = waypoint.lane_id
-            self.lane_change_tracker[id].append(current_lane)
 
-            if quantification_method == 'quantity':
+        if quantification_method == 'quantity':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                waypoint = self.map.get_waypoint(actor.get_location(), project_to_road=True, lane_type=(carla.LaneType.Driving | carla.LaneType.Shoulder | carla.LaneType.Sidewalk))
+                current_lane = waypoint.lane_id
+                self.lane_change_tracker[id].append(current_lane)
+
                 self.vehicle_behaviors[id]['lane_changes'] = self.count_value_changes(self.lane_change_tracker[id])
-                # todo: implement more quantification methods -- high pass filter??
+
+        elif quantification_method == 'generic':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                behavior = self.get_actor_behavior_type(actor)
+                self.vehicle_behaviors[id]['lane_changes'] = behavior['lane_changes']
 
 
     def calculate_follow_time(self, quantification_method='average'):
         # todo: Observe and quantify following time
-        # for actor in self.vehicle_actors:
-        #     id = actor.id
-        #     do something
-
         # Direct actor behavior label
-        for actor in self.vehicle_actors:
-            id = actor.id
-            behavior = self.get_actor_behavior_type(actor)
-            self.vehicle_behaviors[id]['follow_time'] = behavior['follow_time']
+        if quantification_method == 'generic':
+            for actor in self.vehicle_actors:
+                id = actor.id
+                behavior = self.get_actor_behavior_type(actor)
+                self.vehicle_behaviors[id]['follow_time'] = behavior['follow_time']
+
 
     def calculate_svo(self, estimation_type = 'generic'):
         if estimation_type == 'generic':
@@ -170,10 +181,10 @@ class Vehicle_Behavior_Analyser:
             self.no_svo()
 
         # self.calculate_smoothness('average')
-        self.calculate_speed_limit('average')
-        self.calculate_lane_centering('average')
-        self.calculate_lane_changes('quantity')
-        self.calculate_follow_time('average')
+        self.calculate_speed_limit('generic')
+        self.calculate_lane_centering('live')
+        self.calculate_lane_changes('generic')
+        self.calculate_follow_time('generic')
 
         if estimation_type == 'type_1':
             for actor in self.vehicle_actors:
