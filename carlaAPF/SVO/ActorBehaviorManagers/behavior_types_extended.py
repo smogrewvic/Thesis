@@ -129,7 +129,7 @@ class Sadistic(object):
     max_speed = 50
     speed_lim_dist = -40
     speed_decrease = 2
-    safety_time = 0.5
+    safety_time = 0.25
     min_proximity_threshold = 0
-    braking_distance = 1
+    braking_distance = 0
     tailgate_counter = -1

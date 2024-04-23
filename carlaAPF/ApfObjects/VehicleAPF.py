@@ -24,8 +24,7 @@ class VehicleAPF(APF_Object):
         return potential
 
     def dynamic_APF_SVO(self, x, y, svo):
-        # svo = 0
-        self.svo  = svo
+        self.svo = svo
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         theta = np.radians(self.relative_state["heading"])
         speed_factor = 1*abs(self.relative_state["speed"]) / 3.6  # distance traveled in 2 seconds from meters/second velocity
@@ -41,4 +40,5 @@ class VehicleAPF(APF_Object):
         return potential
 
     def get_svo(self):
+
         return self.svo
