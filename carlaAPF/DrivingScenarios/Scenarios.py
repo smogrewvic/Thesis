@@ -37,7 +37,7 @@ class Scenario:
         elif scenario_name == 'basic_merge':
             self.origin = 'id_66'
             self.destination = 'id_62'
-            self.ego_delay = 2
+            self.ego_delay = 2.1
             self.traffic_delay = 0
 
             self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_63', model_category='sedan', behavior_type='sadistic').data)

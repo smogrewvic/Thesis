@@ -152,7 +152,7 @@ class Actor_State_Recorder:
                          (y[i], x[i]),  # these are the coordinates to position the label
                          textcoords="offset points",  # how to position the text
                          xytext=(20, 0),  # distance from text to points (x,y)
-                         ha='center')  # horizontal alignment can be left, right or center
+                         ha='left')  # horizontal alignment can be left, right or center
 
         closest_distance = float('inf')
         for i, data in enumerate(self.plot_data[start_index:stop_index]):
@@ -163,7 +163,17 @@ class Actor_State_Recorder:
                      (10, 3),
                      textcoords="offset points",
                      xytext=(20, 0),
-                     ha='center')
+                     ha='left')
+
+        total_distance = 0
+        for i in range(1, len(x)):
+            total_distance += (x[i]-x[i-1])**2 + (y[i]-y[i-1])**2
+
+        plt.annotate('Total Distance: ' + str(round(total_distance, 3)),
+                     (y[-1], x[-1]),
+                     textcoords="offset points",
+                     xytext=(20, 0),
+                     ha='left')
 
         plt.ylabel('Longitudinal Position (m)', fontsize=18)  # Set ylabel font size
         plt.xlabel('Lateral Position (m)', fontsize=18)  # Set xlabel font size
@@ -175,16 +185,19 @@ class Actor_State_Recorder:
         print('Plotting Actor Accelerations')
 
         start_index, stop_index = self.get_start_stop_index()
+        x_ax_raw, x_ay_raw, steering, throttle, brake, time = [], [], [], [], [], []
 
-        x_ax_raw = [data['a_x'] for data in self.plot_data[start_index:stop_index]]
-        x_ay_raw = [data['a_y'] for data in self.plot_data[start_index:stop_index]]
-        steering = [data['steering'] * 100 for data in self.plot_data[start_index:stop_index]]
-        throttle = [data['throttle'] * 100 for data in self.plot_data[start_index:stop_index]]
-        brake = [data['brake'] * 100 for data in self.plot_data[start_index:stop_index]]
-        time = [data['sim_time'] - self.record_delay for data in self.plot_data[start_index:stop_index]]
+        for data in self.plot_data[start_index:stop_index]:
+            if data['type'] == 'ego_vehicle':
+                x_ax_raw.append(data['a_x'])
+                x_ay_raw.append(data['a_y'])
+                steering.append(data['steering'] * 100)
+                throttle.append(data['throttle'] * 100)
+                brake.append(data['brake'] * 100)
+                time.append(data['sim_time'])
 
-        x_ax = self.low_pass_filter(x_ax_raw, alpha=0.3)
-        x_ay = self.low_pass_filter(x_ay_raw, alpha=0.3)
+        x_ax = self.low_pass_filter(x_ax_raw, alpha=0.4)
+        x_ay = self.low_pass_filter(x_ay_raw, alpha=0.4)
 
         fig, axs = plt.subplots(4, 1, figsize=(17, 10))
 
@@ -224,14 +237,8 @@ class Actor_State_Recorder:
         plt.draw()
 
         plt.pause(0.01)
-        # print('WEIGHTED RMS:', self.weighted_rms_acceleration())
+        print('RMS',self.rms_acceleration(), '\tWEIGHTED RMS:', self.weighted_rms_acceleration())
 
-    def low_pass_filter(self, data, alpha=0.1):
-        filtered_data = [data[0]]  # Initialize filtered data with first value
-        for i in range(1, len(data)):
-            filtered_value = alpha * data[i] + (1 - alpha) * filtered_data[-1]
-            filtered_data.append(filtered_value)
-        return filtered_data
 
     def plot_relative_distance(self):
         print('Plotting Relative Distance')
@@ -284,10 +291,19 @@ class Actor_State_Recorder:
                 break
         return start_index, stop_index
 
-    def weighted_rms_acceleration(self):
+
+    def low_pass_filter(self, data, alpha=0.1):
+        filtered_data = [data[0]]  # Initialize filtered data with first value
+        for i in range(1, len(data)):
+            filtered_value = alpha * data[i] + (1 - alpha) * filtered_data[-1]
+            filtered_data.append(filtered_value)
+        return filtered_data
+
+    def rms_acceleration(self):
+        return self.weighted_rms_acceleration(1,1,1)
+    def weighted_rms_acceleration(self, k_x=1.4, k_y=1.4, k_z=1):
 
         a_x, a_y, a_z = [], [], []
-        k_x, k_y, k_z = 1.4, 1.4, 1
 
         start_index, stop_index = self.get_start_stop_index()
         for i, data in enumerate(self.plot_data[start_index:stop_index]):
@@ -296,7 +312,7 @@ class Actor_State_Recorder:
                 a_y.append(data['a_y'])
                 a_z.append(data['a_z'])
 
-        rms_w = np.sqrt((k_x*np.mean(a_x))**2+(k_y*np.mean(a_y))**2+(k_z*np.mean(a_z))**2)
+        rms_w = np.sqrt((k_x * np.mean(a_x)) ** 2 + (k_y * np.mean(a_y)) ** 2 + (k_z * np.mean(a_z)) ** 2)
 
         return rms_w
 
