@@ -32,7 +32,7 @@ if __name__ == "__main__":
                                                                          True,  # autopilot_on
                                                                          True,  # display apf
                                                                          False,  # display control system and actor positions
-                                                                         'none'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
+                                                                         'type_2'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
 
     p1.start()
     time.sleep(traffic_delay)

@@ -107,7 +107,7 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
         if key_flag:
             print("Plotting Data")
             recorder.plot_positions()
-            recorder.plot_accelerations()
+            # recorder.plot_accelerations()
             # recorder.plot_relative_distance()
             key_flag = False
 

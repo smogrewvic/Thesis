@@ -4,7 +4,10 @@ from ApfObjects.VehicleAPF import VehicleAPF
 from ApfObjects.NavpointAPF import NavpointAPF
 from ApfObjects.RegressionLaneAPF import Regression_Lane_APF
 from ApfObjects.TrafficLightAPF import TrafficLightAPF
+import matplotlib
 import matplotlib.pyplot as plt
+
+# matplotlib.rcParams['text.usetex'] = True
 import numpy as np
 
 
@@ -142,6 +145,12 @@ class Actor_State_Recorder:
         colors = [data['color'] for data in self.plot_data[start_index:stop_index]]
         labels = [data['svo'] for data in self.plot_data[start_index:stop_index]]
 
+        ego_x, ego_y = [], []
+        for data in self.plot_data[start_index:stop_index]:
+            if data['type'] == 'ego_vehicle':
+                ego_x.append(data['x'])
+                ego_y.append(data['y'])
+
         plt.scatter(y, x, c=colors)
 
         for i, label in enumerate(labels):
@@ -151,32 +160,54 @@ class Actor_State_Recorder:
             plt.annotate(label,  # this is the text
                          (y[i], x[i]),  # these are the coordinates to position the label
                          textcoords="offset points",  # how to position the text
-                         xytext=(20, 0),  # distance from text to points (x,y)
+                         xytext=(15, 0),  # distance from text to points (x,y)
                          ha='left')  # horizontal alignment can be left, right or center
 
+        total_distance = 0
         closest_distance = float('inf')
+        for i in range(1, len(ego_x)):
+            total_distance += np.sqrt((ego_x[i] - ego_x[i-1]) ** 2 + (ego_y[i] - ego_y[i-1]) ** 2)
+
         for i, data in enumerate(self.plot_data[start_index:stop_index]):
             if data['type'] == 'vehicle':
                 closest_distance = min(closest_distance, data['relative_distance'])
 
-        plt.annotate('Closest Distance: ' + str(round(closest_distance, 3)),
-                     (10, 3),
+        plt.annotate('Closest Distance: ' + str(round(closest_distance, 2))+'m',
+                     (2.5, 35),
                      textcoords="offset points",
-                     xytext=(20, 0),
+                     xytext=(0, 0),
+                     fontsize=10,
+                     weight = 'bold',
                      ha='left')
 
-        total_distance = 0
-        for i in range(1, len(x)):
-            total_distance += (x[i]-x[i-1])**2 + (y[i]-y[i-1])**2
-
-        plt.annotate('Total Distance: ' + str(round(total_distance, 3)),
-                     (y[-1], x[-1]),
+        plt.annotate('Total Distance: ' + str(round(total_distance, 2))+'m',
+                     (2.5, 38),
                      textcoords="offset points",
-                     xytext=(20, 0),
+                     xytext=(0, 0),
+                     fontsize=10,
+                     weight='bold',
                      ha='left')
 
-        plt.ylabel('Longitudinal Position (m)', fontsize=18)  # Set ylabel font size
-        plt.xlabel('Lateral Position (m)', fontsize=18)  # Set xlabel font size
+        plt.annotate('Ego-Vehicle',
+                     (y[0],x[0]),
+                     textcoords="offset points",
+                     xytext=(0, -15),
+                     fontsize=10,
+                     weight='bold',
+                     ha='center')
+
+        plt.annotate('Actor',
+                     (y[1],x[1]),
+                     textcoords="offset points",
+                     xytext=(0, -15),
+                     fontsize=10,
+                     weight='bold',
+                     ha='center')
+
+        plt.ylabel('Longitudinal Position (m)', fontsize=14, weight='bold')  # Set ylabel font size
+        plt.xlabel('Lateral Position (m)', fontsize=14, weight='bold')  # Set xlabel font size
+        plt.xlim(-1.5, 5)
+        plt.ylim(-5)
 
         plt.draw()
         plt.pause(0.01)
