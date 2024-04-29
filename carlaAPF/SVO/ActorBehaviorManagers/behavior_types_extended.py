@@ -50,9 +50,9 @@ class Altruistic(object):
     """
 
     max_speed = 10
-    speed_lim_dist = 6
-    speed_decrease = 12
-    safety_time = 3
+    speed_lim_dist = 8
+    speed_decrease = 14
+    safety_time = 5
     min_proximity_threshold = 12
     braking_distance = 8
     tailgate_counter = 0
@@ -73,7 +73,7 @@ class Cooperative(object):
     speed_lim_dist = 6
     speed_decrease = 12
     safety_time = 3
-    min_proximity_threshold = 12
+    min_proximity_threshold = 10
     braking_distance = 6
     tailgate_counter = 0
 
@@ -89,12 +89,13 @@ class Individualistic(object):
     tailgate_counter: A counter to avoid tailgating too quickly after the last tailgate.
     """
     max_speed = 70
-    speed_lim_dist = 1
+    speed_lim_dist = 0
     speed_decrease = 8
-    safety_time = 3
+    safety_time = 2
     min_proximity_threshold = 8
     braking_distance = 4
     tailgate_counter = -1
+
 
 
 class Competitive(object):
@@ -108,12 +109,12 @@ class Competitive(object):
     tailgate_counter: A counter to avoid tailgating too quickly after the last tailgate.
     """
     max_speed = 50
-    speed_lim_dist = 0
-    speed_decrease = 10
-    safety_time = 3
-    min_proximity_threshold = 10
-    braking_distance = 3
-    tailgate_counter = 0
+    speed_lim_dist = -40
+    speed_decrease = 4
+    safety_time = 1
+    min_proximity_threshold = 4
+    braking_distance = 2
+    tailgate_counter = -2
 
 
 class Sadistic(object):

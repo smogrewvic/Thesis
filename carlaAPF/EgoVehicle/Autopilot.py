@@ -62,7 +62,7 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
     svo_all_actors = {}
 
     # Data Recorder
-    recorder = Actor_State_Recorder(potential_field.get_actor_info(), world)
+    recorder = Actor_State_Recorder(potential_field.get_actor_info(), world, svo_estimation)
 
 
     while True:
@@ -105,10 +105,10 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
         global key_flag
         keyboard.on_press_key("up", key_press)
         if key_flag:
-            print("Plotting Data")
-            recorder.plot_positions()
+            # recorder.plot_positions()
             # recorder.plot_accelerations()
-            # recorder.plot_relative_distance()
+            # recorder.save_simulation_to_file()
+            recorder.plot_comparison()
             key_flag = False
 
 
