@@ -51,6 +51,11 @@ class Scenario:
             self.pedestrians.append(
                 PedestrianInfo(spawn_point_id='id_52', destination_point_id='id_172', model_category='adult', behavior_type='sadistic').data)
 
+        elif scenario_name == 'blocked_road_lane_change':
+            self.origin = 'id_69'
+            self.destination = 'id_62'
+            # self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_63', model_category='sedan', behavior_type='sadistic').data)
+
     def get_pedestrians(self):
         return self.pedestrians
 

@@ -49,12 +49,14 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
 
     # Steering Control
     steering_PID = Steering_Control_PID(ego_vehicle, potential_field.get_granularity(), potential_field=potential_field.get_potential_field())
+    # steering_PID.set_PID_values(0.25, 0, 0.25)  # good turning response (p=0.25,i=0,d=0) @ 20kph, (p=0.15,i=0,d=0) @ 50kph,
     steering_PID.set_PID_values(0.25, 0, 0.25)  # good turning response (p=0.25,i=0,d=0) @ 20kph, (p=0.15,i=0,d=0) @ 50kph,
     steering_PID.set_look_ahead(20)
 
     # Throttle Control
     throttle_PID = Throttle_Control_PID(ego_vehicle, potential_field.get_potential_field(), potential_field.get_granularity())
-    throttle_PID.set_PID_values(0.25, 0.01, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
+    # throttle_PID.set_PID_values(0.25, 0.01, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
+    throttle_PID.set_PID_values(0.25, 0.002, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
 
     # Behavior Analysis
     pedestrian_behavior_analyser = Pedestrian_Behavior_Analyser(world)
@@ -82,7 +84,7 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
             ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_output, steer=steering_output, brake=brake_output))
 
         if display_apf == True:
-            path_planner.save_image_APF(show_path = False)
+            path_planner.save_image_APF(show_path = True)
             path_planner.show_APF()
 
         if display_debug == True:
@@ -107,7 +109,7 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
         if key_flag:
             # recorder.plot_positions()
             # recorder.plot_accelerations()
-            # recorder.save_simulation_to_file()
+            recorder.save_simulation_to_file()
             recorder.plot_comparison()
             key_flag = False
 

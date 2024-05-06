@@ -94,14 +94,18 @@ class Regression_Lane_APF():
         # fxy = ((y -fx)**2)/1 + slope
 
         ### Gaussian lane equation
-        gain = 100
-        sigma = (self.lane_width/2) / self.potential_field_granularity
-        exponent = -((y - fx) ** 2) / (2 * sigma ** 2)
-        lane = gain*(1 - np.e ** exponent)
+        # gain = 100
+        # sigma = (self.lane_width/2) / self.potential_field_granularity
+        # exponent = -((y - fx) ** 2) / (2 * sigma ** 2)
+        # lane = gain*(1 - np.e ** exponent)
+
+        #2nd order lane equation
+        gain = 4
+        lane = gain*((y-fx)**2)/self.lane_width
+
 
         a_width = 2.8/self.potential_field_granularity
         b_width = 2.8/self.potential_field_granularity
-
         goal = ((x-self.sub_goal[0])/a_width)**2 + ((y-self.sub_goal[1])/b_width)**2
 
 

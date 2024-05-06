@@ -11,7 +11,7 @@ import keyboard
 
 if __name__ == "__main__":
 
-    scenario = Scenario('basic_merge')
+    scenario = Scenario('blocked_road_lane_change')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
@@ -26,13 +26,13 @@ if __name__ == "__main__":
                                                                                       pedestrians,
                                                                                       True,  # autopilot
                                                                                       100,  # percent of max speed limit
-                                                                                      0.005))  # sim timestep    0.005 slow mo
+                                                                                      0.005))  # sim timestep    0.005 slow mo,  0.001 super slow mo
 
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destination, # destination
                                                                          True,  # autopilot_on
-                                                                         False,  # display apf
+                                                                         True,  # display apf
                                                                          False,  # display control system and actor positions
-                                                                         'none'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
+                                                                         'type_2'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
 
     p1.start()
     time.sleep(traffic_delay)

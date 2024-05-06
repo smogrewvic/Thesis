@@ -72,6 +72,7 @@ class Actor_State_Recorder:
                         'sim_time': current_time - self.start_time,
                         'x': state['position'][0] - self.start_position[0],
                         'y': state['position'][1] - self.start_position[1],
+                        'speed': state['speed'],
                         'a_x': state['acceleration'][0],
                         'a_y': state['acceleration'][1],
                         'a_z': state['acceleration'][2],
@@ -96,6 +97,7 @@ class Actor_State_Recorder:
                         'sim_time': current_time - self.start_time,
                         'x': state['position'][0] - self.start_position[0],
                         'y': state['position'][1] - self.start_position[1],
+                        'speed': state['speed'],
                         'a_x': state['acceleration'][0],
                         'a_y': state['acceleration'][1],
                         'a_z': state['acceleration'][2],
@@ -115,6 +117,7 @@ class Actor_State_Recorder:
                         'sim_time': current_time - self.start_time,
                         'x': state[0] - self.start_position[0],
                         'y': state['position'][1] - self.start_position[1],
+                        'speed': state['speed'],
                         'a_x': state['acceleration'][0],
                         'a_y': state['acceleration'][1],
                         'a_z': state['acceleration'][2],
@@ -129,6 +132,7 @@ class Actor_State_Recorder:
                         'sim_time': current_time - self.start_time,
                         'x': state['position'][0] - self.start_position[0],
                         'y': state['position'][1] - self.start_position[1],
+                        'speed': state['speed'],
                         'a_x': state['acceleration'][0],
                         'a_y': state['acceleration'][1],
                         'a_z': state['acceleration'][2],
@@ -392,6 +396,14 @@ class Actor_State_Recorder:
         start_index, stop_index = self.get_start_stop_index()
         initial_time = self.plot_data[start_index]['sim_time']
         ax, ay, steering, throttle, brake, time = [], [], [], [], [], []
+        ego_x, ego_y = [], []
+        speed = []
+
+        all_x = [data['x'] for data in self.plot_data[start_index:stop_index]]
+        all_y = [data['y'] for data in self.plot_data[start_index:stop_index]]
+        colors = [data['color'] for data in self.plot_data[start_index:stop_index]]
+        labels = [data['svo'] for data in self.plot_data[start_index:stop_index]]
+
 
         for data in self.plot_data[start_index:stop_index]:
             if data['type'] == 'ego_vehicle':
@@ -401,10 +413,33 @@ class Actor_State_Recorder:
                 throttle.append(data['throttle'] * 100)
                 brake.append(data['brake'] * 100)
                 time.append(data['sim_time']-initial_time)
+                ego_x.append(data['x'])
+                ego_y.append(data['y'])
+                speed.append(data['speed'])
 
         parent_folder_path = r"C:\Users\victor\Desktop\SVO Comparison"
         folder_path = os.path.join(parent_folder_path, f"{self.svo_estimation_type}")
         os.makedirs(folder_path, exist_ok=True)
+
+        filename = os.path.join(folder_path, "sim_all_positions.txt")
+        with open(filename, "w") as file:
+            for x, y in zip(all_x, all_y):
+                file.write(f"{x} {y}\n")
+
+        filename = os.path.join(folder_path, "sim_colors.txt")
+        with open(filename, "w") as file:
+            for x in zip(colors):
+                file.write(f"{x} {y}\n")
+
+        filename = os.path.join(folder_path, "sim_svo_labels.txt")
+        with open(filename, "w") as file:
+            for x in zip(labels):
+                file.write(f"{x} {y}\n")
+
+        filename = os.path.join(folder_path, "sim_speed.txt")
+        with open(filename, "w") as file:
+            for x, y in zip(time, speed):
+                file.write(f"{x} {y}\n")
 
         filename = os.path.join(folder_path, "sim_longitudinal_accel.txt")
         with open(filename, "w") as file:
@@ -449,7 +484,8 @@ class Actor_State_Recorder:
                      f"sim_lateral_accel.txt",
                      f"sim_throttle.txt",
                      f"sim_brake.txt",
-                     f"sim_steering.txt"]
+                     f"sim_steering.txt",
+                     "sim_speed.txt"]
 
         folders = [r"C:\Users\victor\Desktop\SVO Comparison\none",
                    r"C:\Users\victor\Desktop\SVO Comparison\type_1",
@@ -466,6 +502,8 @@ class Actor_State_Recorder:
         time_none, brake_none = self.extract_file(filename)
         filename = os.path.join(folders[0], filenames[4])
         time_none, steering_none = self.extract_file(filename)
+        filename = os.path.join(folders[0], filenames[5])
+        time_none, speed_none = self.extract_file(filename)
 
         filename = os.path.join(folders[1], filenames[0])
         time_t1, ax_t1 = self.extract_file(filename)
@@ -477,6 +515,8 @@ class Actor_State_Recorder:
         time_t1, brake_t1 = self.extract_file(filename)
         filename = os.path.join(folders[1], filenames[4])
         time_t1, steering_t1 = self.extract_file(filename)
+        filename = os.path.join(folders[1], filenames[5])
+        time_t1, speed_t1 = self.extract_file(filename)
 
         filename = os.path.join(folders[2], filenames[0])
         time_t2, ax_t2 = self.extract_file(filename)
@@ -488,6 +528,8 @@ class Actor_State_Recorder:
         time_t2, brake_t2 = self.extract_file(filename)
         filename = os.path.join(folders[2], filenames[4])
         time_t2, steering_t2 = self.extract_file(filename)
+        filename = os.path.join(folders[2], filenames[5])
+        time_t2, speed_t2 = self.extract_file(filename)
 
         ax_none = self.low_pass_filter(ax_none, alpha=0.5)
         ay_none = self.low_pass_filter(ay_none, alpha=0.5)
@@ -498,7 +540,7 @@ class Actor_State_Recorder:
         ax_t2 = self.low_pass_filter(ax_t2, alpha=0.5)
         ay_t2 = self.low_pass_filter(ay_t2, alpha=0.5)
 
-        fig, axs = plt.subplots(5, 1, figsize=(15, 17))
+        fig, axs = plt.subplots(6, 1, figsize=(15, 17))
         num_ticks = 5
 
         # Plot for subplot 1
@@ -562,6 +604,18 @@ class Actor_State_Recorder:
         axs[4].legend(loc='upper right', fontsize=12)
         axs[4].set_xlim(0, 8)
         axs[4].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
+
+        axs[5].plot(time_none, speed_none, color=(1, 0.25, 0.5, 0.4), linestyle = 'dotted', label='None')
+        axs[5].plot(time_t1, speed_t1, color=(1, 0.25, 0.5, 1), linestyle = 'dashed', label='Type-1')
+        axs[5].plot(time_t2, speed_t2, color=(1, 0.25, 0.5, 1) , label='Type-2')
+        axs[5].set_title('Velocity', fontsize=18, weight='bold')
+        axs[5].set_ylabel('Velocity (m/s)', fontsize=14, weight='bold')
+        axs[5].set_xlabel('Time (s)', fontsize=14, weight='bold')
+        axs[5].tick_params(axis='x', labelsize=14)
+        axs[5].tick_params(axis='y', labelsize=14)
+        axs[5].legend(loc='upper right', fontsize=12)
+        axs[5].set_xlim(0, 8)
+        axs[5].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         plt.subplots_adjust(hspace=1.0)
 
