@@ -267,6 +267,9 @@ def generate(vehicle_spawns, pedestrian_spawns, autopilot_state, percentage_of_s
                 blueprint.set_attribute('role_name', vehicle['behavior_type'])  # todo: messign around here for behavior
 
             # spawn the cars and set their autopilot and light state all together
+
+            autopilot_state = autopilot_state if vehicle['spawn_id'] != vehicle['destination_id'] else False
+            print('AUTOPILOT STATE', autopilot_state)
             batch.append(SpawnActor(blueprint, transform).then(SetAutopilot(FutureActor, autopilot_state, traffic_manager.get_port())))
 
         for response in client.apply_batch_sync(batch, synchronous_master):

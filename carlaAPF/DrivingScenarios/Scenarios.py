@@ -36,7 +36,7 @@ class Scenario:
 
         elif scenario_name == 'basic_merge':
             self.origin = 'id_66'
-            self.destination = 'id_62'
+            self.destination = ('id_62',)
             self.ego_delay = 2.1
             self.traffic_delay = 0
 
@@ -44,7 +44,7 @@ class Scenario:
 
         elif scenario_name == 'pedestrian_crossing':
             self.origin = 'id_113'
-            self.destination = 'id_62'
+            self.destination = ('id_113','id_62')
 
             self.pedestrians.append(
                 PedestrianInfo(spawn_point_id='id_172', destination_point_id='id_754', model_category='adult', behavior_type='cooperative').data)
@@ -53,9 +53,11 @@ class Scenario:
 
         elif scenario_name == 'blocked_road_lane_change':
             self.origin = 'id_69'
-            self.destination = 'id_62'
-            # self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_63', model_category='sedan', behavior_type='sadistic').data)
+            self.destination = ('id_113','id_62')
+            self.cars.append(VehicleInfo(spawn_point_id='id_83', destination_point_id='id_62', model_category='sedan', behavior_type='sadistic').data)
 
+        else:
+            print('No matching scenario found for: ', scenario_name)
     def get_pedestrians(self):
         return self.pedestrians
 

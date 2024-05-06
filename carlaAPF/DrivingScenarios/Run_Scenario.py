@@ -16,7 +16,7 @@ if __name__ == "__main__":
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
     origin = scenario.get_origin()
-    destination = scenario.get_destination()
+    destinations = scenario.get_destination()
     ego_delay = scenario.get_ego_delay()
     traffic_delay = scenario.get_traffic_delay()
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
                                                                                       100,  # percent of max speed limit
                                                                                       0.005))  # sim timestep    0.005 slow mo,  0.001 super slow mo
 
-    p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destination, # destination
+    p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destinations, # destination
                                                                          True,  # autopilot_on
                                                                          True,  # display apf
                                                                          False,  # display control system and actor positions

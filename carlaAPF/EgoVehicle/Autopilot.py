@@ -23,7 +23,7 @@ def key_press(event):
     key_flag = True
 
 
-def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none'):
+def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none'):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF(field_size=30, granularity=0.3) #meters, meters
@@ -35,14 +35,28 @@ def main(destination_id='id_113', autopilot_on=True, display_apf=True, display_d
         if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
             ego_vehicle = actor
 
+    # # find current ego_vehicle location and find random point to navigate to
+    # navpoint_transforms = []
+    # origin = ego_vehicle.get_location()
+    # d = Spawn_Points.points.value[destination_id]
+    # destination = carla.Location(x=d[0], y=d[1], z=d[2])
+    #
+    # for waypoint in high_level_route.trace_route(origin, destination):
+    #     navpoint_transforms.append(waypoint[0].transform)
+
+
+
     # find current ego_vehicle location and find random point to navigate to
     navpoint_transforms = []
     origin = ego_vehicle.get_location()
-    d = Spawn_Points.points.value[destination_id]
-    destination = carla.Location(x=d[0], y=d[1], z=d[2])
+    sub_destinations = [origin]
+    for sub_destination_id in destination_ids:
+        d = Spawn_Points.points.value[sub_destination_id]
+        sub_destinations.append(carla.Location(x=d[0], y=d[1], z=d[2]))
 
-    for waypoint in high_level_route.trace_route(origin, destination):
-        navpoint_transforms.append(waypoint[0].transform)
+    for i in range(0, len(sub_destinations)-1 ):
+        for waypoint in high_level_route.trace_route(sub_destinations[i], sub_destinations[i+1]):
+            navpoint_transforms.append(waypoint[0].transform)
 
     potential_field.set_navpoints(navpoint_transforms)
     path_planner = Gradient_path_planner(potential_field.get_potential_field())
