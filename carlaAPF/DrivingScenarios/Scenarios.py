@@ -52,9 +52,23 @@ class Scenario:
                 PedestrianInfo(spawn_point_id='id_52', destination_point_id='id_172', model_category='adult', behavior_type='sadistic').data)
 
         elif scenario_name == 'blocked_road_lane_change':
-            self.origin = 'id_69'
-            self.destination = ('id_113','id_62')
-            self.cars.append(VehicleInfo(spawn_point_id='id_83', destination_point_id='id_62', model_category='sedan', behavior_type='sadistic').data)
+            self.origin = 'id_15'
+            self.destination = ( 'id_x01','id_66','id_62')
+            self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_62', model_category='sedan', behavior_type='immobile').data)
+            self.cars.append(
+                VehicleInfo(spawn_point_id='id_16', destination_point_id='id_62', model_category='sedan', behavior_type='altruistic').data)
+            self.cars.append(
+                VehicleInfo(spawn_point_id='id_x02', destination_point_id='id_62', model_category='sedan', behavior_type='individualistic').data)
+
+            self.ego_delay = 10
+
+        elif scenario_name == 'blocked_road_lane_change2':
+            self.origin = 'id_15'
+            self.destination = ( 'id_x01','id_66','id_62')
+            self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_62', model_category='sedan', behavior_type='immobile').data)
+            self.cars.append(
+                VehicleInfo(spawn_point_id='id_16', destination_point_id='id_62', model_category='sedan', behavior_type='altruistic').data)
+            self.ego_delay = 10
 
         else:
             print('No matching scenario found for: ', scenario_name)

@@ -11,7 +11,7 @@ import keyboard
 
 if __name__ == "__main__":
 
-    scenario = Scenario('blocked_road_lane_change')
+    scenario = Scenario('blocked_road_lane_change2')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
@@ -35,8 +35,10 @@ if __name__ == "__main__":
                                                                          'type_2'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
 
     p1.start()
+
     time.sleep(traffic_delay)
     p2.start()
 
     time.sleep(ego_delay)
     p3.start()
+

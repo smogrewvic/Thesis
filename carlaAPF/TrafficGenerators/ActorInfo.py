@@ -21,7 +21,8 @@ class VehicleInfo:
                           'cooperative': '150,255,50',
                           'individualistic': '255,255,0',
                           'competitive': '255,128,0',
-                          'sadistic': '155,0,0'}
+                          'sadistic': '155,0,0',
+                          'immobile': '255,255,255'}
         model_color = color_info_map[behavior_type]
 
         if static_svo == True:
@@ -29,7 +30,8 @@ class VehicleInfo:
                              'cooperative': 0.35,
                              'individualistic': 0,
                              'competitive': -0.35,
-                             'sadistic': -0.75}
+                             'sadistic': -0.75,
+                             'immobile':0}
             behavior_type = svo_value_map[behavior_type]
 
         if spawn_point_id == 'random':
@@ -69,6 +71,8 @@ class PedestrianInfo:
                 model_blueprint = 'walker.pedestrian.0007'  # purple shirt
             if behavior_type == 'sadistic':
                 model_blueprint = 'walker.pedestrian.0008'  # bright orange shirt
+            if behavior_type == 'immobile':
+                model_blueprint = ' walker.pedestrian.0032'  # police officer
         elif model_category == 'child':
             model_blueprint = 'walker.pedestrian.0009'  # no relevant color options for children
         else:
@@ -81,7 +85,8 @@ class PedestrianInfo:
                              'cooperative': 0.35,
                              'individualistic': 0,
                              'competitive': -0.35,
-                             'sadistic': -0.75}
+                             'sadistic': -0.75,
+                             'immobile': 0}
             behavior_type = svo_value_map[behavior_type]
 
         if spawn_point_id == 'random':

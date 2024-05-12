@@ -29,8 +29,9 @@ class Actor_State_Recorder:
                                'sadistic': (155 / 255, 0 / 255, 0 / 255)}
         self.sim_time_factor = 3.83
         self.recording_distance = 30
-        self.record_delay = 2  # seconds
-        self.record_time = 8  # seconds
+        self.record_delay = 5  # seconds
+        # self.record_time = 16  # seconds
+        self.record_time = 14
 
     def _svo_to_color(self, svo):
         behavior = 'individualistic'
@@ -141,6 +142,90 @@ class Actor_State_Recorder:
 
     def plot_positions(self):
         print('Plotting Actor Positions')
+        label_frequency = 4  # odd number to plot other actors
+        # plt.cla()
+        plt.clf()
+
+        start_index, stop_index = self.get_start_stop_index()
+
+        x = [data['x'] for data in self.plot_data[start_index:stop_index]]
+        y = [data['y'] for data in self.plot_data[start_index:stop_index]]
+        colors = [data['color'] for data in self.plot_data[start_index:stop_index]]
+        labels = [data['svo'] for data in self.plot_data[start_index:stop_index]]
+
+        ego_x, ego_y = [], []
+        for data in self.plot_data[start_index:stop_index]:
+            if data['type'] == 'ego_vehicle':
+                ego_x.append(data['x'])
+                ego_y.append(data['y'])
+
+        plt.scatter(y, x, c=colors, edgecolors = (0,0,0))
+        for i, label in enumerate(labels):
+            if i % label_frequency != 0 or label == 0:
+                continue
+
+            plt.annotate(label,  # this is the text
+                         (y[i], x[i]),  # these are the coordinates to position the label
+                         textcoords="offset points",  # how to position the text
+                         xytext=(15, 0),  # distance from text to points (x,y)
+                         ha='left')  # horizontal alignment can be left, right or center
+
+        total_distance = 0
+        closest_distance = float('inf')
+        for i in range(1, len(ego_x)):
+            total_distance += np.sqrt((ego_x[i] - ego_x[i-1]) ** 2 + (ego_y[i] - ego_y[i-1]) ** 2)
+
+        for i, data in enumerate(self.plot_data[start_index:stop_index]):
+            if data['type'] == 'vehicle':
+                closest_distance = min(closest_distance, data['relative_distance'])
+
+        plt.annotate('Closest Distance: ' + str(round(closest_distance, 2))+'m',
+                     (2.5, 35),
+                     textcoords="offset points",
+                     xytext=(0, 0),
+                     fontsize=10,
+                     weight = 'bold',
+                     ha='left')
+
+        plt.annotate('Total Distance: ' + str(round(total_distance, 2))+'m',
+                     (2.5, 38),
+                     textcoords="offset points",
+                     xytext=(0, 0),
+                     fontsize=10,
+                     weight='bold',
+                     ha='left')
+
+        plt.annotate('Ego-Vehicle',
+                     (y[0],x[0]),
+                     textcoords="offset points",
+                     xytext=(0, -15),
+                     fontsize=10,
+                     weight='bold',
+                     ha='center')
+
+        plt.annotate('Actor',
+                     (y[1],x[1]),
+                     textcoords="offset points",
+                     xytext=(0, -15),
+                     fontsize=10,
+                     weight='bold',
+                     ha='center')
+
+        plt.ylabel('Longitudinal Position (m)', fontsize=14, weight='bold')  # Set ylabel font size
+        plt.xlabel('Lateral Position (m)', fontsize=14, weight='bold')  # Set xlabel font size
+        # plt.xlim(-1.5, 5)
+        plt.ylim(13)
+
+        file_name = '\\Positions ' + self.svo_estimation_type + '.png'
+        folder_path = r'C:\Users\victor\Desktop\SVO Results'
+        plt.gcf().set_size_inches(3, 10)
+        plt.savefig(folder_path + file_name, bbox_inches='tight', dpi = 300)
+
+        print('ESTIMATION: ',self.svo_estimation_type, '\tCLOSEST DIST: ',round(closest_distance, 3), '\tTOTAL DIST: ', round  (total_distance,3))
+        plt.show()
+
+    def plot_positions2(self):
+        print('Plotting Actor Positions')
         label_frequency = 3  # odd number to plot other actors
         # plt.cla()
         plt.clf()
@@ -213,7 +298,7 @@ class Actor_State_Recorder:
 
         plt.ylabel('Longitudinal Position (m)', fontsize=14, weight='bold')  # Set ylabel font size
         plt.xlabel('Lateral Position (m)', fontsize=14, weight='bold')  # Set xlabel font size
-        plt.xlim(-1.5, 5)
+        # plt.xlim(-1.5, 5)
         plt.ylim(-5)
 
         file_name = '\\Positions ' + self.svo_estimation_type + '.png'
@@ -553,7 +638,7 @@ class Actor_State_Recorder:
         axs[0].tick_params(axis='x', labelsize=14)
         axs[0].tick_params(axis='y', labelsize=14)
         axs[0].legend(loc='upper right', fontsize=12)
-        axs[0].set_xlim(0,8)
+        axs[0].set_xlim(0,self.record_time - self.record_delay)
         axs[0].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         # Plot for subplot 2
@@ -566,7 +651,7 @@ class Actor_State_Recorder:
         axs[1].tick_params(axis='x', labelsize=14)
         axs[1].tick_params(axis='y', labelsize=14)
         axs[1].legend(loc='upper right', fontsize=12)
-        axs[1].set_xlim(0, 8)
+        axs[1].set_xlim(0, self.record_time - self.record_delay)
         axs[1].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         axs[2].plot(time_none, brake_none, color=(1, 0, 0, 0.4), linestyle = 'dotted', label='None')
@@ -578,7 +663,7 @@ class Actor_State_Recorder:
         axs[2].tick_params(axis='x', labelsize=14)
         axs[2].tick_params(axis='y', labelsize=14)
         axs[2].legend(loc='upper right', fontsize=12)
-        axs[2].set_xlim(0, 8)
+        axs[2].set_xlim(0, self.record_time - self.record_delay)
         axs[2].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         axs[3].plot(time_none, ay_none, color=(0, 0, 1, 0.4), linestyle = 'dotted', label='None')
@@ -590,7 +675,7 @@ class Actor_State_Recorder:
         axs[3].tick_params(axis='x', labelsize=14)
         axs[3].tick_params(axis='y', labelsize=14)
         axs[3].legend(loc='upper right', fontsize=12)
-        axs[3].set_xlim(0, 8)
+        axs[3].set_xlim(0, self.record_time - self.record_delay)
         axs[3].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         axs[4].plot(time_none, steering_none, color=(0.75, 0, 0.5, 0.4), linestyle = 'dotted', label='None')
@@ -602,7 +687,7 @@ class Actor_State_Recorder:
         axs[4].tick_params(axis='x', labelsize=14)
         axs[4].tick_params(axis='y', labelsize=14)
         axs[4].legend(loc='upper right', fontsize=12)
-        axs[4].set_xlim(0, 8)
+        axs[4].set_xlim(0, self.record_time - self.record_delay)
         axs[4].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         axs[5].plot(time_none, speed_none, color=(1, 0.25, 0.5, 0.4), linestyle = 'dotted', label='None')
@@ -614,7 +699,7 @@ class Actor_State_Recorder:
         axs[5].tick_params(axis='x', labelsize=14)
         axs[5].tick_params(axis='y', labelsize=14)
         axs[5].legend(loc='upper right', fontsize=12)
-        axs[5].set_xlim(0, 8)
+        axs[5].set_xlim(0, self.record_time - self.record_delay)
         axs[5].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         plt.subplots_adjust(hspace=1.0)
@@ -636,10 +721,10 @@ class Actor_State_Recorder:
         print('\nTYPE-2 ESTIMATION\n RMS: ', rms_t2, '\tWRMS: ', wrms_t2, '\tPEAK AX: ', peak_ax_t2, '\tPEAK AY: ', peak_ay_t2)
 
         file_name1 = '\\Accelerations Comparison.png'
-        file_name2 = '\\Accelerations Comparison.svg'
+        # file_name2 = '\\Accelerations Comparison.svg'
         folder_path = r'C:\Users\victor\Desktop\SVO Comparison'
         plt.savefig(folder_path + file_name1, bbox_inches='tight' )
-        plt.savefig(folder_path + file_name2, bbox_inches='tight')
+        # plt.savefig(folder_path + file_name2, bbox_inches='tight')
         plt.show()
 
 

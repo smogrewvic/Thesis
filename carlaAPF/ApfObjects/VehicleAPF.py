@@ -26,11 +26,12 @@ class VehicleAPF(APF_Object):
 
     def dynamic_APF_SVO(self, x, y, svo):
         self.svo = svo
+        # print('VehicleAPF, SVO ', svo)
         i, j = self.scaled_egocentric_state["position"][0], self.scaled_egocentric_state["position"][1]
         theta = np.radians(self.relative_state["heading"])
         speed_factor = self.reaction_time*abs(self.relative_state["speed"]) / 3.6  # distance traveled in 2 seconds from meters/second velocity
-        sigma_x = (self.length + speed_factor) + self.alpha * svo
-        sigma_y = (self.width + 0.05 * speed_factor) + self.alpha * svo
+        sigma_x = (self.length + speed_factor)*(1 + self.alpha * svo)
+        sigma_y = (self.width + 0.05 * speed_factor)*(1 + self.alpha * svo)
 
         long_term = (x * np.cos(theta) + y * np.sin(theta) - (i * np.cos(theta) + j * np.sin(theta)) - 0.659 * speed_factor) ** 4 / (2 * sigma_x ** 4)
         lat_term = (y * np.cos(theta) - x * np.sin(theta) - (j * np.cos(theta) - i * np.sin(theta))) ** 4 / (2 * sigma_y ** 4)

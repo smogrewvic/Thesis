@@ -15,7 +15,7 @@ from agents.navigation.basic_agent import BasicAgent
 from agents.navigation.local_planner import RoadOption
 # from agents.navigation.behavior_types import Cautious, Aggressive, Normal
 from SVO.ActorBehaviorManagers.behavior_types_extended import Cautious, Aggressive, Normal, Altruistic, Cooperative, Individualistic, Competitive, \
-    Sadistic
+    Sadistic, Immobile
 
 from agents.tools.misc import get_speed, positive, is_within_distance, compute_distance
 
@@ -76,4 +76,6 @@ class BehaviorAgentExtended(BehaviorAgent):  # Class extended to have more behav
             self._behavior = Competitive()
         elif behavior == 'sadistic':
             self._behavior = Sadistic()
+        elif behavior == 'immobile':
+            self._behavior = Immobile()
 

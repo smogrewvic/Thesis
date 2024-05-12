@@ -1,4 +1,5 @@
 from SVO.FuzzyEstimators.Vehicle_SVO_Fuzzy import Vehicle_SVO_Fuzzy
+from SVO.FuzzyEstimators.Vehicle_SVO_T2Fuzzy import Vehicle_SVO_T2Fuzzy
 import numpy as np
 import time
 import collections
@@ -11,6 +12,7 @@ class Vehicle_Behavior_Analyser:
         self.world = world
         self.map = world.get_map()
         self.type1_fuzzy = Vehicle_SVO_Fuzzy()
+        self.type2_fuzzy = Vehicle_SVO_T2Fuzzy()
         self.social_values = {}
         self.vehicle_actors = self.filter_actors('vehicle')
 
@@ -193,7 +195,7 @@ class Vehicle_Behavior_Analyser:
         elif estimation_type == 'type_2':
             for actor in self.vehicle_actors:
                 id = actor.id
-                self.social_values[id] = self.type1_fuzzy.calculate_output(self.vehicle_behaviors[id])
+                self.social_values[id] = self.type2_fuzzy.calculate_output(self.vehicle_behaviors[id])
 
         return self.social_values
 

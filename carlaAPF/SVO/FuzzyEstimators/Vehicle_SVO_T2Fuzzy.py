@@ -26,28 +26,33 @@ class Vehicle_SVO_T2Fuzzy():
 
         svo = {}
 
-        follow_time['close'] = IT2FS(linspace(0., 6, 100), rtri_mf, [2.5, 0.5, 1.0], rtri_mf, [2.5, 0.5, 0.8], check_set=True)
-        follow_time['medium'] = IT2FS(linspace(0., 6, 100), gaussian_mf, [2, 0.5, 1.0], gaussian_mf, [2, 0.5, 0.8], check_set=True)
-        follow_time['far'] = IT2FS(linspace(0., 6, 100), ltri_mf, [1.5, 4, 1.0], ltri_mf, [1.5, 4, 0.8], check_set=True)
+        #closest to matlab
+        follow_time['close'] = IT2FS(linspace(0., 6, 100), rtri_mf, [2.7, 0.7, 1.0], rtri_mf, [2.3, 0.3, 0.95], check_set=True)
+        follow_time['medium'] = IT2FS(linspace(0., 6, 100), gaussian_mf, [2, 0.625, 1.0], gaussian_mf, [2, 0.375, 0.95], check_set=True)
+        follow_time['far'] = IT2FS(linspace(0., 6, 100), ltri_mf, [1.25, 3.75, 1.0], ltri_mf, [1.75, 4.25, 0.95], check_set=True)
 
-        lane_changes['low'] = IT2FS(linspace(0., 5, 100), rtri_mf, [1.5, 0.25, 1.0], rtri_mf, [1.5, 0.25, 0.8], check_set=True)
-        lane_changes['medium'] = IT2FS(linspace(0., 5, 100), gaussian_mf, [1.5, 0.5, 1.0], gaussian_mf, [1.5, 0.5, 0.8], check_set=True)
-        lane_changes['high'] = IT2FS(linspace(0., 5, 100), ltri_mf, [1.5, 3, 1.0], ltri_mf, [1.5, 3, 0.8], check_set=True)
+        # closest to matlab
+        lane_changes['low'] = IT2FS(linspace(0., 5, 100), rtri_mf, [1.65, 0.35, 1.0], rtri_mf, [1.4, 0.1, 0.95], check_set=True)
+        lane_changes['medium'] = IT2FS(linspace(0., 5, 100), gaussian_mf, [1.5, 0.65, 1.0], gaussian_mf, [1.5, 0.365, 0.95], check_set=True)
+        lane_changes['high'] = IT2FS(linspace(0., 5, 100), ltri_mf, [1.35, 2.85, 1.0], ltri_mf, [1.65, 3.15, 0.95], check_set=True)
 
-        lane_centering['good'] = IT2FS(linspace(0., 2, 100), rtri_mf, [0.6, 0.2, 1.0], rtri_mf, [0.6, 0.2, 0.8], check_set=True)
-        lane_centering['medium'] = IT2FS(linspace(0., 2, 100), gaussian_mf, [0.6, 0.15, 1.0], gaussian_mf, [0.6, 0.15, 0.8], check_set=True)
-        lane_centering['poor'] = IT2FS(linspace(0., 2, 100), ltri_mf, [0.6, 1.2, 1.0], ltri_mf, [0.6, 1.2, 0.8], check_set=True)
+        # closest to matlab
+        lane_centering['good'] = IT2FS(linspace(0., 2, 100), rtri_mf, [0.64, 0.24, 1.0], rtri_mf, [0.557, 0.157, 0.95], check_set=True)
+        lane_centering['medium'] = IT2FS(linspace(0., 2, 100), gaussian_mf, [0.6, 0.19, 1.0], gaussian_mf, [0.6, 0.11, 0.95], check_set=True)
+        lane_centering['poor'] = IT2FS(linspace(0., 2, 100), ltri_mf, [0.54, 1.14, 1.0], ltri_mf, [0.66, 1.26, 0.95], check_set=True)
 
-        speed_limit_percent['slow'] = IT2FS(linspace(0., 200, 100), rtri_mf, [125, 60, 1.0], rtri_mf, [125, 60, 0.8], check_set=True)
-        speed_limit_percent['medium'] = IT2FS(linspace(0., 200, 100), gaussian_mf, [110, 10, 1.0], gaussian_mf, [110, 10, 0.8], check_set=True)
-        speed_limit_percent['fast'] = IT2FS(linspace(0., 200  , 100), ltri_mf, [100, 160, 1.0], ltri_mf, [100, 160, 0.8], check_set=True)
+        # closest to matlab
+        speed_limit_percent['slow'] = IT2FS(linspace(0., 200, 100), rtri_mf, [128, 63, 1.0], rtri_mf, [122, 57, 1], check_set=True)
+        speed_limit_percent['medium'] = IT2FS(linspace(0., 200, 100), gaussian_mf, [110, 11.5, 1.0], gaussian_mf, [110, 8.5, 0.95], check_set=True)
+        speed_limit_percent['fast'] = IT2FS(linspace(0., 200, 100), ltri_mf, [97, 157, 1.0], ltri_mf, [103, 163, 1], check_set=True)
 
         # # output
-        svo['altruistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-1, 0.25, 1.0], gaussian_mf, [-1, 0.2, 1.0], check_set=True)
-        svo['cooperative'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-0.5, 0.25, 1.0], gaussian_mf, [-0.5, 0.2, 1.0], check_set=True)
-        svo['individualistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0, 0.25, 1.0], gaussian_mf, [0, 0.2, 1.0], check_set=True)
-        svo['competitive'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0.5, 0.25, 1.0], gaussian_mf, [0.5, 0.2, 1.0], check_set=True)
-        svo['sadistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [1, 0.25, 1.0], gaussian_mf, [1, 0.2, 1.0], check_set=True)
+        # closest to matlab
+        svo['altruistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-1, 0.25, 1.0], gaussian_mf, [-1, 0.15, 1.0], check_set=True)
+        svo['cooperative'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-0.5, 0.25, 1.0], gaussian_mf, [-0.5, 0.15, 1.0], check_set=True)
+        svo['individualistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0, 0.25, 1.0], gaussian_mf, [0, 0.15, 1.0], check_set=True)
+        svo['competitive'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0.5, 0.25, 1.0], gaussian_mf, [0.5, 0.15, 1.0], check_set=True)
+        svo['sadistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [1, 0.25, 1.0], gaussian_mf, [1, 0.15, 1.0], check_set=True)
 
         # IT2FS_plot(follow_time['close'],follow_time['medium'], follow_time['far'], legends=["close", "medium", "far"], filename="simp_ex_sets")
         # IT2FS_plot(lane_changes['low'], lane_changes['medium'], lane_changes['high'], legends=["low", "medium", "high"], filename="simp_ex_sets")
@@ -134,5 +139,4 @@ class Vehicle_SVO_T2Fuzzy():
                                                       })
 
         return crisp(tr["svo"])
-
 

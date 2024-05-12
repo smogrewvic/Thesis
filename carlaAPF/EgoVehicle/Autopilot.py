@@ -35,16 +35,6 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
         if 'role_name' in actor.attributes and actor.attributes['role_name'] == 'ego_vehicle':
             ego_vehicle = actor
 
-    # # find current ego_vehicle location and find random point to navigate to
-    # navpoint_transforms = []
-    # origin = ego_vehicle.get_location()
-    # d = Spawn_Points.points.value[destination_id]
-    # destination = carla.Location(x=d[0], y=d[1], z=d[2])
-    #
-    # for waypoint in high_level_route.trace_route(origin, destination):
-    #     navpoint_transforms.append(waypoint[0].transform)
-
-
 
     # find current ego_vehicle location and find random point to navigate to
     navpoint_transforms = []
@@ -98,7 +88,7 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
             ego_vehicle.apply_control(carla.VehicleControl(throttle=throttle_output, steer=steering_output, brake=brake_output))
 
         if display_apf == True:
-            path_planner.save_image_APF(show_path = True)
+            path_planner.save_image_APF(show_path = False)
             path_planner.show_APF()
 
         if display_debug == True:
@@ -121,7 +111,7 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
         global key_flag
         keyboard.on_press_key("up", key_press)
         if key_flag:
-            # recorder.plot_positions()
+            recorder.plot_positions()
             # recorder.plot_accelerations()
             recorder.save_simulation_to_file()
             recorder.plot_comparison()
