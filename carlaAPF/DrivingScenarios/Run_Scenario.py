@@ -11,7 +11,7 @@ import keyboard
 
 if __name__ == "__main__":
 
-    scenario = Scenario('blocked_road_lane_change2')
+    scenario = Scenario('pedestrian_crossing')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
@@ -32,7 +32,7 @@ if __name__ == "__main__":
                                                                          True,  # autopilot_on
                                                                          True,  # display apf
                                                                          False,  # display control system and actor positions
-                                                                         'type_2'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
+                                                                         'none'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
 
     p1.start()
 

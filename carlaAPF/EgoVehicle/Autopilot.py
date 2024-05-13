@@ -111,9 +111,9 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
         global key_flag
         keyboard.on_press_key("up", key_press)
         if key_flag:
-            recorder.plot_positions()
+            # recorder.plot_positions()
             # recorder.plot_accelerations()
-            recorder.save_simulation_to_file()
+            # recorder.save_simulation_to_file()
             recorder.plot_comparison()
             key_flag = False
 

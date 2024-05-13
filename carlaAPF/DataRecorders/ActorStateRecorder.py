@@ -29,9 +29,13 @@ class Actor_State_Recorder:
                                'sadistic': (155 / 255, 0 / 255, 0 / 255)}
         self.sim_time_factor = 3.83
         self.recording_distance = 30
-        self.record_delay = 5  # seconds
-        # self.record_time = 16  # seconds
-        self.record_time = 14
+        ### Immobile Vehicle
+        # self.record_delay = 5  # seconds
+        # self.record_time = 14
+
+        ### Emergency Merge
+        self.record_delay = 2  # seconds
+        self.record_time = 8  # seconds
 
     def _svo_to_color(self, svo):
         behavior = 'individualistic'
@@ -142,7 +146,7 @@ class Actor_State_Recorder:
 
     def plot_positions(self):
         print('Plotting Actor Positions')
-        label_frequency = 4  # odd number to plot other actors
+        label_frequency = 3  # odd number to plot other actors
         # plt.cla()
         plt.clf()
 
@@ -213,8 +217,8 @@ class Actor_State_Recorder:
 
         plt.ylabel('Longitudinal Position (m)', fontsize=14, weight='bold')  # Set ylabel font size
         plt.xlabel('Lateral Position (m)', fontsize=14, weight='bold')  # Set xlabel font size
-        # plt.xlim(-1.5, 5)
-        plt.ylim(13)
+        plt.xlim(-1.5, 5)
+        # plt.ylim(13)
 
         file_name = '\\Positions ' + self.svo_estimation_type + '.png'
         folder_path = r'C:\Users\victor\Desktop\SVO Results'
