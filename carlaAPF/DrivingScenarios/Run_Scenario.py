@@ -29,10 +29,10 @@ if __name__ == "__main__":
                                                                                       0.005))  # sim timestep    0.005 slow mo,  0.001 super slow mo
 
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destinations, # destination
-                                                                         True,  # autopilot_on
+                                                                         False,  # autopilot_on
                                                                          True,  # display apf
                                                                          False,  # display control system and actor positions
-                                                                         'type_2'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
+                                                                         'type_1'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
 
     p1.start()
 

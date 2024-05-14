@@ -26,7 +26,7 @@ def key_press(event):
 def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none'):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
-    potential_field = pf.APF(field_size=30, granularity=0.3) #meters, meters
+    potential_field = pf.APF(field_size=40, granularity=0.3) #meters, meters
     high_level_route = GlobalRoutePlanner(world.get_map(), 1)
     ego_vehicle = None
 
@@ -59,8 +59,8 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
 
     # Throttle Control
     throttle_PID = Throttle_Control_PID(ego_vehicle, potential_field.get_potential_field(), potential_field.get_granularity())
-    # throttle_P ID.set_PID_values(0.25, 0.01, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
-    throttle_PID.set_PID_values(0.25, 0.002, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
+    throttle_PID.set_PID_values(0.25, 0.01, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
+    # throttle_PID.set_PID_values(0.25, 0.002, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
 
     # Behavior Analysis
     pedestrian_behavior_analyser = Pedestrian_Behavior_Analyser(world)

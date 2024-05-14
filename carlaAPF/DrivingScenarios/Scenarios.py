@@ -43,14 +43,12 @@ class Scenario:
             self.cars.append(VehicleInfo(spawn_point_id='id_113', destination_point_id='id_63', model_category='sedan', behavior_type='sadistic').data)
 
         elif scenario_name == 'pedestrian_crossing':
-            self.origin = 'id_44'
+            self.origin = 'id_98'
             self.destination = ('id_63','id_152')
-            # self.cars.append(
-            #     VehicleInfo(spawn_point_id='id_16', destination_point_id='id_62', model_category='sedan', behavior_type='altruistic').data)
+
+
             self.pedestrians.append(
-                PedestrianInfo(spawn_point_id='id_172', destination_point_id='id_754', model_category='adult', behavior_type='cooperative').data)
-            self.pedestrians.append(
-                PedestrianInfo(spawn_point_id='id_52', destination_point_id='id_172', model_category='adult', behavior_type='sadistic').data)
+                PedestrianInfo(spawn_point_id='id_713', destination_point_id='id_539', model_category='adult', behavior_type='altruistic').data)
 
         elif scenario_name == 'blocked_road_lane_change':
             self.origin = 'id_15'
