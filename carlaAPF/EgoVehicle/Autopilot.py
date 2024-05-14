@@ -59,7 +59,7 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
 
     # Throttle Control
     throttle_PID = Throttle_Control_PID(ego_vehicle, potential_field.get_potential_field(), potential_field.get_granularity())
-    # throttle_PID.set_PID_values(0.25, 0.01, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
+    # throttle_P ID.set_PID_values(0.25, 0.01, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
     throttle_PID.set_PID_values(0.25, 0.002, 0)  # (0.6, 0, 0) good for 20kph setpoint (0.06, 0.01, 0)  (0.25, 0.005, 0)
 
     # Behavior Analysis

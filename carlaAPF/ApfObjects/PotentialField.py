@@ -73,9 +73,9 @@ class APF:
                            "angular_velocity": np.array(angular_vel),
                            "acceleration": np.array(acceleration),
                            "velocity": np.array(velocity),
-                           "steering": controls.steer,
-                           "throttle": controls.throttle,
-                           "brake":controls.brake,
+                           "steering": controls.steer if vehicle else 0,
+                           "throttle": controls.throttle if vehicle else 0,
+                           "brake": controls.brake if vehicle else 0,
                            "svo": svo}
 
             if id not in self.actor_ids:  # create apf object
