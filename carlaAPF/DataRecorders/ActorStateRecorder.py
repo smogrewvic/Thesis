@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import copy
+import re
 
 
 class Actor_State_Recorder:
@@ -343,7 +344,7 @@ class Actor_State_Recorder:
 
     def plot_positions(self):
         print('Plotting Actor Positions')
-        label_frequency = 1  # odd number to plot other actors
+        label_frequency = 3  # odd number to plot other actors
         # plt.cla()
         plt.clf()
 
@@ -362,14 +363,16 @@ class Actor_State_Recorder:
 
         plt.scatter(x, y, c=colors, edgecolors=(0, 0, 0))
         for i, label in enumerate(labels):
-            # if i % label_frequency != 0 or label == 0:
-            #     continue
-            print('label', label, 'x', x[i])
+            if i % label_frequency != 0 or label == 0:
+                continue
+            print('label', label, 'x', x[i], 'y', y[i])
             plt.annotate(label,  # this is the text
-                         (y[i], x[i]),  # these are the coordinates to position the label
+                         (x[i], y[i]),  # these are the coordinates to position the label
                          textcoords="offset points",  # how to position the text
-                         xytext=(0, 0),  # distance from text to points (x,y)
-                         ha='left')  # horizontal alignment can be left, right or center
+                         xytext=(-25, 10),  # distance from text to points (x,y)
+                         ha='left', # horizontal alignment can be left, right or center
+                         rotation=315.0)
+
 
         total_distance = 0
         closest_distance = float('inf')
@@ -414,11 +417,11 @@ class Actor_State_Recorder:
 
         plt.ylabel('Longitudinal Position (m)', fontsize=14, weight='bold')  # Set ylabel font size
         plt.xlabel('Lateral Position (m)', fontsize=14, weight='bold')  # Set xlabel font size
-        # plt.xlim(-1.5, 5)
+        plt.xlim(-2.5)
         # plt.ylim(13)
 
         file_name = '\\Positions ' + self.svo_estimation_type + '.png'
-        folder_path = r'C:\Users\victor\Desktop\SVO Results'
+        folder_path = r'C:\Users\victor\Desktop\SVO Comparison'
         plt.gcf().set_size_inches(3, 10)
         plt.savefig(folder_path + file_name, bbox_inches='tight', dpi=300)
 
@@ -675,11 +678,18 @@ class Actor_State_Recorder:
         if os.path.exists(filename):
             temp_x_data = []
             temp_y_data = []
+            pattern = r'[-+]?\d*\.\d+|\d+'
             with open(filename, "r") as file:
                 for line in file:
-                    x, y = map(float, line.split())
+                    # x, y = map(float, line.split())
+                    # temp_x_data.append(x)
+                    # temp_y_data.append(y)
+
+                    cleaned_line = [re.findall(pattern, line.split()[0])[0], line.split()[1]]
+                    x, y = map(float, cleaned_line)
                     temp_x_data.append(x)
                     temp_y_data.append(y)
+
 
 
             return temp_x_data, temp_y_data
@@ -690,7 +700,8 @@ class Actor_State_Recorder:
                      f"sim_throttle.txt",
                      f"sim_brake.txt",
                      f"sim_steering.txt",
-                     "sim_speed.txt"]
+                     "sim_speed.txt",
+                     "sim_svo_labels.txt"]
 
         folders = [r"C:\Users\victor\Desktop\SVO Comparison\none",
                    r"C:\Users\victor\Desktop\SVO Comparison\type_1",
@@ -709,6 +720,9 @@ class Actor_State_Recorder:
         time_none, steering_none = self.extract_file(filename)
         filename = os.path.join(folders[0], filenames[5])
         time_none, speed_none = self.extract_file(filename)
+        # filename = os.path.join(folders[0], filenames[6])
+        # svo_none, _  = self.extract_file(filename)
+
 
         filename = os.path.join(folders[1], filenames[0])
         time_t1, ax_t1 = self.extract_file(filename)
@@ -722,6 +736,9 @@ class Actor_State_Recorder:
         time_t1, steering_t1 = self.extract_file(filename)
         filename = os.path.join(folders[1], filenames[5])
         time_t1, speed_t1 = self.extract_file(filename)
+        filename = os.path.join(folders[1], filenames[6])
+        svo_t1_temp,_ = self.extract_file(filename)
+        svo_t1 = svo_t1_temp[1::2]
 
         filename = os.path.join(folders[2], filenames[0])
         time_t2, ax_t2 = self.extract_file(filename)
@@ -735,6 +752,10 @@ class Actor_State_Recorder:
         time_t2, steering_t2 = self.extract_file(filename)
         filename = os.path.join(folders[2], filenames[5])
         time_t2, speed_t2 = self.extract_file(filename)
+        filename = os.path.join(folders[2], filenames[6])
+        svo_t2_temp,_ = self.extract_file(filename)
+        svo_t2 = svo_t2_temp[1::2]
+
 
         ax_none = self.low_pass_filter(ax_none, alpha=0.5)
         ay_none = self.low_pass_filter(ay_none, alpha=0.5)
@@ -745,7 +766,7 @@ class Actor_State_Recorder:
         ax_t2 = self.low_pass_filter(ax_t2, alpha=0.5)
         ay_t2 = self.low_pass_filter(ay_t2, alpha=0.5)
 
-        fig, axs = plt.subplots(6, 1, figsize=(15, 17))
+        fig, axs = plt.subplots(7, 1, figsize=(15, 17))
         num_ticks = 5
 
         # Plot for subplot 1
@@ -821,6 +842,20 @@ class Actor_State_Recorder:
         axs[5].legend(loc='upper right', fontsize=12)
         axs[5].set_xlim(0, self.record_time - self.record_delay)
         axs[5].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
+
+
+        t1_len = min(len(time_t1), len(svo_t1))
+        t2_len = min(len(time_t2), len(svo_t2))
+        axs[6].plot(time_t1[:t1_len], svo_t1[:t1_len], color=(0, 0, 0, 1), linestyle = 'dashed', label='Type-1')
+        axs[6].plot(time_t2[:t2_len], svo_t2[:t2_len], color=(0, 0, 0, 1) , label='Type-2')
+        axs[6].set_title('SVO', fontsize=18, weight='bold')
+        axs[6].set_ylabel('SVO', fontsize=14, weight='bold')
+        axs[6].set_xlabel('Time (s)', fontsize=14, weight='bold')
+        axs[6].tick_params(axis='x', labelsize=14)
+        axs[6].tick_params(axis='y', labelsize=14)
+        axs[6].legend(loc='upper right', fontsize=12)
+        axs[6].set_xlim(0, self.record_time - self.record_delay)
+        axs[6].yaxis.set_major_locator(plt.MaxNLocator(num_ticks))
 
         plt.subplots_adjust(hspace=1.0)
 

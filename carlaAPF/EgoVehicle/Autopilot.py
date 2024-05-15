@@ -54,7 +54,7 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
     # Steering Control
     steering_PID = Steering_Control_PID(ego_vehicle, potential_field.get_granularity(), potential_field=potential_field.get_potential_field())
     # steering_PID.set_PID_values(0.25, 0, 0.25)  # good turning response (p=0.25,i=0,d=0) @ 20kph, (p=0.15,i=0,d=0) @ 50kph,
-    steering_PID.set_PID_values(0.25, 0, 0.25)  # good turning response (p=0.25,i=0,d=0) @ 20kph, (p=0.15,i=0,d=0) @ 50kph,
+    steering_PID.set_PID_values(0.15, 0, 0.15)  # good turning response (p=0.25,i=0,d=0) @ 20kph, (p=0.15,i=0,d=0) @ 50kph,
     steering_PID.set_look_ahead(20)
 
     # Throttle Control
@@ -113,7 +113,7 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
         if key_flag:
             recorder.plot_positions()
             # recorder.plot_accelerations()
-            recorder.save_simulation_to_file()
+            # recorder.save_simulation_to_file()
             recorder.plot_comparison()
             key_flag = False
 
