@@ -25,37 +25,27 @@ class Pedestrian_SVO_T2Fuzzy():
         look_time = {}
         svo = {}
 
-        # rgauss_uncert_std_umf(x, params)
+        #closest to matlab
+        distance_to_crosswalk['close'] = IT2FS(linspace(0., 10, 100), rtri_mf, [6.2, 1.7, 1], rtri_mf, [5.75, 1.25, 1.0], check_set=True)
+        distance_to_crosswalk['far'] = IT2FS(linspace(0., 10, 100), ltri_mf, [1.3, 5.8, 1.0], ltri_mf, [1.75, 6.25, 1], check_set=True)
 
-        # distance_to_crosswalk['close'] = IT2FS(linspace(0., 10, 100), rtri_mf, [6, 1.5, 1.0], rtri_mf, [6, 1.5, 0.8], check_set=True)
-        # distance_to_crosswalk['far'] = IT2FS(linspace(0., 10, 100), ltri_mf, [1.5, 6, 1.0], ltri_mf, [1.5, 6, 0.8], check_set=True)
+        # closest to matlab
+        wait_time['short'] = IT2FS(linspace(0., 10, 100), rtri_mf, [5.4, 0.9, 1.0], rtri_mf, [4.5, 0, 0.95], check_set=True)
+        wait_time['medium'] = IT2FS(linspace(0., 10, 100), gaussian_mf, [3.5, 1.25, 1.0], gaussian_mf, [3.5, 0.75, 0.95], check_set=True)
+        wait_time['long'] = IT2FS(linspace(0., 10, 100), ltri_mf, [0.4, 6.4, 1.0], ltri_mf, [1.6, 7.6, 0.95], check_set=True)
+
+        # closest to matlab
+        look_time['short'] = IT2FS(linspace(0., 10, 100), rtri_mf, [6.75, 1.75, 1.0], rtri_mf, [5.25, 0.25, 0.9], check_set=True)
+        look_time['medium'] = IT2FS(linspace(0., 10, 100), gaussian_mf, [4, 1.35, 1.0], gaussian_mf, [4, 0.68, 0.9], check_set=True)
+        look_time['long'] = IT2FS(linspace(0., 10, 100), ltri_mf, [0.7, 6.2, 1.0], ltri_mf, [2.3, 7.8, 0.9], check_set=True)
+
+        # # output closest to matlab
+        svo['altruistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-1, 0.25, 1.0], gaussian_mf, [-1, 0.15, 1.0], check_set=True)
+        svo['cooperative'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-0.5, 0.25, 1.0], gaussian_mf, [-0.5, 0.15, 1.0], check_set=True)
+        svo['individualistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0, 0.25, 1.0], gaussian_mf, [0, 0.15, 1.0], check_set=True)
+        svo['competitive'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0.5, 0.25, 1.0], gaussian_mf, [0.5, 0.15, 1.0], check_set=True)
+        svo['sadistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [1, 0.25, 1.0], gaussian_mf, [1, 0.15, 1.0], check_set=True)
         #
-        # center, lower limit, upper limit, height
-        distance_to_crosswalk['close'] = IT2FS(linspace(0., 10, 100), rgauss_uncert_std_umf, [1.75, 2, 2, 1], rgauss_uncert_std_lmf, [1.25, 2, 2, 1], check_set=True)
-        distance_to_crosswalk['far'] = IT2FS(linspace(0., 10, 100), lgauss_uncert_std_umf, [5.75, 2, 2, 1], lgauss_uncert_std_lmf, [6.25, 2, 2, 1],check_set=True)
-        # distance_to_crosswalk['close'] = IT2FS(linspace(0., 10, 100), ltri_mf, [1.5, 6, 1.0], ltri_mf, [1.5, 6, 1], check_set=True)
-        #
-
-
-        # wait_time['short'] = IT2FS(linspace(0., 10, 100), rtri_mf, [5, 0.5, 1.0], rtri_mf, [5, 0.5, 0.8], check_set=True)
-        wait_time['short'] = IT2FS(linspace(0., 10, 100), rgauss_uncert_std_umf, [1.3, 1.5, 1.5, 1], rgauss_uncert_std_lmf, [0.7, 1.5, 1.5, 0.95], check_set=True)
-        wait_time['medium'] = IT2FS(linspace(0., 10, 100), gaussian_mf, [3.5, 1.3, 1.0], gaussian_mf, [3.5, 0.7, 0.95], check_set=True)
-        # wait_time['long'] = IT2FS(linspace(0., 10, 100), ltri_mf, [1, 7, 1.0], ltri_mf, [1, 7, 0.8], check_set=True)
-        wait_time['long'] = IT2FS(linspace(0., 10, 100), lgauss_uncert_std_umf, [6.2, 2, 2, 1], lgauss_uncert_std_lmf, [6.8, 2, 2, 0.95],check_set=True)
-
-        # look_time['short'] = IT2FS(linspace(0., 10, 100), rtri_mf, [6, 1, 1.0], rtri_mf, [6, 1, 0.8], check_set=True)
-        look_time['short'] = IT2FS(linspace(0., 10, 100), rgauss_uncert_std_umf, [2, 1.7, 1.7, 1], rgauss_uncert_std_lmf, [1.0, 1.5, 1.7, 0.9], check_set=True)
-        look_time['medium'] = IT2FS(linspace(0., 10, 100), gaussian_mf, [4, 1.5, 1.0], gaussian_mf, [4, 0.5, 0.9], check_set=True)
-        # look_time['long'] = IT2FS(linspace(0., 10, 100), ltri_mf, [1.5, 7, 1.0], ltri_mf, [1.5, 7, 0.8], check_set=True)
-        look_time['long'] = IT2FS(linspace(0., 10, 100), lgauss_uncert_std_umf, [5.5, 1.7, 1.7, 1], lgauss_uncert_std_lmf, [6.5, 1.7, 1.7, 0.9],check_set=True)
-
-        # # output
-        svo['altruistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-1, 0.25, 1.0], gaussian_mf, [-1, 0.2, 1.0], check_set=True)
-        svo['cooperative'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [-0.5, 0.25, 1.0], gaussian_mf, [-0.5, 0.2, 1.0], check_set=True)
-        svo['individualistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0, 0.25, 1.0], gaussian_mf, [0, 0.2, 1.0], check_set=True)
-        svo['competitive'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [0.5, 0.25, 1.0], gaussian_mf, [0.5, 0.2, 1.0], check_set=True)
-        svo['sadistic'] = IT2FS(linspace(-1, 1, 100), gaussian_mf, [1, 0.25, 1.0], gaussian_mf, [1, 0.2, 1.0], check_set=True)
-
         # IT2FS_plot(distance_to_crosswalk['close'], distance_to_crosswalk['far'], legends=["close", "far"])
         # IT2FS_plot(wait_time['short'], wait_time['medium'],wait_time['long'], legends=["short", "medium", "long"])
         # IT2FS_plot(look_time['short'], look_time['medium'], look_time['long'], legends=["short", "medium", "long"])
@@ -131,4 +121,4 @@ class Pedestrian_SVO_T2Fuzzy():
 
 input_vector = {'distance_to_crosswalk': 2, 'time_looking': 0, 'time_waiting': 0}
 test1 = Pedestrian_SVO_T2Fuzzy()
-test1.calculate_output(input_vector)
+# test1.calculate_output(input_vector)

@@ -1,5 +1,6 @@
 from Tools.Crosswalk_Info import Crosswalk_Info
 from SVO.FuzzyEstimators.Pedestrian_SVO_Fuzzy import Pedestrian_SVO_Fuzzy
+from SVO.FuzzyEstimators.Pedestrian_SVO_T2Fuzzy import Pedestrian_SVO_T2Fuzzy
 from SVO.ActorBehaviorProfiles.Pedestrian_Behavior_Types import Pedestrian_Behavior_Types
 import numpy as np
 import time
@@ -11,6 +12,7 @@ class Pedestrian_Behavior_Analyser:
         self.world = world
         self.crosswalk_trigger_distance = Crosswalk_Info.trigger_distance + Crosswalk_Info.trigger_overshoot
         self.type1_fuzzy = Pedestrian_SVO_Fuzzy()
+        self.type2_fuzzy = Pedestrian_SVO_T2Fuzzy()
 
         self.pedestrian_actors = self.filter_actors('pedestrian')
         self.social_values = {}
@@ -131,7 +133,7 @@ class Pedestrian_Behavior_Analyser:
         elif estimation_type == 'type_2':
             for actor in self.pedestrian_actors:
                 id = actor.id
-                self.social_values[id] = self.type1_fuzzy.calculate_output(self.pedestrian_behaviors[id])
+                self.social_values[id] = self.type2_fuzzy.calculate_output(self.pedestrian_behaviors[id])
 
         return self.social_values
 

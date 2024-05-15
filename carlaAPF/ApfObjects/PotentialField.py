@@ -15,7 +15,7 @@ import time
 
 
 class APF:
-    def __init__(self, field_size, granularity): # 15-0.2 high fidelity, #20-0.6 decent
+    def __init__(self, field_size, granularity, traffic_lights = True): # 15-0.2 high fidelity, #20-0.6 decent
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
 
@@ -29,7 +29,9 @@ class APF:
         self.navpoint_actors = [] # to create lane apf
 
         self.svo_all_actors = {}
-        self.set_traffic_lights() # get traffic light positions and info from map
+        if traffic_lights:
+            self.set_traffic_lights() # get traffic light positions and info from map
+
     def update_svo_actors(self, svo_data):
         self.svo_all_actors.update(svo_data)
 

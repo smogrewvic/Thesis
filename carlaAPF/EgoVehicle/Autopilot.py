@@ -26,7 +26,7 @@ def key_press(event):
 def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none'):
     client = carla.Client('localhost', 2000)
     world = client.get_world()
-    potential_field = pf.APF(field_size=40, granularity=0.3) #meters, meters
+    potential_field = pf.APF(field_size=40, granularity=0.3, traffic_lights=False) #meters, meters
     high_level_route = GlobalRoutePlanner(world.get_map(), 1)
     ego_vehicle = None
 
@@ -106,14 +106,14 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
                   )
 
         # results.put(recorder.plot_positions())
-        recorder.record_data(filters = ['ego_vehicle', 'vehicles'])
+        recorder.record_data(filters = ['ego_vehicle', 'pedestrians'])
 
         global key_flag
         keyboard.on_press_key("up", key_press)
         if key_flag:
-            # recorder.plot_positions()
+            recorder.plot_positions()
             # recorder.plot_accelerations()
-            # recorder.save_simulation_to_file()
+            recorder.save_simulation_to_file()
             recorder.plot_comparison()
             key_flag = False
 

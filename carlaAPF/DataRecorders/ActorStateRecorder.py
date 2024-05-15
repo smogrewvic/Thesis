@@ -29,13 +29,18 @@ class Actor_State_Recorder:
                                'sadistic': (155 / 255, 0 / 255, 0 / 255)}
         self.sim_time_factor = 3.83
         self.recording_distance = 30
+
+        ### Pedestrian Crossing
+        self.record_delay = 4  # seconds
+        self.record_time = 20  # seconds
+
         ### Immobile Vehicle
         # self.record_delay = 5  # seconds
         # self.record_time = 14
 
-        ### Emergency Merge
-        self.record_delay = 2  # seconds
-        self.record_time = 8  # seconds
+        # ### Emergency Merge
+        # self.record_delay = 2  # seconds
+        # self.record_time = 8  # seconds
 
     def _svo_to_color(self, svo):
         behavior = 'individualistic'
@@ -114,6 +119,31 @@ class Actor_State_Recorder:
                         'color': rgba}
                 self.plot_data.append(data)
 
+            elif type(self.actors[id]) is PedestrianAPF and 'pedestrians' in filters:
+                if self.start_position == [0, 0]: continue
+                rgb = self._svo_to_color(self.actors[id].get_svo())
+                transparency = self._velocity_to_transparecy(self.actors[id].get_state()['speed'])
+                rgba = rgb + (transparency,)
+                current_time = self.world.get_snapshot().timestamp.elapsed_seconds
+                state = self.actors[id].get_state()
+                distance = np.linalg.norm(self.actors[id].get_relative_state()["position"])
+                if distance > self.recording_distance: continue
+                data = {'type': 'pedestrian',
+                        'sim_time': current_time - self.start_time,
+                        'x': state['position'][0] - self.start_position[0],
+                        'y': state['position'][1] - self.start_position[1],
+                        'speed': state['speed'],
+                        'a_x': state['acceleration'][0],
+                        'a_y': state['acceleration'][1],
+                        'a_z': state['acceleration'][2],
+                        'throttle': state['throttle'],
+                        'brake': state['brake'],
+                        'steering': state['steering'],
+                        'svo': round(state['svo'], 3),
+                        'relative_distance': distance,
+                        'color': rgba}
+                self.plot_data.append(data)
+
             elif type(self.actors[id]) is NavpointAPF and 'navpoints' in filters:
                 if self.start_position == [0, 0]: continue
                 current_time = self.world.get_snapshot().timestamp.elapsed_seconds
@@ -144,7 +174,7 @@ class Actor_State_Recorder:
                         'color': 'pink'}
                 self.plot_data.append(data)
 
-    def plot_positions(self):
+    def plot_positions3(self):
         print('Plotting Actor Positions')
         label_frequency = 3  # odd number to plot other actors
         # plt.cla()
@@ -310,6 +340,92 @@ class Actor_State_Recorder:
         plt.savefig(folder_path + file_name, bbox_inches='tight')
 
         plt.show()
+
+    def plot_positions(self):
+        print('Plotting Actor Positions')
+        label_frequency = 1  # odd number to plot other actors
+        # plt.cla()
+        plt.clf()
+
+        start_index, stop_index = self.get_start_stop_index()
+
+        x = [data['x'] for data in self.plot_data[start_index:stop_index]]
+        y = [-data['y'] for data in self.plot_data[start_index:stop_index]]
+        colors = [data['color'] for data in self.plot_data[start_index:stop_index]]
+        labels = [data['svo'] for data in self.plot_data[start_index:stop_index]]
+
+        ego_x, ego_y = [], []
+        for data in self.plot_data[start_index:stop_index]:
+            if data['type'] == 'ego_vehicle':
+                ego_x.append(data['x'])
+                ego_y.append(data['y'])
+
+        plt.scatter(x, y, c=colors, edgecolors=(0, 0, 0))
+        for i, label in enumerate(labels):
+            # if i % label_frequency != 0 or label == 0:
+            #     continue
+            print('label', label, 'x', x[i])
+            plt.annotate(label,  # this is the text
+                         (y[i], x[i]),  # these are the coordinates to position the label
+                         textcoords="offset points",  # how to position the text
+                         xytext=(0, 0),  # distance from text to points (x,y)
+                         ha='left')  # horizontal alignment can be left, right or center
+
+        total_distance = 0
+        closest_distance = float('inf')
+        for i in range(1, len(ego_x)):
+            total_distance += np.sqrt((ego_x[i] - ego_x[i - 1]) ** 2 + (ego_y[i] - ego_y[i - 1]) ** 2)
+
+        for i, data in enumerate(self.plot_data[start_index:stop_index]):
+            if data['type'] == 'vehicle' or data['type'] == 'pedestrian':
+                closest_distance = min(closest_distance, data['relative_distance'])
+
+        plt.annotate('Closest Distance: ' + str(round(closest_distance, 2)) + 'm',
+                     (2.5, 50),
+                     textcoords="offset points",
+                     xytext=(0, 0),
+                     fontsize=10,
+                     weight='bold',
+                     ha='left')
+
+        plt.annotate('Total Distance: ' + str(round(total_distance, 2)) + 'm',
+                     (2.5, 53),
+                     textcoords="offset points",
+                     xytext=(0, 0),
+                     fontsize=10,
+                     weight='bold',
+                     ha='left')
+
+        plt.annotate('Ego-Vehicle',
+                     (y[0], x[0]),
+                     textcoords="offset points",
+                     xytext=(0, -15),
+                     fontsize=10,
+                     weight='bold',
+                     ha='center')
+
+        plt.annotate('Actor',
+                     (y[1], x[1]),
+                     textcoords="offset points",
+                     xytext=(0, -15),
+                     fontsize=10,
+                     weight='bold',
+                     ha='center')
+
+        plt.ylabel('Longitudinal Position (m)', fontsize=14, weight='bold')  # Set ylabel font size
+        plt.xlabel('Lateral Position (m)', fontsize=14, weight='bold')  # Set xlabel font size
+        # plt.xlim(-1.5, 5)
+        # plt.ylim(13)
+
+        file_name = '\\Positions ' + self.svo_estimation_type + '.png'
+        folder_path = r'C:\Users\victor\Desktop\SVO Results'
+        plt.gcf().set_size_inches(3, 10)
+        plt.savefig(folder_path + file_name, bbox_inches='tight', dpi=300)
+
+        print('ESTIMATION: ', self.svo_estimation_type, '\tCLOSEST DIST: ', round(closest_distance, 3), '\tTOTAL DIST: ', round(total_distance, 3))
+        plt.show()
+
+
     def plot_accelerations(self):
         print('Plotting Actor Accelerations')
 
