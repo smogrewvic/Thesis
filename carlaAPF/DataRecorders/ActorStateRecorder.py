@@ -12,10 +12,12 @@ import numpy as np
 import os
 import copy
 import re
+import json
+import pickle
 
 
 class Actor_State_Recorder:
-    def __init__(self, pf_actors, world, svo_estimation_type):
+    def __init__(self, pf_actors, world, svo_estimation_type, recording_distance = 30):
         self.world = world
         self.start_time = self.world.get_snapshot().timestamp.elapsed_seconds
         self.start_position = [0, 0]
@@ -29,19 +31,20 @@ class Actor_State_Recorder:
                                'competitive': (255 / 255, 128 / 255, 0 / 255),
                                'sadistic': (155 / 255, 0 / 255, 0 / 255)}
         self.sim_time_factor = 3.83
-        self.recording_distance = 30
+        self.recording_distance = recording_distance
 
-        ### Pedestrian Crossing
+        # ### Pedestrian Crossing
         self.record_delay = 4  # seconds
         self.record_time = 20  # seconds
 
-        ### Immobile Vehicle
+        # ### Immobile Vehicle
         # self.record_delay = 5  # seconds
         # self.record_time = 14
 
         # ### Emergency Merge
         # self.record_delay = 2  # seconds
         # self.record_time = 8  # seconds
+
 
     def _svo_to_color(self, svo):
         behavior = 'individualistic'
@@ -174,6 +177,157 @@ class Actor_State_Recorder:
                         'a_z': state['acceleration'][2],
                         'color': 'pink'}
                 self.plot_data.append(data)
+
+
+
+    def record_training_data(self, save_folder, file_count = 0, save_type = 'pickle'):
+
+        training_data = {}
+        for id in self.actors:
+            if id == 'ego_vehicle':
+                current_time = self.world.get_snapshot().timestamp.elapsed_seconds
+                state = self.actors[id].get_state()
+                data = {'type': 'ego_vehicle',
+                        'id': id,
+                        'sim_time': float(round(current_time - self.start_time, 3)),
+                        'x': float(round(state['position'][0] - self.start_position[0], 3)),
+                        'y': float(round(state['position'][1] - self.start_position[1], 3)),
+                        'speed': float(round(state['speed'], 3)),
+                        'heading': float(round(state['heading'], 3)),
+                        'vel_x': float(round(state['velocity'][0], 3)),
+                        'vel_y': float(round(state['velocity'][1], 3)),
+                        'rel_x': 0,
+                        'rel_y': 0,
+                        'rel_speed': 0,
+                        'rel_heading': 0,
+                        'rel_vel_x': 0,
+                        'rel_vel_y': 0,
+                        'svo': 0,
+                        'relative_distance': 0}
+
+                training_data[id] = data
+
+
+            elif type(self.actors[id]) is VehicleAPF:
+                # if self.start_position == [0, 0]: continue
+                current_time = self.world.get_snapshot().timestamp.elapsed_seconds
+                state = self.actors[id].get_state()
+                rel_state = self.actors[id].get_relative_state()
+                distance = np.linalg.norm(self.actors[id].get_relative_state()["position"])
+                if distance > self.recording_distance: continue
+                data = {'type': 'vehicle',
+                        'id':id,
+                        'sim_time': float(round(current_time - self.start_time , 3)),
+                        'x': float(round(state['position'][0] - self.start_position[0], 3)),
+                        'y': float(round(state['position'][1] - self.start_position[1] , 3)),
+                        'speed': float(round(state['speed'] , 3)),
+                        'heading': float(round(state['heading'] , 3)),
+                        'vel_x': float(round(state['velocity'][0] , 3)),
+                        'vel_y': float(round(state['velocity'][1] , 3)),
+                        'rel_x': float(round(rel_state['position'][0] - self.start_position[0] , 3)),
+                        'rel_y': float(round(rel_state['position'][1] - self.start_position[1] , 3)),
+                        'rel_speed': float(round(rel_state['speed'] , 3)),
+                        'rel_heading': float(round( rel_state['heading'], 3)),
+                        'rel_vel_x': float(round( rel_state['velocity'][0], 3)),
+                        'rel_vel_y': float(round(rel_state['velocity'][1] , 3)),
+                        'svo': float(round(state['svo'], 3)),
+                        'relative_distance': float(round(distance , 3))}
+                training_data[id] = data
+
+            elif type(self.actors[id]) is PedestrianAPF:
+                # if self.start_position == [0, 0]: continue
+                current_time = self.world.get_snapshot().timestamp.elapsed_seconds
+                state = self.actors[id].get_state()
+                rel_state = self.actors[id].get_relative_state()
+                distance = np.linalg.norm(self.actors[id].get_relative_state()["position"])
+                if distance > self.recording_distance: continue
+                data = {'type': 'pedestrian',
+                        'id':id,
+                        'sim_time': float(round(current_time - self.start_time , 3)),
+                        'x': float(round(state['position'][0] - self.start_position[0], 3)),
+                        'y': float(round(state['position'][1] - self.start_position[1] , 3)),
+                        'speed': float(round(state['speed'] , 3)),
+                        'heading': float(round(state['heading'] , 3)),
+                        'vel_x': float(round(state['velocity'][0] , 3)),
+                        'vel_y': float(round(state['velocity'][1] , 3)),
+                        'rel_x': float(round(rel_state['position'][0] - self.start_position[0] , 3)),
+                        'rel_y': float(round(rel_state['position'][1] - self.start_position[1] , 3)),
+                        'rel_speed': float(round(rel_state['speed'] , 3)),
+                        'rel_heading': float(round( rel_state['heading'], 3)),
+                        'rel_vel_x': float(round( rel_state['velocity'][0], 3)),
+                        'rel_vel_y': float(round(rel_state['velocity'][1] , 3)),
+                        'svo': float(round(state['svo'], 3)),
+                        'relative_distance': float(round(distance , 3))}
+
+                training_data[id] = data
+
+            elif type(self.actors[id]) is NavpointAPF:
+                # if self.start_position == [0, 0]: continue
+                current_time = self.world.get_snapshot().timestamp.elapsed_seconds
+                state = self.actors[id].get_state()
+                rel_state = self.actors[id].get_relative_state()
+                distance = np.linalg.norm(self.actors[id].get_relative_state()["position"])
+                if distance > self.recording_distance: continue
+                data = {'type': 'navpoint',
+                        'id':id,
+                        'sim_time': float(round(current_time - self.start_time , 3)),
+                        'x': float(round(state['position'][0] - self.start_position[0], 3)),
+                        'y': float(round(state['position'][1] - self.start_position[1] , 3)),
+                        'speed': float(round(state['speed'] , 3)),
+                        'heading': float(round(state['heading'] , 3)),
+                        'vel_x': float(round(state['velocity'][0] , 3)),
+                        'vel_y': float(round(state['velocity'][1] , 3)),
+                        'rel_x': float(round(rel_state['position'][0] - self.start_position[0] , 3)),
+                        'rel_y': float(round(rel_state['position'][1] - self.start_position[1] , 3)),
+                        'rel_speed': float(round(rel_state['speed'] , 3)),
+                        'rel_heading': float(round( rel_state['heading'], 3)),
+                        'rel_vel_x': float(round( rel_state['velocity'][0], 3)),
+                        'rel_vel_y': float(round(rel_state['velocity'][1] , 3)),
+                        'svo':0,
+                        'relative_distance': float(round(distance , 3))}
+                training_data[id] = data
+
+            elif type(self.actors[id]) is TrafficLightAPF:
+                # if self.start_position == [0, 0]: continue
+                current_time = self.world.get_snapshot().timestamp.elapsed_seconds
+                state = self.actors[id].get_state()
+                rel_state = self.actors[id].get_relative_state()
+                distance = np.linalg.norm(self.actors[id].get_relative_state()["position"])
+                if distance > self.recording_distance: continue
+                data = {'type': 'traffic_light',
+                        'id':id,
+                        'sim_time': float(round(current_time - self.start_time , 3)),
+                        'x': float(round(state['position'][0] - self.start_position[0], 3)),
+                        'y': float(round(state['position'][1] - self.start_position[1] , 3)),
+                        'speed': float(round(state['speed'] , 3)),
+                        'heading': float(round(state['heading'] , 3)),
+                        'vel_x': float(round(state['velocity'][0] , 3)),
+                        'vel_y': float(round(state['velocity'][1] , 3)),
+                        'rel_x': float(round(rel_state['position'][0] - self.start_position[0] , 3)),
+                        'rel_y': float(round(rel_state['position'][1] - self.start_position[1] , 3)),
+                        'rel_speed': float(round(rel_state['speed'] , 3)),
+                        'rel_heading': float(round( rel_state['heading'], 3)),
+                        'rel_vel_x': float(round( rel_state['velocity'][0], 3)),
+                        'rel_vel_y': float(round(rel_state['velocity'][1] , 3)),
+                        'svo': 0,
+                        'relative_distance': float(round(distance , 3))}
+                training_data[id] = data
+
+        # print('\n\n\n\n\nTRAINING DATA\n')
+        # for key in training_data:
+        #     print(key, training_data[key])
+
+        if not os.path.exists(save_folder):
+            os.makedirs(save_folder)
+
+        file_path = os.path.join(save_folder, f"test{file_count}.pickle")
+
+        # with open(file_path, 'w') as json_file:
+        #     json.dump(training_data, json_file, indent=4)
+
+        with open(file_path, 'wb') as pickle_file:
+            pickle.dump(training_data, pickle_file)
+        print(f"Data saved to {file_path}")
 
     def plot_positions3(self):
         print('Plotting Actor Positions')
@@ -371,7 +525,8 @@ class Actor_State_Recorder:
                          textcoords="offset points",  # how to position the text
                          xytext=(-25, 10),  # distance from text to points (x,y)
                          ha='left', # horizontal alignment can be left, right or center
-                         rotation=315.0)
+                         rotation=315.0,
+                         fontsize=10)
 
 
         total_distance = 0
@@ -754,7 +909,7 @@ class Actor_State_Recorder:
         time_t2, speed_t2 = self.extract_file(filename)
         filename = os.path.join(folders[2], filenames[6])
         svo_t2_temp,_ = self.extract_file(filename)
-        svo_t2 = svo_t2_temp[1::2]
+        svo_t2 = svo_t2_temp[::2]
 
 
         ax_none = self.low_pass_filter(ax_none, alpha=0.5)
@@ -787,7 +942,7 @@ class Actor_State_Recorder:
         axs[1].plot(time_t1, throttle_t1, color=(0, 0.5, 0, 1), linestyle = 'dashed', label='Type-1')
         axs[1].plot(time_t2, throttle_t2, color=(0, 0.5, 0, 1), label='Type-2')
         axs[1].set_title('Throttle Input', fontsize=18, weight='bold')
-        axs[1].set_ylabel('Pedal Position (%)', fontsize=14, weight='bold')
+        axs[1].set_ylabel('Pedal Pos. (%)', fontsize=14, weight='bold')
         axs[1].set_xlabel('Time (s)', fontsize=14, weight='bold')
         axs[1].tick_params(axis='x', labelsize=14)
         axs[1].tick_params(axis='y', labelsize=14)
@@ -799,7 +954,7 @@ class Actor_State_Recorder:
         axs[2].plot(time_t1, brake_t1, color=(1, 0, 0, 1), linestyle = 'dashed', label='Type-1')
         axs[2].plot(time_t2, brake_t2, color=(1, 0, 0, 1) , label='Type-2')
         axs[2].set_title('Brake Input', fontsize=18, weight='bold')
-        axs[2].set_ylabel('Pedal Position (%)', fontsize=14, weight='bold')
+        axs[2].set_ylabel('Pedal Pos.(%)', fontsize=14, weight='bold')
         axs[2].set_xlabel('Time (s)', fontsize=14, weight='bold')
         axs[2].tick_params(axis='x', labelsize=14)
         axs[2].tick_params(axis='y', labelsize=14)
@@ -823,7 +978,7 @@ class Actor_State_Recorder:
         axs[4].plot(time_t1, steering_t1, color=(0.75, 0, 0.5, 1), linestyle = 'dashed', label='Type-1')
         axs[4].plot(time_t2, steering_t2, color=(0.75, 0, 0.5, 1) , label='Type-2')
         axs[4].set_title('Steering Input', fontsize=18, weight='bold')
-        axs[4].set_ylabel('Steering Input (%)', fontsize=14, weight='bold')
+        axs[4].set_ylabel('Steer (%)', fontsize=14, weight='bold')
         axs[4].set_xlabel('Time (s)', fontsize=14, weight='bold')
         axs[4].tick_params(axis='x', labelsize=14)
         axs[4].tick_params(axis='y', labelsize=14)

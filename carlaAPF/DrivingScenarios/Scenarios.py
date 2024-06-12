@@ -21,7 +21,7 @@ class Scenario:
 
         elif scenario_name == 'generic':
             self.origin = 'id_113'
-            self.destination = 'id_62'
+            self.destination = ( 'id_x01','id_66','id_62')
 
             self.cars.append(VehicleInfo(spawn_point_id='id_66', destination_point_id='id_12', model_category='sedan', behavior_type='sadistic').data)
             self.cars.append(
@@ -33,6 +33,8 @@ class Scenario:
                 PedestrianInfo(spawn_point_id='id_172', destination_point_id='id_754', model_category='adult', behavior_type='cooperative').data)
             self.pedestrians.append(
                 PedestrianInfo(spawn_point_id='id_52', destination_point_id='id_172', model_category='adult', behavior_type='sadistic').data)
+
+            self.ego_delay = 1
 
         elif scenario_name == 'basic_merge':
             self.origin = 'id_66'
@@ -46,12 +48,9 @@ class Scenario:
             self.origin = 'id_41'
             self.destination = ('id_63','id_152')
 
-
-            # self.pedestrians.append(
-            #     PedestrianInfo(spawn_point_id='id_713', destination_point_id='id_539', model_category='adult', behavior_type='competitive').data)
             self.pedestrians.append(
                 PedestrianInfo(spawn_point_id='id_481', destination_point_id='id_539', model_category='adult', behavior_type='competitive').data)
-            self.ego_delay = 8.5
+            self.ego_delay = 8.2
 
         elif scenario_name == 'blocked_road_lane_change':
             self.origin = 'id_15'

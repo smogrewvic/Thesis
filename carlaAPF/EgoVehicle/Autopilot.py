@@ -14,6 +14,9 @@ from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavio
 from Tools.SpawnPoints import Spawn_Points
 from DataRecorders.ActorStateRecorder import Actor_State_Recorder
 import time
+import pickle
+import os
+import numpy as np
 
 import keyboard
 key_flag = False
@@ -23,7 +26,9 @@ def key_press(event):
     key_flag = True
 
 
-def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, display_debug=False, svo_estimation = 'none'):
+def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, display_debug=False,
+         svo_estimation = 'none', recording_type = 'none'):
+
     client = carla.Client('localhost', 2000)
     world = client.get_world()
     potential_field = pf.APF(field_size=40, granularity=0.3, traffic_lights=False) #meters, meters
@@ -68,8 +73,8 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
     svo_all_actors = {}
 
     # Data Recorder
-    recorder = Actor_State_Recorder(potential_field.get_actor_info(), world, svo_estimation)
-
+    recorder = Actor_State_Recorder(potential_field.get_actor_info(), world, svo_estimation, recording_distance=40)
+    save_count = 0
 
     while True:
         svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo(estimation_type=svo_estimation))
@@ -80,8 +85,8 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
 
         if autopilot_on == True:
             navigation_path = path_planner.phi_max_regressed_descent(0.7854)
-            steering_PID.set_regression_precision(path_planner.get_regression_precision())
 
+            steering_PID.set_regression_precision(path_planner.get_regression_precision())
             steering_output = steering_PID.get_control_output(navigation_path)
             throttle_output, brake_output = throttle_PID.get_control_output(navigation_path, 20, kph=True)
 
@@ -105,17 +110,37 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
                   round(ego_vehicle.get_transform().rotation.yaw, 4), "\t",
                   )
 
-        # results.put(recorder.plot_positions())
-        recorder.record_data(filters = ['ego_vehicle', 'pedestrians'])
+        if recording_type == 'normal':
+            recorder.record_data(filters = ['ego_vehicle', 'pedestrians'])
+            global key_flag
+            keyboard.on_press_key("up", key_press)
+            if key_flag:
+                # recorder.plot_positions()
+                # recorder.plot_accelerations()
+                # recorder.save_simulation_to_file()
+                # recorder.plot_comparison()
+                key_flag = False
 
-        global key_flag
-        keyboard.on_press_key("up", key_press)
-        if key_flag:
-            recorder.plot_positions()
-            # recorder.plot_accelerations()
-            # recorder.save_simulation_to_file()
-            recorder.plot_comparison()
-            key_flag = False
+        if recording_type == 'training':
+            training_folder = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset 1"
+            recorder.record_training_data(training_folder)
+
+            path_coeffs = path_planner.regression_coefficients(3)
+            if len(path_coeffs)==1: path_coeffs = [0,0,0,0]
+            path_length = 0
+            path_length_x = navigation_path[-1][0]
+            for i in range(1, len(navigation_path)):
+                path_length += np.sqrt((navigation_path[i][0] - navigation_path[i - 1][0]) ** 2 + (navigation_path[i][1] - navigation_path[i - 1][1]) ** 2)
+
+            print('COEFFICIENTS', path_coeffs, 'LENGTH', path_length, 'PATH_LENGTH_X', path_length_x)
+
+            open_file = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset 1\test0.pickle"
+            with open(open_file, 'rb') as pickle_file:
+                reconstructed_data = pickle.load(pickle_file)
+                # print(type(reconstructed_data))
+                # print(reconstructed_data, '\n')
+
+            save_count+=1
 
 
 if __name__ == '__main__':

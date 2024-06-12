@@ -11,7 +11,7 @@ import keyboard
 
 if __name__ == "__main__":
 
-    scenario = Scenario('pedestrian_crossing')
+    scenario = Scenario('generic')
 
     cars = scenario.get_cars()
     pedestrians = scenario.get_pedestrians()
@@ -30,9 +30,10 @@ if __name__ == "__main__":
 
     p3 = multiprocessing.Process(target=EgoVehicle.Autopilot.main, args=(destinations, # destination
                                                                          True,  # autopilot_on
-                                                                         True,  # display apf
+                                                                         False,  # display apf
                                                                          False,  # display control system and actor positions
-                                                                         'type_1'))  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
+                                                                         'type_2',  # svo estimation type ('none', 'generic' 'type_1', 'type_2'
+                                                                         'training'))  # recording_type ('none', 'normal', 'training')
 
     p1.start()
 
