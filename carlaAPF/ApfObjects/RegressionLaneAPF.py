@@ -11,7 +11,7 @@ class Regression_Lane_APF():
         self.coeffs = []
         self.ego_vehicle_state = ego_vehicle_state
         self.sub_goal = []
-        self.lane_width = 3
+        self.lane_width = 3.0
 
     def set_navpoints(self, navpoints):
         self.navpoints = navpoints
@@ -28,7 +28,7 @@ class Regression_Lane_APF():
 
         return closest_index
 
-    def regression_coefficients(self, poly_order=4):
+    def regression_coefficients(self, poly_order=3):
         closest_index = self.closest_navpoint_index()
 
         # perform regression
@@ -44,7 +44,7 @@ class Regression_Lane_APF():
             local_navpoints_x.append(self.navpoints[i].get_scaled_egocentric_state()["position"][0])
             local_navpoints_y.append(self.navpoints[i].get_scaled_egocentric_state()["position"][1])
 
-        self.sub_goal = [local_navpoints_x[-1], local_navpoints_y[-1]]
+        self.sub_goal = [local_navpoints_x[-5], local_navpoints_y[-5]]
         coeffs = np.polyfit(local_navpoints_x, local_navpoints_y, poly_order)
 
 
@@ -102,8 +102,8 @@ class Regression_Lane_APF():
         lane = gain*((y-fx)**2)/self.lane_width
 
 
-        a_width = 2.8/self.potential_field_granularity
-        b_width = 2.8/self.potential_field_granularity
+        a_width = (2.8)/self.potential_field_granularity
+        b_width = (2.8+2)/self.potential_field_granularity
         goal = ((x-self.sub_goal[0])/a_width)**2 + ((y-self.sub_goal[1])/b_width)**2
 
 

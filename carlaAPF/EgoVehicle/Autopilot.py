@@ -1,14 +1,10 @@
 import carla
-
 import EgoVehicle.EgoVehicle_Pygame
 from agents.navigation.global_route_planner import GlobalRoutePlanner
-
 from ApfObjects import PotentialField as pf
 from PathPlanners.GradientDescentPathPlanner import Gradient_path_planner
-
 from VehicleControllers.SteeringControlPID import Steering_Control_PID
 from VehicleControllers.ThrottleControlPID import Throttle_Control_PID
-
 from SVO.ActorBehaviorAnalysers.Pedestrian_Behavior_Analyser import Pedestrian_Behavior_Analyser
 from SVO.ActorBehaviorAnalysers.Vehicle_Behavior_Analyser import Vehicle_Behavior_Analyser
 from Tools.SpawnPoints import Spawn_Points
@@ -17,7 +13,7 @@ import time
 import pickle
 import os
 import numpy as np
-
+from NN_Tools.TrainingDataManager import Training_Data_Manager
 import keyboard
 key_flag = False
 
@@ -75,6 +71,8 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
     # Data Recorder
     recorder = Actor_State_Recorder(potential_field.get_actor_info(), world, svo_estimation, recording_distance=40)
     save_count = 0
+    training_folder = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset No Actors No TLs"
+    training_data = Training_Data_Manager(training_folder, 'pickle')
 
     while True:
         svo_all_actors.update(pedestrian_behavior_analyser.calculate_svo(estimation_type=svo_estimation))
@@ -121,26 +119,42 @@ def main(destination_ids=['id_113'], autopilot_on=True, display_apf=True, displa
                 # recorder.plot_comparison()
                 key_flag = False
 
+        # if recording_type == 'training':
+        #     training_folder = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset 1"
+        #     recorder.record_training_data(training_folder)
+        #
+        #     path_coeffs = path_planner.regression_coefficients(3)
+        #     if len(path_coeffs)==1: path_coeffs = [0,0,0,0]
+        #     path_length = 0
+        #     path_length_x = navigation_path[-1][0]
+        #     for i in range(1, len(navigation_path)):
+        #         path_length += np.sqrt((navigation_path[i][0] - navigation_path[i - 1][0]) ** 2 + (navigation_path[i][1] - navigation_path[i - 1][1]) ** 2)
+        #
+        #     # print('COEFFICIENTS', path_coeffs, 'LENGTH', path_length, 'PATH_LENGTH_X', path_length_x)
+        #     #
+        #     # open_file = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset 1\test0.pickle"
+        #     # with open(open_file, 'rb') as pickle_file:
+        #     #     reconstructed_data = pickle.load(pickle_file)
+        #     #     # print(type(reconstructed_data))
+        #     #     # print(reconstructed_data, '\n')
+        #     # save_count+=1
+
+
         if recording_type == 'training':
-            training_folder = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset 1"
-            recorder.record_training_data(training_folder)
 
             path_coeffs = path_planner.regression_coefficients(3)
             if len(path_coeffs)==1: path_coeffs = [0,0,0,0]
             path_length = 0
-            path_length_x = navigation_path[-1][0]
+            path_length_x = abs(navigation_path[-1][0] - navigation_path[0][0])
             for i in range(1, len(navigation_path)):
                 path_length += np.sqrt((navigation_path[i][0] - navigation_path[i - 1][0]) ** 2 + (navigation_path[i][1] - navigation_path[i - 1][1]) ** 2)
 
-            print('COEFFICIENTS', path_coeffs, 'LENGTH', path_length, 'PATH_LENGTH_X', path_length_x)
+            training_inputs = recorder.record_training_data(training_folder)
+            training_outputs = {'euclidean_length': path_length, 'longitudinal_length': path_length_x, 'regression_coefficients': path_coeffs}
 
-            open_file = r"C:\Users\victor\Desktop\Gradient Descent Training Data\Dataset 1\test0.pickle"
-            with open(open_file, 'rb') as pickle_file:
-                reconstructed_data = pickle.load(pickle_file)
-                # print(type(reconstructed_data))
-                # print(reconstructed_data, '\n')
+            training_data.save_training_file(training_inputs, training_outputs)
 
-            save_count+=1
+            training_data.load_training_file()
 
 
 if __name__ == '__main__':

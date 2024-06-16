@@ -108,7 +108,6 @@ class Gradient_path_planner:
     def get_regression_precision(self):
         return self.regression_precision
     def regression_coefficients(self, poly_order=3):
-
         discreet_path = np.array(self.gradient_path)
         if len(discreet_path)<= poly_order+1:  # return null coeffs if polyfit is poorly conditioned
             return [0]

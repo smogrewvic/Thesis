@@ -317,17 +317,17 @@ class Actor_State_Recorder:
         # for key in training_data:
         #     print(key, training_data[key])
 
-        if not os.path.exists(save_folder):
-            os.makedirs(save_folder)
-
-        file_path = os.path.join(save_folder, f"test{file_count}.pickle")
-
-        # with open(file_path, 'w') as json_file:
-        #     json.dump(training_data, json_file, indent=4)
-
-        with open(file_path, 'wb') as pickle_file:
-            pickle.dump(training_data, pickle_file)
-        print(f"Data saved to {file_path}")
+        # if not os.path.exists(save_folder):
+        #     os.makedirs(save_folder)
+        #
+        # file_path = os.path.join(save_folder, f"test{file_count}.pickle")
+        #
+        # # with open(file_path, 'w') as json_file:
+        # #     json.dump(training_data, json_file, indent=4)
+        #
+        # with open(file_path, 'wb') as pickle_file:
+        #     pickle.dump(training_data, pickle_file)
+        # print(f"Data saved to {file_path}")
 
     def plot_positions3(self):
         print('Plotting Actor Positions')
